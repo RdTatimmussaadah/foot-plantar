@@ -8,6 +8,7 @@
 const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 50;  // r=50
 let currentData    = null;
 let currentPosture = 'Berdiri';
+let _firebaseHistory = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   const sidebarEl = document.getElementById('sidebar');
@@ -24,7 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ambil data profil (ini akan memicu renderSidebar otomatis)
     loadPatientToSidebar();
     generateMockHistory();
-    renderHistoryBars();
+    firebaseLoadHistory((list) => {
+      _firebaseHistory = list;
+      renderHistoryBars();
+    });
 
     // onDataUpdate((data) => {
     //   const filteredData = applyEMAFilter(data);
@@ -339,27 +343,58 @@ function getPronationSVG(cssClass, side) {
 // ============================================================
 // HISTORY MINI CHART
 // ============================================================
+// function renderHistoryBars() {
+//   const snaps = getSnapshots();
+//   const container = document.getElementById('history-bars');
+//   if (!container) return;
+
+//   const recent = snaps.slice(0, 7).reverse();
+
+//   if (recent.length === 0) {
+//     container.innerHTML = `<span style="color:var(--text-dim);font-size:11px;font-family:var(--font-mono)">Belum ada snapshot.</span>`;
+//     return;
+//   }
+
+//   const maxScore = 100;
+//   container.innerHTML = recent.map(snap => {
+//     const pct   = Math.round((snap.balance_score / maxScore) * 100);
+//     const color = snap.balance_score >= 90 ? 'var(--green)' :
+//                   snap.balance_score >= 80 ? 'var(--yellow)' : 'var(--red)';
+//     return `
+//       <div class="h-bar-wrap" title="${snap.snapshot_time}: ${snap.balance_score}">
+//         <div class="h-bar" style="height:${pct}%; background:${color};"></div>
+//         <span class="h-bar-val">${snap.balance_score.toFixed(0)}</span>
+//       </div>
+//     `;
+//   }).join('');
+// }
+
 function renderHistoryBars() {
-  const snaps = getSnapshots();
+  const snaps = _firebaseHistory; // 🔥 dari Firebase
   const container = document.getElementById('history-bars');
   if (!container) return;
 
-  const recent = snaps.slice(0, 7).reverse();
-
-  if (recent.length === 0) {
+  if (!snaps || snaps.length === 0) {
     container.innerHTML = `<span style="color:var(--text-dim);font-size:11px;font-family:var(--font-mono)">Belum ada snapshot.</span>`;
     return;
   }
 
+  // ambil 7 terbaru
+  const recent = snaps.slice(-7); // lebih aman dari Firebase (urutan lama → baru)
+
   const maxScore = 100;
+
   container.innerHTML = recent.map(snap => {
-    const pct   = Math.round((snap.balance_score / maxScore) * 100);
-    const color = snap.balance_score >= 90 ? 'var(--green)' :
-                  snap.balance_score >= 80 ? 'var(--yellow)' : 'var(--red)';
+    const score = Number(snap.balance_score) || 0;
+
+    const pct   = Math.round((score / maxScore) * 100);
+    const color = score >= 90 ? 'var(--green)' :
+                  score >= 80 ? 'var(--yellow)' : 'var(--red)';
+
     return `
-      <div class="h-bar-wrap" title="${snap.snapshot_time}: ${snap.balance_score}">
+      <div class="h-bar-wrap" title="${snap.snapshot_time}: ${score}">
         <div class="h-bar" style="height:${pct}%; background:${color};"></div>
-        <span class="h-bar-val">${snap.balance_score.toFixed(0)}</span>
+        <span class="h-bar-val">${score.toFixed(0)}</span>
       </div>
     `;
   }).join('');

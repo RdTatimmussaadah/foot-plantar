@@ -76,9 +76,11 @@ function renderTopbar(container, pageTitle) {
       <button class="btn-snapshot" onclick="openSnapModal()">
         ${Icons.rec} Rekam Snapshot
       </button>
+      <!--
       <button class="btn-export" onclick="exportData()">
         ${Icons.download} Export
       </button>
+      -->
     </div>
   `;
 }

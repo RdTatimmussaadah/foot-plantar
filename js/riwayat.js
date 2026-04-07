@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderHistoryList();
       renderSummaryStats();
       drawTrendCharts();
+      renderHistoryBars();
     });
 
     // onDataUpdate((data) => {
