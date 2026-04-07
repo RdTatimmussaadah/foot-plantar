@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daftar — Data Diri</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/variables.css" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/auth.css" />
+</head>
+<body class="auth-body">
+
+  <div class="auth-layout">
+    <div class="auth-left">
+      <div class="auth-brand">
+        <div class="brand-icon">
+          <img src="../assets/images/logo-foot.png" alt="Foot Plantar Sense Logo">
+        </div>
+        <div class="brand-name">Foot Plantar <span>Sense</span></div>
+      </div>
+      <p class="auth-tagline">Monitoring tekanan plantar kaki untuk keseimbangan &amp; rehabilitasi</p>
+      <div class="auth-left-footer">v1.0.0 · Foot Plantar 2026</div>
+    </div>
+
+    <div class="auth-right">
+      <div class="auth-card">
+        <div class="auth-card-title"><span>Data Diri</span></div>
+        <p class="auth-card-subtitle" style="margin-bottom: var(--space-lg)">Langkah 2 dari 3</p>
+        
+        
+        <div class="steps-indicator">
+          <div class="step-item">
+            <div class="step-dot done">✓</div>
+            <span class="step-label">Akun</span>
+          </div>
+          <div class="step-line done"></div>
+          <div class="step-item">
+            <div class="step-dot active">2</div>
+            <span class="step-label active">Data Diri</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step-item">
+            <div class="step-dot">3</div>
+            <span class="step-label">Konfirmasi</span>
+          </div>
+          <div class="progress-line" id="progress-line" style="width:66%"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nama Lengkap</label>
+          <input class="form-input" type="text" id="nama" placeholder="Nama sesuai KTP" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tanggal Lahir</label>
+            <input class="form-input" type="date" id="dob" onchange="calcAge()" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Usia</label>
+            <input class="form-input" type="text" id="age" placeholder="Tahun" readonly style="opacity:0.6" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Jenis Kelamin</label>
+          <div class="gender-options">
+            <button class="gender-btn selected" id="gender_m" onclick="selectGender('Laki-laki')">Laki-laki</button>
+            <button class="gender-btn" id="gender_f" onclick="selectGender('Perempuan')">Perempuan</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tinggi (cm)</label>
+            <input class="form-input" type="number" id="height" placeholder="168" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Berat (kg)</label>
+            <input class="form-input" type="number" id="weight" placeholder="70" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Golongan Darah</label>
+          <div class="blood-options">
+            <button class="blood-btn selected" onclick="selectBlood('A')">A</button>
+            <button class="blood-btn" onclick="selectBlood('B')">B</button>
+            <button class="blood-btn" onclick="selectBlood('AB')">AB</button>
+            <button class="blood-btn" onclick="selectBlood('O')">O</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Alamat</label>
+          <input class="form-input" type="text" id="address" placeholder="Jalan, kota, provinsi" />
+        </div>
+        
+        <div class="btn-group">
+          <button class="btn-back" onclick="window.history.back()">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          
+          <button class="btn-primary" onclick="nextStep()">Lanjutkan →</button>
+        </div>
+        <p class="auth-switch">Sudah punya akun? <a href="login.html">Masuk</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  
+  <script>
+    let selectedGender = 'Laki-laki';
+    let selectedBlood  = 'A';
+
+    function selectGender(val) {
+      selectedGender = val;
+      document.getElementById('gender_m').classList.toggle('selected', val === 'Laki-laki');
+      document.getElementById('gender_f').classList.toggle('selected', val === 'Perempuan');
+    }
+
+    function selectBlood(val) {
+      selectedBlood = val;
+      document.querySelectorAll('.blood-btn').forEach(b => {
+        b.classList.toggle('selected', b.textContent === val);
+      });
+    }
+
+    function calcAge() {
+      const dob = new Date(document.getElementById('dob').value);
+      if (isNaN(dob)) return;
+      const age = Math.floor((Date.now() - dob) / (365.25 * 24 * 3600 * 1000));
+      document.getElementById('age').value = age + ' th';
+    }
+
+    function nextStep() {
+      const nama    = document.getElementById('nama').value.trim();
+      const dob     = document.getElementById('dob').value;
+      const height  = document.getElementById('height').value;
+      const weight  = document.getElementById('weight').value;
+      const address = document.getElementById('address').value.trim();
+
+      if (!nama || !dob || !height || !weight || !address) {
+        alert('Harap isi semua field.'); return;
+      }
+
+      sessionStorage.setItem('reg_nama',    nama);
+      sessionStorage.setItem('reg_dob',     dob);
+      sessionStorage.setItem('reg_gender',  selectedGender);
+      sessionStorage.setItem('reg_height',  height);
+      sessionStorage.setItem('reg_weight',  weight);
+      sessionStorage.setItem('reg_blood',   selectedBlood);
+      sessionStorage.setItem('reg_address', address);
+
+      window.location.href = 'register-3.html';
+    }
+  </script>
+</body>
+</html>

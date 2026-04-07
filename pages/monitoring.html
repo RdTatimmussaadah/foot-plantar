@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitor — Foot Plantar Sense</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/variables.css" />
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="../css/monitoring.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="app-sidebar" id="sidebar"></aside>
+      <div class="app-main">
+        <header class="app-topbar" id="topbar"></header>
+        <main class="app-content">
+          <div class="monitoring-grid">
+            <!-- HEATMAP -->
+            <div class="heatmap-card">
+              <div class="heatmap-header">
+                <div class="card-title">PETA TEKANAN PLANTAR</div>
+                <div style="text-align: right">
+                  <div
+                    style="
+                      font-size: 11px;
+                      font-weight: 700;
+                      color: var(--text-secondary);
+                    "
+                  >
+                    Distribusi 4 Sensor
+                  </div>
+                  <div
+                    style="
+                      font-family: var(--font-mono);
+                      font-size: 10px;
+                      color: var(--text-dim);
+                    "
+                    id="total-force-label"
+                  >
+                    Total: — N
+                  </div>
+                </div>
+              </div>
+              <div class="heatmap-body">
+                <div class="foot-labels-row">
+                  <span class="foot-side-lbl">KIRI</span>
+                  <span class="foot-side-lbl">KANAN</span>
+                </div>
+                <div class="feet-container">
+                  <div class="foot-wrap">
+                    <canvas id="heatmap-L" width="110" height="200"></canvas>
+                  </div>
+                  <div class="foot-wrap">
+                    <canvas id="heatmap-R" width="110" height="200"></canvas>
+                  </div>
+                </div>
+                <div class="heatmap-legend">
+                  <span
+                    style="
+                      color: #22d48f;
+                      font-size: 9px;
+                      font-family: var(--font-mono);
+                    "
+                    >Low</span
+                  >
+                  <div class="legend-gradient"></div>
+                  <span
+                    style="
+                      color: #e7302a;
+                      font-size: 9px;
+                      font-family: var(--font-mono);
+                    "
+                    >High</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- DETAIL SENSOR -->
+            <div class="detail-card">
+              <div class="card-section-title">DETAIL PER SENSOR</div>
+              <div class="detail-cols">
+                <div>
+                  <div class="detail-side-header left">● KIRI</div>
+                  <div id="left-sensor-rows"></div>
+                </div>
+                <div>
+                  <div class="detail-side-header right">● KANAN</div>
+                  <div id="right-sensor-rows"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- METRICS -->
+            <div class="metrics-row">
+              <div class="metric-card mc-red">
+                <img
+                  src="../assets/images/weight-icon.png"
+                  alt="weight-icon"
+                  class="icon"
+                />
+                <div class="mc-val" id="m-weight" style="color: var(--red)">
+                  —
+                </div>
+                <div class="mc-unit">kg</div>
+                <div class="mc-lbl">Est. Berat Badan</div>
+                <div class="mc-sub" id="m-weight-sub">dari — N</div>
+                <div class="mc-glow" style="background: var(--red)"></div>
+              </div>
+              <div class="metric-card">
+                <img
+                  src="../assets/images/balance-icon.png"
+                  alt="balance-icon"
+                  class="icon"
+                />
+                <div class="mc-val" id="m-balance" style="color: var(--green)">
+                  —
+                </div>
+                <div class="mc-unit">%</div>
+                <div class="mc-lbl">Simetri L/R</div>
+                <div class="mc-sub" id="m-balance-sub">batas min 85%</div>
+                <div class="mc-glow" style="background: var(--green)"></div>
+              </div>
+            </div>
+
+            <!-- POSTURE LABEL -->
+            <!-- <div class="posture-card">
+          <div class="posture-card-header">
+            <div>
+              <div class="card-section-title" style="margin:0 0 2px">LABEL POSTUR</div>
+              <div style="font-size:11px;font-weight:700">Postur Saat Ini</div>
+            </div>
+            <span class="posture-badge" id="posture-badge">Berdiri</span>
+          </div>
+          <div class="posture-grid">
+            <button class="posture-btn active" data-g="Berdiri" onclick="selectPosture('Berdiri',this)">
+              <img src="../assets/images/standup-icon.png" alt="standup-icon" class="icon" style="margin-bottom: 0px!important;">
+              <span>Berdiri</span>
+            </button>
+            <button class="posture-btn" data-g="Jongkok" onclick="selectPosture('Jongkok',this)">
+              <img src="../assets/images/jongkok-icon.png" alt="standup-icon" class="icon" style="margin-bottom: 0px!important;">
+              <span>Jongkok</span>
+            </button>
+            <button class="posture-btn" data-g="1 Kaki" onclick="selectPosture('1 Kaki',this)">
+              <img src="../assets/images/onefoot-icon.png" alt="standup-icon" class="icon" style="margin-bottom: 0px!important;">
+              <span>1 Kaki</span>
+            </button>
+          </div>
+        </div> -->
+
+            <!-- ── POSTURE CARD ── -->
+            <div class="posture-card">
+              <div class="posture-card-header">
+                <div class="card-section-title" style="margin: 0 0 2px">
+                  DETEKSI POSTUR
+                </div>
+                <span class="posture-badge" id="posture-badge"
+                  >Mendeteksi...</span
+                >
+              </div>
+
+              <!-- Hasil deteksi utama -->
+              <div class="posture-result">
+                <img
+                  id="posture-icon"
+                  src="../assets/images/standup-icon.png"
+                  alt="postur"
+                  class="posture-result-icon"
+                />
+                <div class="posture-result-info">
+                  <div class="posture-result-label" id="posture-label">
+                    Mendeteksi...
+                  </div>
+                  <div class="posture-result-source" id="posture-source">
+                    ⚙️ Rule-based · menunggu model ML
+                  </div>
+                </div>
+              </div>
+
+              <!-- Panel per postur — highlight yang aktif -->
+              <div class="posture-panels">
+                <div class="posture-panel" data-posture="Berdiri">
+                  <img
+                    src="../assets/images/standup-icon.png"
+                    class="icon"
+                    alt="berdiri"
+                  />
+                  <span>Berdiri</span>
+                </div>
+                <div class="posture-panel" data-posture="Jongkok">
+                  <img
+                    src="../assets/images/jongkok-icon.png"
+                    class="icon"
+                    alt="jongkok"
+                  />
+                  <span>Jongkok</span>
+                </div>
+                <div class="posture-panel" data-posture="1 Kaki">
+                  <img
+                    src="../assets/images/onefoot-icon.png"
+                    class="icon"
+                    alt="1 kaki"
+                  />
+                  <span>1 Kaki</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <script src="../js/calculations.js"></script>
+    <script src="../js/simulation.js"></script>
+    <script src="../js/firebase.js"></script>
+    <script src="../js/components.js"></script>
+    <script src="../js/monitoring.js"></script>
+  </body>
+</html>

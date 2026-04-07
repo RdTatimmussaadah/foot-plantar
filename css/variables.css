@@ -1,0 +1,88 @@
+/* ============================================================
+   variables.css
+   Design tokens & CSS custom properties
+   Foot Plantar Sense — IoT Monitoring System
+   ============================================================ */
+
+:root {
+  /* === COLOR PALETTE === */
+  /* Backgrounds */
+  --bg-base:        #0A0A0E;   /* darkest — page background */
+  --bg-panel:       #11111A;   /* sidebar / left panel */
+  --bg-card:        #1C1C26;   /* cards & inputs */
+  --bg-card-alt:    #181820;   /* slightly darker card variant */
+  --bg-hover:       #2A2A3A;   /* hover state */
+
+  /* Brand */
+  --red:            #E7302A;   /* primary accent — Foot Plantar red */
+  --red-glow:       rgba(231, 48, 42, 0.20);
+  --red-glow-soft:  rgba(231, 48, 42, 0.08);
+
+  /* Text */
+  --text-primary:   #EEEEF5;   /* main text */
+  --text-secondary: #60607A;   /* muted / labels */
+  --text-dim:       #363648;   /* very faint — version strings */
+
+  /* Status colors */
+  --green:          #22D48F;   /* normal / good */
+  --green-glow:     rgba(34, 212, 143, 0.15);
+  --yellow:         #F5C842;   /* warning / moderate */
+  --yellow-glow:    rgba(245, 200, 66, 0.15);
+  --blue:           #2266FF;   /* info / live indicator */
+  --blue-light:     #229AC8;   /* chart / sensor accent */
+
+  /* Sensor highlight colors (used in sensor bars) */
+  --sensor-hallux:  #229AC8;
+  --sensor-medff:   #227BE9;
+  --sensor-latff:   #2299C9;
+  --sensor-heel:    #E7302A;
+
+  /* === TYPOGRAPHY === */
+  --font-display:   'Nunito', sans-serif;
+  --font-mono:      'JetBrains Mono', monospace;
+
+  /* Font sizes */
+  --text-xs:    10px;
+  --text-sm:    12px;
+  --text-base:  14px;
+  --text-md:    16px;
+  --text-lg:    18px;
+  --text-xl:    24px;
+  --text-2xl:   30px;
+  --text-3xl:   35px;
+  --text-hero:  48px;
+
+  /* Font weights */
+  --fw-regular:    400;
+  --fw-semibold:   600;
+  --fw-bold:       700;
+  --fw-extrabold:  800;
+  --fw-black:      900;
+
+  /* === SPACING === */
+  --space-xs:   4px;
+  --space-sm:   8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+  --space-2xl: 48px;
+
+  /* === BORDERS === */
+  --border:        1px solid rgba(96, 96, 122, 0.15);
+  --border-accent: 1px solid rgba(231, 48, 42, 0.30);
+  --radius-sm:   8px;
+  --radius-md:  14px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-full: 9999px;
+
+  /* === SHADOWS === */
+  --shadow-red:   0 0 26px rgba(231, 48, 42, 0.20);
+  --shadow-card:  0 4px 20px rgba(0, 0, 0, 0.40);
+  --shadow-glow:  0 0 40px rgba(231, 48, 42, 0.12);
+
+  /* === LAYOUT === */
+  --sidebar-width: 220px;
+  --topbar-height:  66px;
+  --transition: 0.2s ease;
+}

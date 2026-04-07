@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Riwayat — Foot Plantar Sense</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/variables.css" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/riwayat.css" />
+</head>
+<body>
+<div class="app-layout">
+  <aside class="app-sidebar" id="sidebar"></aside>
+  <div class="app-main">
+    <header class="app-topbar" id="topbar"></header>
+
+    <!-- Live bar -->
+    <!-- <div class="live-info-bar">
+      <div class="live-info-inner">
+        <div>
+          <div style="font-weight:800;font-size:13px">Sensor aktif real-time</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:1px">Rekam snapshot kapan saja untuk menyimpan kondisi tekanan saat ini ke riwayat</div>
+        </div>
+        <button class="btn-snap-large" onclick="openSnapModal()">
+          <svg width="10" height="10" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
+          Rekam Snapshot
+        </button>
+      </div>
+    </div> -->
+
+    <main class="app-content">
+      <div class="riwayat-grid">
+
+        <!-- HISTORY LIST -->
+        <div class="history-list-col">
+          <div class="riwayat-section-header">
+            <span class="card-title" style="font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase">RIWAYAT SNAPSHOT</span>
+          </div>
+          <div id="history-list-body"></div>
+          <div class="history-export-row">
+            <button class="btn-export-outline" onclick="exportCSV()">📥 Export CSV</button>
+            <button class="btn-export-red" onclick="exportPDF()">📄 Laporan PDF</button>
+          </div>
+        </div>
+
+        <!-- SUMMARY + CHART -->
+        <div class="summary-col">
+          <div class="summary-card">
+            <div class="riwayat-section-header" style="margin-bottom:12px">
+              <span class="card-title" style="font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase">RINGKASAN</span>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:10px">Statistik Snapshot Terkini</div>
+            <div class="summary-stats-grid">
+              <div class="stat-box">
+                <div class="stat-val ok" id="avg-score">—</div>
+                <div class="stat-lbl">Avg Balance Score</div>
+                <div class="stat-sub">10 snapshot terakhir</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-val red" id="avg-heel">—</div>
+                <div class="stat-lbl">Avg Heel Load</div>
+                <div class="stat-sub">rerata dominasi</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-val warn" id="avg-sym">—</div>
+                <div class="stat-lbl">Avg Simetri</div>
+                <div class="stat-sub">L/R balance</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-val purple" id="total-snaps">—</div>
+                <div class="stat-lbl">Snapshot</div>
+                <div class="stat-sub">3 hari terakhir</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tren Balance Score only -->
+          <div class="trend-card">
+            <div class="trend-header">
+              <span style="font-weight:800;font-size:12px">Score per Snapshot</span>
+              <span class="trend-delta" id="trend-delta"></span>
+            </div>
+            <canvas id="trend-canvas" height="100"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+<div class="toast-container" id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+<script src="../js/calculations.js"></script>
+<script src="../js/simulation.js"></script>
+<script src="../js/firebase.js"></script>
+<script src="../js/components.js"></script>
+<script src="../js/riwayat.js"></script>
+</body>
+</html>

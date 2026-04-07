@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profil Pasien — Foot Plantar Sense</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/variables.css" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/profil.css" />
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="sidebar"></aside>
+
+  <div class="app-main">
+    <header class="app-topbar" id="topbar"></header>
+
+    <main class="app-content">
+      <div class="profile-grid">
+
+        <!-- ── LEFT: PROFILE IDENTITY ── -->
+        <div class="profile-aside">
+          <div class="profile-identity-card">
+            <div class="profile-identity-header">
+              <div class="profile-avatar-lg" id="p-initials">...</div>
+              <div class="profile-name" id="p-name">....</div>
+              <div class="profile-meta" id="p-meta">.. th · ...</div>
+            </div>
+            <div class="profile-contact-section">
+              <!-- <div class="biodata-section-title" style="margin-bottom: none;">Kontak</div> -->
+              <div class="card-title" style="margin-bottom: none;">Kontak</div>
+              <div class="profile-field-row">
+                <span class="profile-field-key">Email</span>
+                <span class="profile-field-val" id="p-email">—</span>
+              </div>
+              <div class="profile-field-row">
+                <span class="profile-field-key">No. Telepon</span>
+                <span class="profile-field-val" id="p-phone">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="logout-card">
+            <button class="logout-card-btn" onclick="openLogoutModal()">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M10 2h3a1 1 0 011 1v10a1 1 0 01-1 1h-3M7 11l3-3-3-3M10 8H2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Keluar dari Akun
+            </button>
+          </div>
+        </div>
+
+        <!-- ── RIGHT: BIODATA ── -->
+        <div class="biodata-card">
+          <div class="detail-card-header" style="margin-left:var(--space-md); margin-top:var(--space-md);">
+            <span class="card-title" style="margin-bottom: none !important; margin-left: var(--space-lg);">BIODATA PRIBADI</span>
+          </div>
+          <div class="biodata-body" style="margin-top:0">
+            <div class="biodata-grid">
+              <div class="biodata-field">
+                <span class="biodata-field-label">Nama Lengkap</span>
+                <span class="biodata-field-value" id="b-nama">—</span>
+              </div>
+              <div class="biodata-field">
+                <span class="biodata-field-label">Tanggal Lahir</span>
+                <span class="biodata-field-value" id="b-dob">—</span>
+                <span class="biodata-field-sub" id="b-age">—</span>
+              </div>
+              <div class="biodata-field">
+                <span class="biodata-field-label">Jenis Kelamin</span>
+                <span class="biodata-field-value" id="b-gender">—</span>
+              </div>
+              <div class="biodata-field">
+                <span class="biodata-field-label">Golongan Darah</span>
+                <span class="biodata-field-value" id="b-blood">—</span>
+              </div>
+              <div class="biodata-field">
+                <span class="biodata-field-label">Tinggi / Berat Badan</span>
+                <span class="biodata-field-value" id="b-tbbb">—</span>
+              </div>
+              <div class="biodata-field full-width">
+                <span class="biodata-field-label">Alamat</span>
+                <span class="biodata-field-value" id="b-address">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+<script src="../js/calculations.js"></script>
+<script src="../js/simulation.js"></script>
+<script src="../js/firebase.js"></script>
+<script src="../js/components.js"></script>
+<script>
+  let currentData    = null;
+  let currentPosture = 'Berdiri';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebarEl = document.getElementById('sidebar');
+
+    // LANGSUNG gambar sidebar pakai data default (biar gak kosong)
+    renderSidebar(sidebarEl, 'profil');
+    // 1. UI Statis (Langsung Muncul)
+    renderTopbar(document.getElementById('topbar'), 'Foot Plantar <span>Sense</span>');
+
+    // 2. Cek Auth & Jalankan Logic (Tunggu Firebase)
+    requireAuth((user) => {
+      // Kode di dalam sini hanya jalan jika USER SUDAH LOGIN
+      loadPatientToSidebar();
+      firebaseLoadProfile(function(profil) {
+        if (profil) {
+          fillProfile(profil);
+        } else {
+          // Fallback jika profil belum ada di database
+          fillProfile(getActivePatient());
+        }
+      });
+
+      onDataUpdate((data) => {
+        const filteredData = applyEMAFilter(data);
+        currentData = computeAll(filteredData);
+        // updateUI(currentData);
+      });
+      startSimulation();
+      // startFirebaseListen(function(data) {
+      //   const filteredData = applyEMAFilter(data);
+      //   currentData = computeAll(filteredData);
+      //   updateUI(currentData); // atau updateBalanceUI(data)
+      // });
+    });
+    // renderSidebar(document.getElementById('sidebar'), 'profil');
+    // renderTopbar(document.getElementById('topbar'), 'Foot Plantar <span>Sense</span>');
+
+    // // Load profil dari Firebase
+    //   firebaseLoadProfile(function(profil) {
+    //     if (profil) {
+    //       fillProfile(profil);
+    //     } else {
+    //       // Fallback jika profil belum ada di database
+    //       fillProfile(getActivePatient());
+    //     }
+    //   });
+  });
+
+  function fillProfile(p) {
+    // Hitung usia
+    let age = p.age || 0;
+    if (p.dob && !p.age) {
+      age = Math.floor((Date.now() - new Date(p.dob)) / (365.25 * 24 * 3600 * 1000));
+    }
+
+    // Buat initials
+    const initials = (p.name || p.initials || 'P')
+      .split(' ').map(function(w) { return w[0]; })
+      .join('').toUpperCase().slice(0, 2);
+
+    // Format tanggal lahir
+    let dobFormatted = p.dob || '—';
+    if (p.dob && p.dob.includes('-')) {
+      dobFormatted = new Date(p.dob).toLocaleDateString('id-ID', {
+        day: 'numeric', month: 'long', year: 'numeric'
+      });
+    }
+
+    document.getElementById('p-initials').textContent = initials;
+    document.getElementById('p-name').textContent     = p.name      || '—';
+    document.getElementById('p-meta').textContent     = age + ' th · Pasien';
+    document.getElementById('p-email').textContent    = p.email     || '—';
+    document.getElementById('p-phone').textContent    = p.phone     || '—';
+
+    document.getElementById('b-nama').textContent    = p.name          || '—';
+    document.getElementById('b-dob').textContent     = dobFormatted;
+    document.getElementById('b-age').textContent     = '(' + age + ' tahun)';
+    document.getElementById('b-gender').textContent  = p.gender        || '—';
+    document.getElementById('b-blood').textContent   = p.blood_type || p.bloodType || '—';
+    document.getElementById('b-tbbb').textContent    = (p.height && p.weight)
+      ? p.height + ' cm / ' + p.weight + ' kg' : '—';
+    document.getElementById('b-address').textContent = p.address       || '—';
+  }
+
+  function recordSnapshot() { openSnapModal(); }
+  function _recordSnapshot_unused() {
+    showToast('Rekam snapshot dari halaman Monitor.', 'success');
+  }
+  window.recordSnapshot = recordSnapshot;
+</script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daftar — Konfirmasi</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/variables.css" />
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="../css/auth.css" />
+  </head>
+  <body class="auth-body">
+    <div class="auth-layout">
+      <div class="auth-left">
+        <div class="auth-brand">
+          <div class="brand-icon">
+            <img
+              src="../assets/images/logo-foot.png"
+              alt="Foot Plantar Sense Logo"
+            />
+          </div>
+          <div class="brand-name">Foot Plantar <span>Sense</span></div>
+        </div>
+        <p class="auth-tagline">
+          Monitoring tekanan plantar kaki untuk keseimbangan &amp; rehabilitasi
+        </p>
+        <div class="auth-left-footer">v1.0.0 · Foot Plantar 2026</div>
+      </div>
+
+      <div class="auth-right">
+        <div class="auth-card">
+          <div class="auth-card-title"><span>Konfirmasi</span></div>
+          <p class="auth-card-subtitle" style="margin-bottom: var(--space-lg)">
+            Langkah 3 dari 3
+          </p>
+
+          <div class="steps-indicator">
+            <div class="step-item">
+              <div class="step-dot done">✓</div>
+              <span class="step-label">Akun</span>
+            </div>
+            <div class="step-line done"></div>
+            <div class="step-item">
+              <div class="step-dot done">✓</div>
+              <span class="step-label">Data Diri</span>
+            </div>
+            <div class="step-line done"></div>
+            <div class="step-item">
+              <div class="step-dot active">3</div>
+              <span class="step-label active">Konfirmasi</span>
+            </div>
+            <div
+              class="progress-line"
+              id="progress-line"
+              style="width: 100%"
+            ></div>
+          </div>
+
+          <div class="steps-title">Periksa kembali data sebelum menyimpan.</div>
+
+          <div class="confirm-section">
+            <div class="confirm-section-title">Data Akun</div>
+            <div class="confirm-row">
+              <span class="key">Email</span
+              ><span class="val" id="c_email">—</span>
+            </div>
+            <div class="confirm-row">
+              <span class="key">No. Telepon</span
+              ><span class="val" id="c_phone">—</span>
+            </div>
+          </div>
+
+          <div class="confirm-section">
+            <div class="confirm-section-title">Data Diri</div>
+            <div class="confirm-row">
+              <span class="key">Nama</span
+              ><span class="val" id="c_nama">—</span>
+            </div>
+            <div class="confirm-row">
+              <span class="key">Tgl Lahir / Usia</span
+              ><span class="val" id="c_dob">—</span>
+            </div>
+            <div class="confirm-row">
+              <span class="key">Jenis Kelamin</span
+              ><span class="val" id="c_gender">—</span>
+            </div>
+            <div class="confirm-row">
+              <span class="key">TB / BB</span
+              ><span class="val" id="c_tb">—</span>
+            </div>
+            <div class="confirm-row">
+              <span class="key">Gol. Darah</span
+              ><span class="val" id="c_blood">—</span>
+            </div>
+            <div class="confirm-row">
+              <span class="key">Alamat</span
+              ><span class="val" id="c_address">—</span>
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <button class="btn-back" onclick="window.history.back()">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M10 4L6 8l4 4"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+
+            <button class="btn-primary" onclick="handleRegister()">
+              Daftar Sekarang
+            </button>
+          </div>
+          <p class="auth-switch">
+            Sudah punya akun? <a href="login.html">Masuk</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="../js/firebase.js"></script>
+
+    <script>
+      // Populate from sessionStorage
+      window.addEventListener("DOMContentLoaded", () => {
+        const dob = sessionStorage.getItem("reg_dob") || "";
+        let ageStr = "—";
+        if (dob) {
+          const age = Math.floor(
+            (Date.now() - new Date(dob)) / (365.25 * 24 * 3600 * 1000),
+          );
+          const formatted = new Date(dob).toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          });
+          ageStr = `${formatted} (${age} th)`;
+        }
+
+        document.getElementById("c_email").textContent =
+          sessionStorage.getItem("reg_email") || "—";
+        document.getElementById("c_phone").textContent =
+          sessionStorage.getItem("reg_phone") || "—";
+        document.getElementById("c_nama").textContent =
+          sessionStorage.getItem("reg_nama") || "—";
+        document.getElementById("c_dob").textContent = ageStr;
+        document.getElementById("c_gender").textContent =
+          sessionStorage.getItem("reg_gender") || "—";
+        document.getElementById("c_blood").textContent =
+          sessionStorage.getItem("reg_blood") || "—";
+        document.getElementById("c_address").textContent =
+          sessionStorage.getItem("reg_address") || "—";
+
+        const h = sessionStorage.getItem("reg_height");
+        const w = sessionStorage.getItem("reg_weight");
+        document.getElementById("c_tb").textContent =
+          h && w ? `${h} cm / ${w} kg` : "—";
+      });
+
+      function handleRegister() {
+        const email = sessionStorage.getItem("reg_email");
+        const password = sessionStorage.getItem("reg_password");
+
+        if (!email || !password) {
+          alert("Data tidak lengkap. Kembali ke langkah 1.");
+          return;
+        }
+
+        const btn = document.querySelector(".btn-primary");
+        btn.textContent = "Mendaftar...";
+        btn.disabled = true;
+
+        // Step 1: buat akun Auth
+        firebaseRegister(email, password)
+          .then(function (cred) {
+            // Step 2: simpan profil ke Database
+            const profil = {
+              email: email,
+              name: sessionStorage.getItem("reg_nama"),
+              phone: sessionStorage.getItem("reg_phone"),
+              dob: sessionStorage.getItem("reg_dob"),
+              gender: sessionStorage.getItem("reg_gender"),
+              height: sessionStorage.getItem("reg_height"),
+              weight: sessionStorage.getItem("reg_weight"),
+              blood_type: sessionStorage.getItem("reg_blood"),
+              address: sessionStorage.getItem("reg_address"),
+            };
+            return firebaseSaveProfile(profil);
+          })
+          .then(function () {
+            sessionStorage.clear();
+            window.location.href = "monitoring.html";
+          })
+          .catch(function (err) {
+            btn.textContent = "Daftar Sekarang";
+            btn.disabled = false;
+            const pesan =
+              err.code === "auth/email-already-in-use"
+                ? "Email sudah terdaftar. Silakan login."
+                : err.code === "auth/weak-password"
+                  ? "Password terlalu lemah (min. 6 karakter)."
+                  : err.code === "auth/invalid-email"
+                    ? "Format email tidak valid."
+                    : err.message;
+            alert(pesan);
+          });
+      }
+    </script>
+  </body>
+</html>

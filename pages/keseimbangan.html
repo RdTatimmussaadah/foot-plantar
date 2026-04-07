@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Keseimbangan — Foot Plantar Sense</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/variables.css" />
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="../css/keseimbangan.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="app-sidebar" id="sidebar"></aside>
+
+      <div class="app-main">
+        <header class="app-topbar" id="topbar"></header>
+
+        <main class="app-content">
+          <div class="balance-grid">
+            <!-- ── BALANCE SCORE CARD (left, large) ── -->
+            <div class="score-card">
+              <div class="detail-card-header" style="padding: var(--space-md)">
+                <span class="card-title">SKOR KESEIMBANGAN</span>
+                <span class="badge" id="b-status-badge">...</span>
+              </div>
+              <div class="score-body">
+                <div class="score-gauge-wrap">
+                  <!-- Circular gauge -->
+                  <div class="score-gauge">
+                    <svg width="120" height="120" viewBox="0 0 120 120">
+                      <circle
+                        class="gauge-track"
+                        cx="60"
+                        cy="60"
+                        r="50"
+                        stroke-dasharray="314"
+                        stroke-dashoffset="0"
+                      />
+                      <circle
+                        class="gauge-fill"
+                        id="gauge-arc"
+                        cx="60"
+                        cy="60"
+                        r="50"
+                        stroke-dasharray="314"
+                        stroke-dashoffset="314"
+                        stroke="var(--green)"
+                      />
+                    </svg>
+                    <div class="gauge-center">
+                      <div class="gauge-value" id="b-score">—</div>
+                      <div class="gauge-max">/100</div>
+                    </div>
+                  </div>
+
+                  <!-- L/R Bars -->
+                  <div class="lr-bars">
+                    <div class="lr-bar-row">
+                      <div class="lr-bar-labels">
+                        <span class="lr-label left-label">Kiri</span>
+                        <span class="lr-label left-label" id="b-left-pct"
+                          >—%</span
+                        >
+                      </div>
+                      <div class="lr-bar-track">
+                        <div
+                          class="lr-bar-left"
+                          id="lr-bar-l"
+                          style="width: 50%"
+                        ></div>
+                      </div>
+                    </div>
+                    <div class="lr-bar-row">
+                      <div class="lr-bar-labels">
+                        <span class="lr-label right-label">Kanan</span>
+                        <span class="lr-label right-label" id="b-right-pct"
+                          >—%</span
+                        >
+                      </div>
+                      <div class="lr-bar-track">
+                        <div
+                          class="lr-bar-right"
+                          id="lr-bar-r"
+                          style="width: 50%"
+                        ></div>
+                      </div>
+                    </div>
+                    <div class="lr-asymmetry-note" id="b-asi-note">
+                      <span>⚠️</span>
+                      <span id="b-asi-text">Memuat...</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- History mini chart -->
+                <div class="history-chart-section">
+                  <div class="history-chart-label">
+                    Riwayat Score (snapshot terakhir)
+                  </div>
+                  <div class="history-bars" id="history-bars">
+                    <!-- filled by JS -->
+                  </div>
+                </div>
+
+                <!-- Zone Distribution -->
+                <div class="zone-section" style="margin-top: var(--space-md)">
+                  <div class="zone-label">
+                    Distribusi Keseimbangan Per Sensor (L+R)
+                  </div>
+                  <div class="zone-row">
+                    <span class="zone-name">Hallux</span>
+                    <div class="zone-bar-track">
+                      <div
+                        class="zone-bar-fill"
+                        id="z-hallux"
+                        style="background: var(--sensor-hallux)"
+                      ></div>
+                    </div>
+                    <span class="zone-pct" id="z-hallux-pct">—%</span>
+                  </div>
+                  <div class="zone-row">
+                    <span class="zone-name">Med. FF</span>
+                    <div class="zone-bar-track">
+                      <div
+                        class="zone-bar-fill"
+                        id="z-medff"
+                        style="background: var(--sensor-medff)"
+                      ></div>
+                    </div>
+                    <span class="zone-pct" id="z-medff-pct">—%</span>
+                  </div>
+                  <div class="zone-row">
+                    <span class="zone-name">Lat. FF</span>
+                    <div class="zone-bar-track">
+                      <div
+                        class="zone-bar-fill"
+                        id="z-latff"
+                        style="background: var(--sensor-latff)"
+                      ></div>
+                    </div>
+                    <span class="zone-pct" id="z-latff-pct">—%</span>
+                  </div>
+                  <div class="zone-row">
+                    <span class="zone-name">Heel</span>
+                    <div class="zone-bar-track">
+                      <div
+                        class="zone-bar-fill"
+                        id="z-heel"
+                        style="background: var(--sensor-heel)"
+                      ></div>
+                    </div>
+                    <span class="zone-pct" id="z-heel-pct">—%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── CLASSIFICATION CARD (right) ── -->
+            <div class="class-card">
+              <div class="detail-card-header" style="padding: var(--space-md)">
+                <span class="card-title">KLASIFIKASI KESEIMBANGAN</span>
+              </div>
+              <div class="class-body">
+                <div class="class-status-row">
+                  <span class="class-emoji" id="cls-emoji">—</span>
+                  <div>
+                    <div class="class-name" id="cls-name">Memuat...</div>
+                  </div>
+                </div>
+                <p class="class-description" id="cls-desc">
+                  Menunggu data sensor...
+                </p>
+
+                <div class="class-metrics">
+                  <div class="class-metric-item">
+                    <div class="class-metric-val" id="cls-score">—</div>
+                    <div class="class-metric-lbl">Balance Score</div>
+                  </div>
+                  <div class="class-metric-item">
+                    <div class="class-metric-val" id="cls-asi">—</div>
+                    <div class="class-metric-lbl">Asimetri L/R</div>
+                  </div>
+                  <div class="class-metric-item">
+                    <div class="class-metric-val" id="cls-heel">—</div>
+                    <div class="class-metric-lbl">Heel Load</div>
+                  </div>
+                </div>
+
+                <div class="class-table">
+                  <div class="class-table-title">Kriteria Klasifikasi</div>
+                  <div class="class-table-row">
+                    <span class="cell">✅</span>
+                    <span class="cell status-label">Normal</span>
+                    <span class="cell">Score ≥ 90</span>
+                    <span class="cell">Heel 50–65%</span>
+                  </div>
+                  <div class="class-table-row">
+                    <span class="cell"></span>
+                    <span class="cell" style="color: var(--text-dim)"></span>
+                    <span class="cell">ASI ≤ 10%</span>
+                    <span class="cell"></span>
+                  </div>
+                  <div class="class-table-row" style="margin-top: 4px">
+                    <span class="cell">⚠️</span>
+                    <span class="cell status-label">Sedang</span>
+                    <span class="cell">Score 80–89</span>
+                    <span class="cell">Heel 40–49% / 66–75%</span>
+                  </div>
+                  <div class="class-table-row">
+                    <span class="cell"></span>
+                    <span class="cell" style="color: var(--text-dim)"></span>
+                    <span class="cell">ASI 10–20%</span>
+                    <span class="cell"></span>
+                  </div>
+                  <div class="class-table-row" style="margin-top: 4px">
+                    <span class="cell">🚨</span>
+                    <span class="cell status-label">Abnormal</span>
+                    <span class="cell">Score &lt; 80</span>
+                    <span class="cell">Heel &lt;40% / &gt;75%</span>
+                  </div>
+                  <div class="class-table-row">
+                    <span class="cell"></span>
+                    <span class="cell" style="color: var(--text-dim)"></span>
+                    <span class="cell">ASI &gt; 20%</span>
+                    <span class="cell"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── PRONATION CARD ── -->
+            <div class="pronation-card" style="grid-column: 1 / -1">
+              <div class="detail-card-header" style="padding: var(--space-md)">
+                <span class="card-title">KLASIFIKASI PRONASI KAKI</span>
+                <span
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 9px;
+                    color: var(--text-secondary);
+                  "
+                >
+                  Berdasarkan rasio Med.FF vs Lat.FF
+                </span>
+              </div>
+              <div class="pronation-body">
+                <!-- Kaki Kiri -->
+                <div class="pron-foot-col">
+                  <div class="pron-foot-title left">● KAKI KIRI</div>
+                  <div id="pron-illus-l" class="pron-illus-wrap"></div>
+                  <div class="pron-result-row">
+                    <span class="pron-label pronation-normal" id="pron-label-l"
+                      >—</span
+                    >
+                    <span class="pron-ratio">
+                      Ratio:
+                      <span
+                        id="pron-ratio-l"
+                        style="font-family: var(--font-mono); font-weight: 700"
+                        >—</span
+                      >
+                    </span>
+                  </div>
+                  <!-- Bar: kiri=underpronation, tengah=normal, kanan=overpronation -->
+                  <div class="pron-bar-wrap">
+                    <span class="pron-bar-lbl">Supinasi</span>
+                    <div class="pron-bar-track">
+                      <div class="pron-bar-center-line"></div>
+                      <div class="pron-bar-fill" id="pron-bar-fill-l"></div>
+                    </div>
+                    <span class="pron-bar-lbl">Pronasi</span>
+                  </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="pron-divider"></div>
+
+                <!-- Kaki Kanan -->
+                <div class="pron-foot-col">
+                  <div class="pron-foot-title right">● KAKI KANAN</div>
+                  <div id="pron-illus-r" class="pron-illus-wrap"></div>
+                  <div class="pron-result-row">
+                    <span class="pron-label pronation-normal" id="pron-label-r"
+                      >—</span
+                    >
+                    <span class="pron-ratio">
+                      Ratio:
+                      <span
+                        id="pron-ratio-r"
+                        style="font-family: var(--font-mono); font-weight: 700"
+                        >—</span
+                      >
+                    </span>
+                  </div>
+                  <div class="pron-bar-wrap">
+                    <span class="pron-bar-lbl">Supinasi</span>
+                    <div class="pron-bar-track">
+                      <div class="pron-bar-center-line"></div>
+                      <div class="pron-bar-fill" id="pron-bar-fill-r"></div>
+                    </div>
+                    <span class="pron-bar-lbl">Pronasi</span>
+                  </div>
+                </div>
+
+                <!-- Tabel referensi -->
+                <div class="pron-ref-col">
+                  <div class="pron-ref-title">Rentang Kriteria</div>
+                  <div class="pron-ref-row">
+                    <span style="color: var(--red)">🔴</span>
+                    <span class="pron-ref-name" style="color: var(--red)"
+                      >Overpronation</span
+                    >
+                    <span class="pron-ref-val">Ratio &gt; +15</span>
+                  </div>
+                  <div class="pron-ref-row">
+                    <span>✅</span>
+                    <span class="pron-ref-name" style="color: var(--green)"
+                      >Normal</span
+                    >
+                    <span class="pron-ref-val">–15 s/d +15</span>
+                  </div>
+                  <div class="pron-ref-row">
+                    <span style="color: #2266ff">🔵</span>
+                    <span class="pron-ref-name" style="color: #2266ff"
+                      >Underpronation</span
+                    >
+                    <span class="pron-ref-val">Ratio &lt; –15</span>
+                  </div>
+                  <div class="pron-ref-desc">
+                    Positif = medial dominan (kaki ke dalam).<br />
+                    Negatif = lateral dominan (kaki ke luar).
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── ARCH TYPE CARD ── -->
+            <div class="arch-card" style="grid-column: 1 / -1">
+              <div class="detail-card-header" style="padding: var(--space-md)">
+                <span class="card-title">DETEKSI ARCH TIPE KAKI</span>
+                <span
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 9px;
+                    color: var(--text-secondary);
+                  "
+                >
+                  Berdasarkan rasio Heel vs Forefoot · Rule-based (ML menyusul)
+                </span>
+              </div>
+              <div class="arch-body">
+                <!-- Kaki Kiri -->
+                <div class="arch-foot-col">
+                  <div class="arch-foot-title left">● KAKI KIRI</div>
+                  <div class="arch-result-row">
+                    <span class="arch-label arch-normal" id="arch-label-l"
+                      >—</span
+                    >
+                    <span class="arch-desc" id="arch-desc-l">—</span>
+                  </div>
+                  <div class="arch-ratios">
+                    <div class="arch-ratio-item">
+                      <span class="arch-ratio-key">Heel</span>
+                      <span class="arch-ratio-val" id="arch-heel-l">—%</span>
+                    </div>
+                    <div class="arch-ratio-item">
+                      <span class="arch-ratio-key">Forefoot</span>
+                      <span class="arch-ratio-val" id="arch-ff-l">—%</span>
+                    </div>
+                  </div>
+                  <!-- Visual bar heel vs forefoot -->
+                  <div class="arch-bar-wrap">
+                    <span class="arch-bar-lbl">Forefoot</span>
+                    <div class="arch-bar-track">
+                      <div class="arch-bar-center-line"></div>
+                      <div class="arch-bar-fill" id="arch-bar-l"></div>
+                    </div>
+                    <span class="arch-bar-lbl">Heel</span>
+                  </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="pron-divider"></div>
+
+                <!-- Kaki Kanan -->
+                <div class="arch-foot-col">
+                  <div class="arch-foot-title right">● KAKI KANAN</div>
+                  <div class="arch-result-row">
+                    <span class="arch-label arch-normal" id="arch-label-r"
+                      >—</span
+                    >
+                    <span class="arch-desc" id="arch-desc-r">—</span>
+                  </div>
+                  <div class="arch-ratios">
+                    <div class="arch-ratio-item">
+                      <span class="arch-ratio-key">Heel</span>
+                      <span class="arch-ratio-val" id="arch-heel-r">—%</span>
+                    </div>
+                    <div class="arch-ratio-item">
+                      <span class="arch-ratio-key">Forefoot</span>
+                      <span class="arch-ratio-val" id="arch-ff-r">—%</span>
+                    </div>
+                  </div>
+                  <div class="arch-bar-wrap">
+                    <span class="arch-bar-lbl">Forefoot</span>
+                    <div class="arch-bar-track">
+                      <div class="arch-bar-center-line"></div>
+                      <div class="arch-bar-fill" id="arch-bar-r"></div>
+                    </div>
+                    <span class="arch-bar-lbl">Heel</span>
+                  </div>
+                </div>
+
+                <!-- Referensi -->
+                <div class="pron-ref-col">
+                  <div class="pron-ref-title">Rentang Kriteria</div>
+                  <div class="pron-ref-row">
+                    <span style="color: var(--red)">🔴</span>
+                    <span class="pron-ref-name" style="color: var(--red)"
+                      >Flat Foot</span
+                    >
+                    <span class="pron-ref-val">FF &gt;65%, Heel &lt;35%</span>
+                  </div>
+                  <div class="pron-ref-row">
+                    <span>✅</span>
+                    <span class="pron-ref-name" style="color: var(--green)"
+                      >Normal</span
+                    >
+                    <span class="pron-ref-val">Seimbang</span>
+                  </div>
+                  <div class="pron-ref-row">
+                    <span style="color: #2266ff">🔵</span>
+                    <span class="pron-ref-name" style="color: #2266ff"
+                      >High Arch</span
+                    >
+                    <span class="pron-ref-val">Heel &gt;65%, FF &lt;35%</span>
+                  </div>
+                  <div class="pron-ref-desc">
+                    FF = Forefoot (Hallux + Med.FF + Lat.FF).<br />
+                    Deteksi akurat menggunakan model ML.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="../js/calculations.js"></script>
+    <script src="../js/simulation.js"></script>
+    <script src="../js/firebase.js"></script>
+    <script src="../js/components.js"></script>
+    <script src="../js/keseimbangan.js"></script>
+  </body>
+</html>
