@@ -6,18 +6,19 @@
 const SENSOR_NAMES = ['Hallux', 'Med. FF', 'Lat. FF', 'Heel'];
 let currentPosture = 'Berdiri';
 let currentData    = null;
+const MAX_FORCE = 100;
 
 // Sensor positions (normalized 0..1) for 110x200 canvas
 const SENSORS_L = [
   { key: 0, nx: 0.50, ny: 0.13, rx: 0.32, ry: 0.14, label: 'Hallux' },
-  { key: 1, nx: 0.35, ny: 0.38, rx: 0.30, ry: 0.13, label: 'Med.FF' },
-  { key: 2, nx: 0.67, ny: 0.43, rx: 0.28, ry: 0.13, label: 'Lat.FF' },
+  { key: 1, nx: 0.67, ny: 0.43, rx: 0.28, ry: 0.13, label: 'Med.FF' },
+  { key: 2, nx: 0.35, ny: 0.38, rx: 0.30, ry: 0.13, label: 'Lat.FF' },
   { key: 3, nx: 0.50, ny: 0.82, rx: 0.36, ry: 0.15, label: 'Heel'   },
 ];
 const SENSORS_R = [
   { key: 0, nx: 0.50, ny: 0.13, rx: 0.32, ry: 0.14, label: 'Hallux' },
-  { key: 1, nx: 0.65, ny: 0.38, rx: 0.30, ry: 0.13, label: 'Med.FF' },
-  { key: 2, nx: 0.33, ny: 0.43, rx: 0.28, ry: 0.13, label: 'Lat.FF' },
+  { key: 1, nx: 0.33, ny: 0.43, rx: 0.28, ry: 0.13, label: 'Med.FF' },
+  { key: 2, nx: 0.65, ny: 0.38, rx: 0.30, ry: 0.13, label: 'Lat.FF' },
   { key: 3, nx: 0.50, ny: 0.82, rx: 0.36, ry: 0.15, label: 'Heel'   },
 ];
 
@@ -41,24 +42,68 @@ const TOES_L = [
 // ============================================================
 // HEAT COLOR (matching fps-website-v5 exactly)
 // ============================================================
+// function heatColor(ratio) {
+//   const r = Math.max(0, Math.min(1, ratio));
+//   if (r <= 0.2) {
+//     const t = r / 0.2;
+//     return [Math.round(t*34), Math.round(180+t*32), Math.round(t*100+40)];
+//   } else if (r <= 0.4) {
+//     const t = (r-0.2)/0.2;
+//     return [Math.round(34*(1-t)+34*t), Math.round(212*(1-t)+102*t), Math.round(140*(1-t)+255*t)];
+//   } else if (r <= 0.6) {
+//     const t = (r-0.4)/0.2;
+//     return [Math.round(34*(1-t)+240*t), Math.round(102*(1-t)+230*t), Math.round(255*(1-t)+30*t)];
+//   } else if (r <= 0.8) {
+//     const t = (r-0.6)/0.2;
+//     return [Math.round(240*(1-t)+245*t), Math.round(230*(1-t)+120*t), Math.round(30*(1-t)+20*t)];
+//   } else {
+//     const t = (r-0.8)/0.2;
+//     return [Math.round(245*(1-t)+231*t), Math.round(120*(1-t)+48*t), Math.round(20*(1-t)+42*t)];
+//   }
+// }
+
 function heatColor(ratio) {
   const r = Math.max(0, Math.min(1, ratio));
-  if (r <= 0.2) {
+
+  let red = 0, green = 0, blue = 0;
+
+  if (r < 0.2) {
+    // biru → cyan
     const t = r / 0.2;
-    return [Math.round(t*34), Math.round(180+t*32), Math.round(t*100+40)];
-  } else if (r <= 0.4) {
-    const t = (r-0.2)/0.2;
-    return [Math.round(34*(1-t)+34*t), Math.round(212*(1-t)+102*t), Math.round(140*(1-t)+255*t)];
-  } else if (r <= 0.6) {
-    const t = (r-0.4)/0.2;
-    return [Math.round(34*(1-t)+240*t), Math.round(102*(1-t)+230*t), Math.round(255*(1-t)+30*t)];
-  } else if (r <= 0.8) {
-    const t = (r-0.6)/0.2;
-    return [Math.round(240*(1-t)+245*t), Math.round(230*(1-t)+120*t), Math.round(30*(1-t)+20*t)];
+    red = 0;
+    green = Math.round(255 * t);
+    blue = 255;
+
+  } else if (r < 0.4) {
+    // cyan → hijau
+    const t = (r - 0.2) / 0.2;
+    red = 0;
+    green = 255;
+    blue = Math.round(255 * (1 - t));
+
+  } else if (r < 0.6) {
+    // hijau → kuning
+    const t = (r - 0.4) / 0.2;
+    red = Math.round(255 * t);
+    green = 255;
+    blue = 0;
+
+  } else if (r < 0.8) {
+    // kuning → oranye
+    const t = (r - 0.6) / 0.2;
+    red = 255;
+    green = Math.round(255 - (t * 120)); // turun ke ~135
+    blue = 0;
+
   } else {
-    const t = (r-0.8)/0.2;
-    return [Math.round(245*(1-t)+231*t), Math.round(120*(1-t)+48*t), Math.round(20*(1-t)+42*t)];
+    // oranye → merah
+    const t = (r - 0.8) / 0.2;
+    red = 255;
+    green = Math.round(135 * (1 - t));
+    blue = 0;
   }
+
+  return [red, green, blue];
 }
 
 // ============================================================
@@ -270,7 +315,7 @@ function drawFootHeatmap(canvasId, sensors, toes, values, maxVal, isLeft) {
   //   {cx:73, cy:38, rx:4, ry:5.5}
   // ];
 
-  const weights = [0.80, 0.50, 0.30, 0.18, 0.10];
+  const weights = [0.90, 0.88, 0.86, 0.84, 0.82];
   toes.forEach((t, i) => {
     const tr = Math.min(1, (values[0]||0) / maxVal) * weights[i];
     ctx.beginPath();
@@ -321,7 +366,7 @@ function drawFootHeatmap(canvasId, sensors, toes, values, maxVal, isLeft) {
 
 function redrawHeatmaps() {
   if (!currentData) return;
-  const maxVal = 200;
+  const maxVal =  Math.max(...currentData.left_fsr_newton, ...currentData.right_fsr_newton, MAX_FORCE);
   drawFootHeatmap('heatmap-L', SENSORS_L, TOES_L, currentData.left_fsr_newton,  maxVal, true);
   drawFootHeatmap('heatmap-R', SENSORS_R, TOES_R, currentData.right_fsr_newton, maxVal, false);
 }
@@ -345,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPatientToSidebar(); 
 
     // Jalankan sistem sensor
-    generateMockHistory();
+    // generateMockHistory();
     // onDataUpdate((data) => {
     //   const filteredData = applyEMAFilter(data);
     //   currentData = computeAll(filteredData);
@@ -401,23 +446,51 @@ function updateUI(data) {
 // ============================================================
 // SENSOR BAR ROWS
 // ============================================================
+// function renderSensorRows(containerId, newtonArr, digitalArr) {
+//   const container = document.getElementById(containerId);
+//   if (!container) return;
+//   const maxForce = Math.max(...newtonArr, 1);
+  
+
+//   container.innerHTML = newtonArr.map((n, i) => {
+//     const pct     = Math.round((n / maxForce) * 100);
+//     const kpa     = Math.round(n * 0.82);
+//     const voltage = ((digitalArr[i] / 4095) * 3.3).toFixed(2);
+//     const [cr,cg,cb] = heatColor(pct / 100);
+//     const barColor = `rgb(${cr},${cg},${cb})`;
+
+    
+//     return `
+//       <div class="sensor-row">
+//         <div class="sr-name">${SENSOR_NAMES[i]}</div>
+//         <div class="sr-kpa">${kpa} <span class="sr-unit">kPa</span></div>
+//         <div class="sr-bar-track"><div class="sr-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+//         <div class="sr-volt">${voltage}V</div>
+//       </div>
+//     `;
+//   }).join('');
+// }
+
 function renderSensorRows(containerId, newtonArr, digitalArr) {
   const container = document.getElementById(containerId);
   if (!container) return;
-  const maxForce = Math.max(...newtonArr, 1);
 
-  container.innerHTML = newtonArr.map((n, i) => {
-    const pct     = Math.round((n / maxForce) * 100);
-    const kpa     = Math.round(n * 0.82);
-    const voltage = ((digitalArr[i] / 4095) * 3.3).toFixed(2);
+  // const maxVal = Math.max(...digitalArr, 1);
+  // const maxVal = MAX_FORCE * 1.2 * (4095 / 50); // Skala digital berdasarkan max force + margin
+  const maxVal = 4095; // Karena kita mau pakai digital value untuk bar, jadi max 4095 (12-bit ADC)
+  container.innerHTML = digitalArr.map((d, i) => {
+    const pct = Math.round((d / maxVal) * 100);
+    const voltage = ((d / 4095) * 3.3).toFixed(2);
     const [cr,cg,cb] = heatColor(pct / 100);
     const barColor = `rgb(${cr},${cg},${cb})`;
 
     return `
       <div class="sensor-row">
         <div class="sr-name">${SENSOR_NAMES[i]}</div>
-        <div class="sr-kpa">${kpa} <span class="sr-unit">kPa</span></div>
-        <div class="sr-bar-track"><div class="sr-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        <div class="sr-kpa">${d} <span class="sr-unit">ADC</span></div>
+        <div class="sr-bar-track">
+          <div class="sr-bar-fill" style="width:${pct}%;background:${barColor}"></div>
+        </div>
         <div class="sr-volt">${voltage}V</div>
       </div>
     `;

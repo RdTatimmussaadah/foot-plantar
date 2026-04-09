@@ -27,6 +27,11 @@
  *       ├── classification:     "NORMAL"     (computed by JS, written back)
  *       └── timestamp:          1646776543210
  *
+ * sensor_data/
+ *  ├── last_update: 1646776543210
+ *  ├── left_fsr_digital:   [512, 620, 450, 580]
+ *  └── right_fsr_digital:  [530, 610, 480, 590]
+ * 
  * users/
  *   └── {uid}/
  *       ├── profile: { name, weight, height, dob, gender, blood_type, address, phone, email }
@@ -34,11 +39,19 @@
  *           └── {auto_id}:
  *               ├── left_fsr_newton:  [...]
  *               ├── right_fsr_newton: [...]
+ *               ├── left_fsr_percent:  [...]
+ *               ├── right_fsr_percent: [...]
  *               ├── total_weight:     68.5
+ *               ├── total_force:      123.4
  *               ├── balance_score:    92.0
  *               ├── asi:              8.0
  *               ├── heel_load:        57.3
+ *               ├── left_percent:     48.2
+ *               ├── right_percent:    51.8
  *               ├── classification:   "NORMAL"
+ *               ├── zones:            { forefoot, midfoot, heel }
+ *               ├── pronation:        { ratioL, ratioR, labelL, labelR }
+ *               ├── archType:         { labelL, labelR, heelRatioL, heelRatioR, ffRatioL, ffRatioR }
  *               ├── posture:          "Berdiri"
  *               ├── note:             ""
  *               └── snapshot_time:   "04/03/2026 14:32"
@@ -133,7 +146,10 @@ function startFirebaseListen(callback) {
     if (!raw) return;
 
     // Compute all metrics from raw ESP32 data
-    const computed = computeAll(raw);
+    const withCalc = processRawDigital(raw);
+    const filtered = applyEMAFilter(withCalc);
+    const computed = computeAll(filtered);
+    // const computed = computeAll(raw);
 
     // Write computed values back to Firebase current node
     // ref.update({

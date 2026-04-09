@@ -17,7 +17,102 @@
  */
 
 'use strict';
+// ============================================================
+// KONVERSI DIGITAL → NEWTON → PERCENT
+// FSR402 + Voltage Divider 3.3V, ADC 12-bit (0–4095)
+//
+// Referensi konversi:
+//   digital → volt  : V = (digital / 4095) * 3.3
+//   volt → newton   : F = (V / Vcc) * F_max  (linear approx FSR402)
+//   F_max FSR402     : ~100 Newton per sensor (bisa dikalibrasi)
+//   newton → percent : pct = F_i / sum(F_all) * 100  (per kaki)
+//
+// Catatan:
+//   - Ini pendekatan linear, cukup untuk perbandingan relatif antar sensor
+//   - Untuk akurasi absolut berat badan, perlu kalibrasi dengan beban diketahui
+//   - Python (plantar_ml_lokal.py) pakai digital langsung tanpa konversi Newton
+//     karena hanya butuh persentase, bukan nilai absolut
+// ============================================================
 
+const FSR_CONFIG = {
+  ADC_MAX:   4095,    // resolusi ADC 12-bit ESP32
+  VCC:       3.3,     // tegangan referensi ESP32
+  F_MAX:     100,     // Newton maksimum per sensor FSR402 (dapat dikalibrasi)
+  // Threshold minimum — di bawah ini dianggap tidak ada tekanan (noise floor)
+  DIGITAL_MIN: 50,
+};
+
+/**
+ * Konversi satu array digital → Newton
+ * F = (digital / ADC_MAX) * F_MAX
+ * @param {number[]} digitalArr — array 4 nilai ADC (0–4095)
+ * @returns {number[]} array 4 nilai Newton
+ */
+function digitalToNewton(digitalArr) {
+  return digitalArr.map(d => {
+    const clamped = Math.max(0, d - FSR_CONFIG.DIGITAL_MIN); // hilangkan noise floor
+    return Math.round((clamped / FSR_CONFIG.ADC_MAX) * FSR_CONFIG.F_MAX * 10) / 10;
+  });
+}
+
+/**
+ * Konversi array Newton → percent relatif (per kaki)
+ * pct_i = newton_i / sum(newton) * 100
+ * Sama dengan cara Python: percent dari total per kaki
+ * @param {number[]} newtonArr
+ * @returns {number[]} percent 0–100 per sensor
+ */
+function newtonToPercent(newtonArr) {
+  const total = newtonArr.reduce((a, b) => a + b, 0);
+  if (total === 0) return [0, 0, 0, 0];
+  return newtonArr.map(n => Math.round((n / total) * 100));
+}
+
+/**
+ * Konversi digital → volt (untuk ditampilkan di UI sensor bar)
+ * @param {number} digital
+ * @returns {number} volt
+ */
+function digitalToVolt(digital) {
+  return Math.round((digital / FSR_CONFIG.ADC_MAX) * FSR_CONFIG.VCC * 100) / 100;
+}
+
+/**
+ * Proses raw data dari ESP32 (hanya digital) menjadi
+ * struktur lengkap dengan Newton dan Percent.
+ *
+ * Input dari Firebase/ESP32:
+ * {
+ *   left_fsr_digital:  [512, 620, 450, 580],
+ *   right_fsr_digital: [530, 610, 480, 590],
+ *   timestamp: 1234567890
+ * }
+ *
+ * Output:
+ * {
+ *   left_fsr_digital,  right_fsr_digital,   ← dari ESP32
+ *   left_fsr_newton,   right_fsr_newton,    ← dihitung JS
+ *   left_fsr_percent,  right_fsr_percent,   ← dihitung JS
+ *   timestamp
+ * }
+ */
+function processRawDigital(rawData) {
+  const lD = rawData.left_fsr_digital  || [0, 0, 0, 0];
+  const rD = rawData.right_fsr_digital || [0, 0, 0, 0];
+
+  const lN = digitalToNewton(lD);
+  const rN = digitalToNewton(rD);
+
+  return {
+    left_fsr_digital:  lD,
+    right_fsr_digital: rD,
+    left_fsr_newton:   lN,
+    right_fsr_newton:  rN,
+    left_fsr_percent:  newtonToPercent(lN),
+    right_fsr_percent: newtonToPercent(rN),
+    timestamp: rawData.timestamp || Date.now(),
+  };
+}
 
 // EMA FILTER
 // Menghaluskan noise sensor sebelum kalkulasi
@@ -42,26 +137,61 @@ function applyEMA(rawArr, prevArr) {
  * @param {object} rawData — {left_fsr_newton, right_fsr_newton, ...}
  * @returns {object} data dengan nilai ter-filter
  */
+// function applyEMAFilter(rawData) {
+//   if (!_emaState) {
+//     // Inisialisasi dengan nilai pertama
+//     _emaState = {
+//       left:  [...rawData.left_fsr_newton],
+//       right: [...rawData.right_fsr_newton],
+//     };
+//     return rawData; // frame pertama: return as-is
+//   }
+
+//   const filteredLeft  = applyEMA(rawData.left_fsr_newton,  _emaState.left);
+//   const filteredRight = applyEMA(rawData.right_fsr_newton, _emaState.right);
+
+//   _emaState.left  = filteredLeft;
+//   _emaState.right = filteredRight;
+
+//   return {
+//     ...rawData,
+//     left_fsr_newton:  filteredLeft.map(Math.round),
+//     right_fsr_newton: filteredRight.map(Math.round),
+//   };
+// }
+
+// 
+
 function applyEMAFilter(rawData) {
+  // Jika data dari ESP32 (hanya digital), proses dulu ke newton+percent
+  const data = (rawData.left_fsr_newton)
+    ? rawData                    // sudah ada newton (dari simulasi)
+    : processRawDigital(rawData); // hanya digital (dari ESP32 real)
+
   if (!_emaState) {
-    // Inisialisasi dengan nilai pertama
     _emaState = {
-      left:  [...rawData.left_fsr_newton],
-      right: [...rawData.right_fsr_newton],
+      left:  [...data.left_fsr_newton],
+      right: [...data.right_fsr_newton],
     };
-    return rawData; // frame pertama: return as-is
+    return data;
   }
 
-  const filteredLeft  = applyEMA(rawData.left_fsr_newton,  _emaState.left);
-  const filteredRight = applyEMA(rawData.right_fsr_newton, _emaState.right);
+  const filteredLeft  = applyEMA(data.left_fsr_newton,  _emaState.left);
+  const filteredRight = applyEMA(data.right_fsr_newton, _emaState.right);
 
   _emaState.left  = filteredLeft;
   _emaState.right = filteredRight;
 
+  // Rebuild percent dari Newton ter-filter
+  const lFiltered = filteredLeft.map(Math.round);
+  const rFiltered = filteredRight.map(Math.round);
+
   return {
-    ...rawData,
-    left_fsr_newton:  filteredLeft.map(Math.round),
-    right_fsr_newton: filteredRight.map(Math.round),
+    ...data,
+    left_fsr_newton:   lFiltered,
+    right_fsr_newton:  rFiltered,
+    left_fsr_percent:  newtonToPercent(lFiltered),
+    right_fsr_percent: newtonToPercent(rFiltered),
   };
 }
 
@@ -324,6 +454,7 @@ function calcArchType(leftNewton, rightNewton) {
  *   right_fsr_digital:[number, number, number, number],
  * }
  */
+
 function computeAll(sensorData) {
   const lN = sensorData.left_fsr_newton  || [0, 0, 0, 0];
   const rN = sensorData.right_fsr_newton || [0, 0, 0, 0];

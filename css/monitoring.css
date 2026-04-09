@@ -71,11 +71,25 @@
   justify-content: center;
   padding-top: 2px;
 }
-.legend-gradient {
+/* .legend-gradient {
   width: 110px;
   height: 6px;
   border-radius: 3px;
   background: linear-gradient(90deg, #22d48f 0%, #2266ff 25%, #f0e020 50%, #f5a623 75%, #E7302A 100%);
+} */
+
+.legend-gradient {
+  width: 110px;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg,
+    #0000ff 0%,    /* biru */
+    #00ffff 20%,   /* cyan */
+    #00ff00 40%,   /* hijau (mid) */
+    #ffff00 60%,   /* kuning */
+    #ff8800 80%,   /* oranye */
+    #ff0000 100%   /* merah */
+  );
 }
 
 /* ── DETAIL SENSOR ── */

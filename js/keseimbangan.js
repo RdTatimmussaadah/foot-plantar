@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Ambil data profil (ini akan memicu renderSidebar otomatis)
     loadPatientToSidebar();
-    generateMockHistory();
+    // generateMockHistory();
     firebaseLoadHistory((list) => {
       _firebaseHistory = list;
       renderHistoryBars();
