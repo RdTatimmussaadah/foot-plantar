@@ -21,7 +21,7 @@ function renderSidebar(container, activePage) {
   const patient = getActivePatient();
   const navItems = [
     { id: 'monitor',      label: 'Monitor',       icon: Icons.monitor,  href: '../pages/monitoring.html' },
-    { id: 'keseimbangan', label: 'Keseimbangan',  icon: Icons.balance,  href: '../pages/keseimbangan.html' },
+    { id: 'keseimbangan', label: 'Analisis',      icon: Icons.balance,  href: '../pages/analisis.html' },
     { id: 'riwayat',      label: 'Riwayat',       icon: Icons.history,  href: '../pages/riwayat.html' },
     { id: 'profil',       label: 'Profil Pasien', icon: Icons.profile,  href: '../pages/profil.html' },
   ];
@@ -156,7 +156,6 @@ function openSnapModal() {
             <div style="font-size:9px;color:var(--text-secondary);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em">Postur</div>
             <div style="font-size:13px;font-weight:800;color:var(--red)" id="snap-postur-lbl">Berdiri</div>
           </div>
-          <div style="margin-left:auto;font-size:9px;color:var(--text-dim)">dari pilihan di Monitor</div>
         </div>
 
         <!-- Preview 8 sensor -->
@@ -244,13 +243,17 @@ function _populateSnapPreview() {
   // Sensor kPa values
   const lN = d.left_fsr_newton  || [0,0,0,0];
   const rN = d.right_fsr_newton || [0,0,0,0];
-  const toKpa = n => Math.round(n * 0.82);
+  // const toKpa = n => Math.round(n * 0.82);
 
   const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
-  set('sp-hl', toKpa(lN[0])); set('sp-ml', toKpa(lN[1]));
-  set('sp-ll', toKpa(lN[2])); set('sp-el', toKpa(lN[3]));
-  set('sp-hr', toKpa(rN[0])); set('sp-mr', toKpa(rN[1]));
-  set('sp-lr', toKpa(rN[2])); set('sp-er', toKpa(rN[3]));
+  // set('sp-hl', toKpa(lN[0])); set('sp-ml', toKpa(lN[1]));
+  // set('sp-ll', toKpa(lN[2])); set('sp-el', toKpa(lN[3]));
+  // set('sp-hr', toKpa(rN[0])); set('sp-mr', toKpa(rN[1]));
+  // set('sp-lr', toKpa(rN[2])); set('sp-er', toKpa(rN[3]));
+  set('sp-hl', lN[0]); set('sp-ml', lN[1]);
+  set('sp-ll', lN[2]); set('sp-el', lN[3]);
+  set('sp-hr', rN[0]); set('sp-mr', rN[1]);
+  set('sp-lr', rN[2]); set('sp-er', rN[3]);
 
   const fL = Math.round(lN.reduce((a,b)=>a+b,0));
   const fR = Math.round(rN.reduce((a,b)=>a+b,0));

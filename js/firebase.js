@@ -231,7 +231,7 @@ function firebaseLoadHistory(callback) {
 
   db.ref(`users/${uid}/history`)
     .orderByKey()
-    .limitToLast(50)
+    .limitToLast(10)
     .on('value', (snapshot) => {
       const history = [];
       snapshot.forEach((child) => {
