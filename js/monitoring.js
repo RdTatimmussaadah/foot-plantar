@@ -24,19 +24,19 @@ const SENSORS_R = [
 
 // Toes
 const TOES_L = [
-    { cx:79, cy:14, rx:9,   ry:11  }, // Hallux
-    { cx:64, cy:11, rx:7.5, ry:9.5 },
-    { cx:50, cy:10, rx:6.5, ry:8.5 },
-    { cx:37, cy:12, rx:5.5, ry:7.5 },
-    { cx:24, cy:18, rx:4.5, ry:6.5 }, // Pinky
+    { cx:85, cy:14, rx:9,   ry:11  }, // Hallux
+    { cx:70, cy:11, rx:7.5, ry:9.5 },
+    { cx:56, cy:10, rx:6.5, ry:8.5 },
+    { cx:43, cy:12, rx:5.5, ry:7.5 },
+    { cx:30, cy:18, rx:4.5, ry:6.5 }, // Pinky
   ];
   // Kaki KANAN: mirror exact — cx = 110 - cx_kiri, cy/rx/ry sama
   const TOES_R = [
-    { cx:31, cy:14, rx:9,   ry:11  }, // Hallux (110-79)
-    { cx:46, cy:11, rx:7.5, ry:9.5 }, // (110-64)
-    { cx:60, cy:10, rx:6.5, ry:8.5 }, // (110-50)
-    { cx:73, cy:12, rx:5.5, ry:7.5 }, // (110-37)
-    { cx:86, cy:18, rx:4.5, ry:6.5 }, // Pinky (110-24)
+    { cx:25, cy:14, rx:9,   ry:11  }, // Hallux (110-79)
+    { cx:40, cy:11, rx:7.5, ry:9.5 }, // (110-64)
+    { cx:54, cy:10, rx:6.5, ry:8.5 }, // (110-50)
+    { cx:67, cy:12, rx:5.5, ry:7.5 }, // (110-37)
+    { cx:80, cy:18, rx:4.5, ry:6.5 }, // Pinky (110-24)
   ];
 
 // ============================================================
@@ -249,7 +249,7 @@ function drawFootHeatmap(canvasId, sensors, toes, values, maxVal, isLeft) {
     footPath.lineTo(...sc(18, 70)); // Sisi luar
     footPath.bezierCurveTo(...sc(15, 25), ...sc(40, 12), ...sc(60, 12)); // Forefoot lebar
     footPath.bezierCurveTo(...sc(85, 12), ...sc(88, 45), ...sc(82, 70)); // Jempol (Sisi dalam)
-    footPath.bezierCurveTo(...sc(78, 100), ...sc(62, 130), ...sc(65, 160)); // LEKUKAN ARCH (Dalam)
+    footPath.bezierCurveTo(...sc(78, 100), ...sc(65, 190), ...sc(72, 140)); // LEKUKAN ARCH (Dalam)
     footPath.bezierCurveTo(...sc(70, 188), ...sc(60, 190), ...sc(45, 190)); // Kembali ke tumit
   } else {
     // Kaki KANAN: Sisi dalam (Jempol & Arch) ada di KIRI canvas
@@ -258,7 +258,7 @@ function drawFootHeatmap(canvasId, sensors, toes, values, maxVal, isLeft) {
     footPath.lineTo(...sc(82, 70)); 
     footPath.bezierCurveTo(...sc(85, 25), ...sc(60, 12), ...sc(40, 12)); 
     footPath.bezierCurveTo(...sc(15, 12), ...sc(12, 45), ...sc(18, 70)); 
-    footPath.bezierCurveTo(...sc(22, 100), ...sc(38, 130), ...sc(35, 160)); 
+    footPath.bezierCurveTo(...sc(22, 100), ...sc(35, 190), ...sc(28, 140)); 
     footPath.bezierCurveTo(...sc(30, 188), ...sc(40, 190), ...sc(55, 190)); 
   }
   footPath.closePath();
