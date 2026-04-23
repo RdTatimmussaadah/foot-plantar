@@ -230,7 +230,7 @@ function calcASI(leftNewton, rightNewton) {
 
   if (total === 0) return { fLeft: 0, fRight: 0, asi: 0 };
 
-  const asi = (Math.abs(fLeft - fRight) / (0.5 * total)) * 100;
+  const asi = (Math.abs(fLeft - fRight) / (total)) * 100;
   return {
     fLeft:  Math.round(fLeft),
     fRight: Math.round(fRight),
@@ -320,7 +320,7 @@ function calcZoneDistribution(leftNewton, rightNewton, totalForce) {
 //
 // Rumus: ratio = (MFF - LFF) / (MFF + LFF) * 100
 //   > +15 → Overpronation  (kaki jatuh ke dalam / arch kolaps)
-//   < -15 → Underpronation (kaki ke luar / supinasi)
+//   < -15 → supination (kaki ke luar / supinasi)
 //   else  → Normal
 //
 // Index sensor: [0]=Hallux, [1]=Med.FF, [2]=Lat.FF, [3]=Heel
@@ -346,7 +346,7 @@ function calcPronation(leftNewton, rightNewton) {
 
   function classifyPronation(ratio) {
     if (ratio > 15)  return { label: 'Overpronation',  cssClass: 'overpronation'};
-    if (ratio < -15) return { label: 'Underpronation', cssClass: 'underpronation'};
+    if (ratio < -15) return { label: 'Supination', cssClass: 'supination'};
     return             { label: 'Normal',          cssClass: 'pronation-normal'};
   }
 

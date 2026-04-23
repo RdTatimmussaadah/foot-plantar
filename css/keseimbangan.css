@@ -407,7 +407,7 @@
   letter-spacing: -.2px;
 }
 .pron-label.overpronation  { color: var(--red); }
-.pron-label.underpronation { color: #2266FF; }
+.pron-label.supination { color: #2266FF; }
 .pron-label.pronation-normal { color: var(--green); }
 
 .pron-ratio {

@@ -428,7 +428,7 @@ function updateUI(data) {
 
   // Balance = simetri percentage
   const sym = Math.round(100 - data.asi);
-  document.getElementById('m-balance').textContent    = sym;
+  document.getElementById('m-balance').textContent    = `${data.balanceScore}`;
   document.getElementById('m-balance-sub').textContent = `ASI: ${data.asi.toFixed(1)}%`;
 
   // Color balance

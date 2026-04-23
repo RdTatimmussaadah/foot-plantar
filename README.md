@@ -55,48 +55,48 @@ Semua rumus ada di `js/calculations.js`.
 
 ESP32 hanya mengirim nilai **digital ADC (0–4095)**. Konversi dilakukan di JavaScript:
 
-| Tahap | Rumus |
-|-------|-------|
+| Tahap            | Rumus                                                                       |
+| ---------------- | --------------------------------------------------------------------------- |
 | Digital → Newton | `F = (digital / 4095) × F_MAX` · `F_MAX = 100N` (FSR402, dapat dikalibrasi) |
-| Newton → Persen | `pct = (F_sensor / total_F_kaki) × 100` |
-| Digital → Volt | `V = (digital / 4095) × 3.3` |
+| Newton → Persen  | `pct = (F_sensor / total_F_kaki) × 100`                                     |
+| Digital → Volt   | `V = (digital / 4095) × 3.3`                                                |
 
 Setelah konversi, data dihaluskan menggunakan **EMA Filter** (`α = 0.2`) sebelum masuk kalkulasi.
 
 ### Metrik Utama
 
-| Metrik | Formula | Referensi |
-|--------|---------|-----------|
-| **Berat Badan** | `W = F_total / 9.81` | Sazonov et al. (2020) |
-| **ASI** | `|F_kiri − F_kanan| / (0.5 × (F_kiri + F_kanan)) × 100%` | Robinson et al. (1987) |
-| **Balance Score** | `100 − ASI` | Błażkiewicz et al. (2014) |
-| **Heel Load** | `(Heel_kiri + Heel_kanan) / F_total × 100%` | Putti et al. (2007) |
+| Metrik            | Formula                                     | Referensi                 |
+| ----------------- | ------------------------------------------- | ------------------------- | ------------------------------------ | ---------------------- |
+| **Berat Badan**   | `W = F_total / 9.81`                        | Sazonov et al. (2020)     |
+| **ASI**           | `                                           | F_kiri − F_kanan          | / (0.5 × (F_kiri + F_kanan)) × 100%` | Robinson et al. (1987) |
+| **Balance Score** | `100 − ASI`                                 | Błażkiewicz et al. (2014) |
+| **Heel Load**     | `(Heel_kiri + Heel_kanan) / F_total × 100%` | Putti et al. (2007)       |
 
 ### Klasifikasi Keseimbangan (Wang et al., 2023)
 
-| Status | Balance Score | ASI | Heel Load |
-|--------|--------------|-----|-----------|
-| ✅ Normal | ≥ 90 | ≤ 10% | 50–65% |
-| ⚠️ Sedang | 80–89 | 11–20% | 40–49% atau 66–75% |
-| 🚨 Abnormal | < 80 | > 20% | < 40% atau > 75% |
+| Status      | Balance Score | ASI    | Heel Load          |
+| ----------- | ------------- | ------ | ------------------ |
+| ✅ Normal   | ≥ 90          | ≤ 10%  | 50–65%             |
+| ⚠️ Sedang   | 80–89         | 11–20% | 40–49% atau 66–75% |
+| 🚨 Abnormal | < 80          | > 20%  | < 40% atau > 75%   |
 
 ### Klasifikasi Pronasi (per kaki)
 
-| Ratio Med-Lat | Klasifikasi |
-|---------------|-------------|
-| > +15 | 🔴 Overpronation |
-| −15 s/d +15 | ✅ Normal |
-| < −15 | 🔵 Underpronation / Supinasi |
+| Ratio Med-Lat | Klasifikasi              |
+| ------------- | ------------------------ |
+| > +15         | 🔴 Overpronation         |
+| −15 s/d +15   | ✅ Normal                |
+| < −15         | 🔵 supination / Supinasi |
 
 `Ratio = (Med.FF − Lat.FF) / (Med.FF + Lat.FF) × 100`
 
 ### Klasifikasi Arch Type (per kaki)
 
-| Kondisi | Arch Type |
-|---------|-----------|
+| Kondisi                     | Arch Type    |
+| --------------------------- | ------------ |
 | Heel > 65% & Forefoot < 35% | 🔵 High Arch |
 | Forefoot > 65% & Heel < 35% | 🔴 Flat Foot |
-| Seimbang | ✅ Normal |
+| Seimbang                    | ✅ Normal    |
 
 ---
 
@@ -166,13 +166,15 @@ users/
 ### Menghubungkan ESP32
 
 ESP32 cukup menulis dua field ke Firebase:
+
 ```json
 {
-  "left_fsr_digital":  [512, 620, 450, 580],
+  "left_fsr_digital": [512, 620, 450, 580],
   "right_fsr_digital": [530, 610, 480, 590],
   "timestamp": 1234567890
 }
 ```
+
 Semua kalkulasi (Newton, persen, balance score, dll) dikerjakan di JavaScript — tidak perlu dikirim dari ESP32.
 
 ---
@@ -189,12 +191,12 @@ Semua design tokens ada di `css/variables.css`:
 
 ## 📌 Sensor Mapping
 
-| Index | Nama | Posisi |
-|-------|------|--------|
-| 0 | Hallux | Ujung ibu jari |
-| 1 | Med. Forefoot | Depan sisi dalam |
-| 2 | Lat. Forefoot | Depan sisi luar |
-| 3 | Heel | Tumit |
+| Index | Nama          | Posisi           |
+| ----- | ------------- | ---------------- |
+| 0     | Hallux        | Ujung ibu jari   |
+| 1     | Med. Forefoot | Depan sisi dalam |
+| 2     | Lat. Forefoot | Depan sisi luar  |
+| 3     | Heel          | Tumit            |
 
 Masing-masing untuk kaki kiri (`left_fsr_*`) dan kanan (`right_fsr_*`). Total: **8 sensor FSR402**.
 
@@ -212,9 +214,10 @@ Deteksi postur saat ini menggunakan **rule-based** (logika sederhana). Rencana k
 Kelas yang akan dideteksi: **Berdiri**, **Jongkok**, **1 Kaki Kiri**, **1 Kaki Kanan**
 
 Untuk mengganti ke ML: ubah satu baris di `monitoring.js`:
+
 ```js
 // Ganti ini:
-return { label, confidence: null, source: 'rule-based' };
+return { label, confidence: null, source: "rule-based" };
 // Dengan ini:
-return predictPosture(data);  // dari model TF.js
+return predictPosture(data); // dari model TF.js
 ```

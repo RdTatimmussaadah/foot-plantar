@@ -152,9 +152,9 @@ function setZoneBar(barId, pctId, pct) {
 //   const elBarL = document.getElementById('pron-bar-fill-l');
 //   const elBarR = document.getElementById('pron-bar-fill-r');
 //   const colorL = p.cssClassL === 'overpronation' ? 'var(--red)'
-//                : p.cssClassL === 'underpronation' ? '#2266FF' : 'var(--green)';
+//                : p.cssClassL === 'supination' ? '#2266FF' : 'var(--green)';
 //   const colorR = p.cssClassR === 'overpronation' ? 'var(--red)'
-//                : p.cssClassR === 'underpronation' ? '#2266FF' : 'var(--green)';
+//                : p.cssClassR === 'supination' ? '#2266FF' : 'var(--green)';
 //   if (elBarL) { elBarL.style.width = `${toBarPct(p.ratioL)}%`; elBarL.style.background = colorL; }
 //   if (elBarR) { elBarR.style.width = `${toBarPct(p.ratioR)}%`; elBarR.style.background = colorR; }
 // }
@@ -179,8 +179,8 @@ function updatePronationUI(p) {
   const toBarPct = r => Math.min(100, Math.max(0, (r + 50)));
   const elBarL = document.getElementById('pron-bar-fill-l');
   const elBarR = document.getElementById('pron-bar-fill-r');
-  const colorL = p.cssClassL === 'overpronation' ? 'var(--red)' : p.cssClassL === 'underpronation' ? '#2266FF' : 'var(--green)';
-  const colorR = p.cssClassR === 'overpronation' ? 'var(--red)' : p.cssClassR === 'underpronation' ? '#2266FF' : 'var(--green)';
+  const colorL = p.cssClassL === 'overpronation' ? 'var(--red)' : p.cssClassL === 'supination' ? '#2266FF' : 'var(--green)';
+  const colorR = p.cssClassR === 'overpronation' ? 'var(--red)' : p.cssClassR === 'supination' ? '#2266FF' : 'var(--green)';
   if (elBarL) { elBarL.style.width = `${toBarPct(p.ratioL)}%`; elBarL.style.background = colorL; }
   if (elBarR) { elBarR.style.width = `${toBarPct(p.ratioR)}%`; elBarR.style.background = colorR; }
 
@@ -247,12 +247,12 @@ function updateArchUI(arch) {
 // Tampak depan kaki — badan kaki miring sesuai kondisi
 function getPronationSVG(cssClass, side) {
   const color = cssClass === 'overpronation'  ? '#E7302A'
-              : cssClass === 'underpronation' ? '#2266FF'
+              : cssClass === 'supination' ? '#2266FF'
               :                                 '#22D48F';
 
   let tiltDeg;
   if      (cssClass === 'overpronation')  tiltDeg = side === 'left' ?  18 : -18;
-  else if (cssClass === 'underpronation') tiltDeg = side === 'left' ? -18 :  18;
+  else if (cssClass === 'supination') tiltDeg = side === 'left' ? -18 :  18;
   else                                    tiltDeg = 0;
 
   // Pivot di tengah bawah (tumit)
@@ -315,15 +315,15 @@ function getPronationSVG(cssClass, side) {
           <ellipse cx="19" cy="70" rx="4" ry="10"
             fill="${color}" opacity="0.35"/>
         `}
-      ` : cssClass === 'underpronation' ? `
+      ` : cssClass === 'supination' ? `
         ${side === 'left' ? `
-          <!-- Kaki kiri underpronation: lateral ada di KIRI canvas -->
+          <!-- Kaki kiri supination: lateral ada di KIRI canvas -->
           <path d="M 20 55 C 17 65 17 76 20 86"
             stroke="${color}" stroke-width="3" stroke-linecap="round" opacity="1"/>
           <ellipse cx="19" cy="70" rx="4" ry="10"
             fill="${color}" opacity="0.35"/>
         ` : `
-          <!-- Kaki kanan underpronation: lateral ada di KANAN canvas -->
+          <!-- Kaki kanan supination: lateral ada di KANAN canvas -->
           <path d="M 60 55 C 63 65 63 76 60 86"
             stroke="${color}" stroke-width="3" stroke-linecap="round" opacity="1"/>
           <ellipse cx="61" cy="70" rx="4" ry="10"
