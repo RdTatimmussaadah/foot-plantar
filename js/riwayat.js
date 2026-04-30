@@ -332,5 +332,285 @@ function drawTrendCharts() {
   });
 }
 
-function exportCSV()  { showToast('Mengekspor CSV...', 'success'); }
-function exportPDF()  { showToast('Membuat laporan PDF...', 'success'); }
+// function exportCSV()  { showToast('Mengekspor CSV...', 'success'); }
+// function exportPDF()  { showToast('Membuat laporan PDF...', 'success'); }
+
+// ── helper: format timestamp → lokal Indonesia ─────────────
+function _fmtTime(raw) {
+  try {
+    const d = new Date(raw);
+    if (!isNaN(d)) {
+      return d.toLocaleString('id-ID', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+    }
+  } catch (_) {}
+  return raw || '—';
+}
+ 
+// ── helper: nama pasien dari sidebar ──────────────────────
+function _getPatientName() {
+  const el = document.querySelector('.patient-name, .sidebar-patient-name, #patient-name');
+  return el ? el.textContent.trim() : 'Pasien';
+}
+ 
+// ── helper: set state tombol ──────────────────────────────
+function _setBtnLoading(id, loading, labelDefault) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.style.opacity = loading ? '0.6' : '1';
+  if (!loading) btn.querySelector('.export-label') && (btn.querySelector('.export-label').textContent = labelDefault);
+}
+ 
+// ============================================================
+// EXPORT CSV
+// ============================================================
+function exportCSV() {
+  const snaps = _firebaseHistory;
+  if (!snaps || snaps.length === 0) {
+    showToast('Belum ada snapshot untuk diekspor.', 'error');
+    return;
+  }
+ 
+  const headers = [
+    'No', 'Waktu', 'Postur',
+    'Balance Score', 'ASI (%)', 'Simetri (%)', 'Heel Load (%)', 'Klasifikasi',
+    'Total Berat (kg)', 'Total Gaya (N)',
+    'Gaya Kiri (N)', 'Persen Kiri (%)',
+    'Gaya Kanan (N)', 'Persen Kanan (%)',
+    'Pronasi Kiri', 'Pronasi Kanan',
+    'Arch Kiri', 'Arch Kanan',
+    'L-Hallux (N)', 'L-MedFF (N)', 'L-LatFF (N)', 'L-Heel (N)',
+    'R-Hallux (N)', 'R-MedFF (N)', 'R-LatFF (N)', 'R-Heel (N)',
+    'Catatan',
+  ];
+ 
+  const rows = snaps.map((s, i) => {
+    const lN   = s.left_fsr_newton  || [0, 0, 0, 0];
+    const rN   = s.right_fsr_newton || [0, 0, 0, 0];
+    const fL   = Array.isArray(lN) ? lN.reduce((a, b) => a + b, 0).toFixed(1) : '—';
+    const fR   = Array.isArray(rN) ? rN.reduce((a, b) => a + b, 0).toFixed(1) : '—';
+    const asi  = parseFloat(s.asi) || 0;
+    const archL = s.arch_label_l || (s.archType && s.archType.arch_label_l) || '—';
+    const archR = s.arch_label_r || (s.archType && s.archType.arch_label_r) || '—';
+    const pronL = s.pronation ? s.pronation.labelL : '—';
+    const pronR = s.pronation ? s.pronation.labelR : '—';
+ 
+    return [
+      i + 1,
+      _fmtTime(s.snapshot_time),
+      s.posture || 'Berdiri',
+      (parseFloat(s.balance_score) || 0).toFixed(1),
+      asi.toFixed(1),
+      (100 - asi).toFixed(1),
+      (parseFloat(s.heel_load) || 0).toFixed(1),
+      s.classification || '—',
+      (parseFloat(s.total_weight) || 0).toFixed(1),
+      (parseFloat(s.total_force)  || 0).toFixed(1),
+      fL, (parseFloat(s.left_percent)  || 0).toFixed(1),
+      fR, (parseFloat(s.right_percent) || 0).toFixed(1),
+      pronL, pronR, archL, archR,
+      Array.isArray(lN) ? lN[0].toFixed(1) : '—',
+      Array.isArray(lN) ? lN[1].toFixed(1) : '—',
+      Array.isArray(lN) ? lN[2].toFixed(1) : '—',
+      Array.isArray(lN) ? lN[3].toFixed(1) : '—',
+      Array.isArray(rN) ? rN[0].toFixed(1) : '—',
+      Array.isArray(rN) ? rN[1].toFixed(1) : '—',
+      Array.isArray(rN) ? rN[2].toFixed(1) : '—',
+      Array.isArray(rN) ? rN[3].toFixed(1) : '—',
+      s.note || '',
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`);
+  });
+ 
+  const csv  = [headers.map(h => `"${h}"`).join(','), ...rows.map(r => r.join(','))].join('\r\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `fps-riwayat-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`✓ CSV berhasil diekspor — ${snaps.length} snapshot`, 'success');
+}
+ 
+// ============================================================
+// EXPORT PDF — print-ready report, no external library
+// ============================================================
+function exportPDF() {
+  const snaps = _firebaseHistory;
+  if (!snaps || snaps.length === 0) {
+    showToast('Belum ada snapshot untuk diekspor.', 'error');
+    return;
+  }
+ 
+  const win = window.open('', '_blank', 'width=960,height=720');
+  if (!win) {
+    showToast('Pop-up diblokir browser. Izinkan pop-up untuk halaman ini.', 'error');
+    return;
+  }
+  showToast('Membuka laporan PDF...', 'success');
+ 
+  // Hitung statistik ringkasan
+  const avg = arr => arr.reduce((a, b) => a + b, 0) / (arr.length || 1);
+  const avgScore     = avg(snaps.map(s => parseFloat(s.balance_score) || 0)).toFixed(1);
+  const avgHeel      = avg(snaps.map(s => parseFloat(s.heel_load) || 0)).toFixed(1);
+  const avgSym       = (100 - avg(snaps.map(s => parseFloat(s.asi) || 0))).toFixed(1);
+  const countNormal  = snaps.filter(s => s.classification === 'NORMAL').length;
+  const countSedang  = snaps.filter(s => s.classification === 'SEDANG').length;
+  const countAbnorm  = snaps.filter(s => s.classification === 'ABNORMAL').length;
+  const patientName  = _getPatientName();
+  const now = new Date().toLocaleString('id-ID', {
+    day: '2-digit', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+ 
+  // Warna kondisi
+  const scoreColor = v => parseFloat(v) >= 90 ? '#22D48F' : parseFloat(v) >= 80 ? '#F5C842' : '#E7302A';
+ 
+  // Baris tabel
+  const tableRows = snaps.map((s, i) => {
+    const asi   = parseFloat(s.asi)           || 0;
+    const score = parseFloat(s.balance_score) || 0;
+    const heel  = parseFloat(s.heel_load)     || 0;
+    const cls   = s.classification || '—';
+    const pronL = s.pronation ? s.pronation.labelL : '—';
+    const pronR = s.pronation ? s.pronation.labelR : '—';
+    const archL = s.arch_label_l || (s.archType && s.archType.arch_label_l) || '—';
+    const archR = s.arch_label_r || (s.archType && s.archType.arch_label_r) || '—';
+    const clsColor = cls === 'NORMAL' ? '#22D48F' : cls === 'SEDANG' ? '#F5C842' : '#E7302A';
+    const lN = s.left_fsr_newton  || [0,0,0,0];
+    const rN = s.right_fsr_newton || [0,0,0,0];
+    const fL = Array.isArray(lN) ? lN.reduce((a,b) => a+b, 0).toFixed(0) : '—';
+    const fR = Array.isArray(rN) ? rN.reduce((a,b) => a+b, 0).toFixed(0) : '—';
+ 
+    return `<tr>
+      <td class="tc dim">${i + 1}</td>
+      <td>${_fmtTime(s.snapshot_time)}</td>
+      <td class="tc mono" style="color:${scoreColor(score)};font-weight:900">${score.toFixed(1)}</td>
+      <td class="tc mono">${asi.toFixed(1)}%</td>
+      <td class="tc mono">${heel.toFixed(1)}%</td>
+      <td class="tc" style="color:${clsColor};font-weight:700">${cls}</td>
+      <td class="tc">${fL}N / ${fR}N</td>
+      <td class="tc small">${pronL}<br>${pronR}</td>
+      <td class="tc small">${archL}<br>${archR}</td>
+      <td class="dim small">${s.note || '—'}</td>
+    </tr>`;
+  }).join('');
+ 
+  win.document.write(`<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="UTF-8"/>
+<title>Laporan Riwayat — Foot Plantar Sense</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#1a1a2e;background:#fff}
+  @page{size:A4 landscape;margin:14mm 12mm}
+ 
+  /* Header */
+  .hd{display:flex;align-items:center;justify-content:space-between;
+      border-bottom:3px solid #E7302A;padding-bottom:12px;margin-bottom:16px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .dot{width:36px;height:36px;border-radius:9px;background:#E7302A;
+       color:#fff;font-weight:900;font-size:15px;
+       display:flex;align-items:center;justify-content:center}
+  .bname{font-size:17px;font-weight:900}
+  .bsub{font-size:9px;color:#888;margin-top:2px}
+  .meta{text-align:right;font-size:9px;color:#888;line-height:1.7}
+  .meta strong{color:#1a1a2e;font-size:11px}
+ 
+  /* Section title */
+  .st{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;
+      letter-spacing:.07em;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .st::after{content:'';flex:1;height:1px;background:#e8e8f0}
+ 
+  /* Summary cards */
+  .sc-row{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px}
+  .sc{border:1.5px solid #eee;border-radius:9px;padding:9px 6px;text-align:center}
+  .sv{font-size:20px;font-weight:900;font-family:monospace;line-height:1}
+  .sl{font-size:8px;color:#888;margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+ 
+  /* Table */
+  table{width:100%;border-collapse:collapse;font-size:10.5px}
+  thead th{background:#f4f4f8;padding:6px 7px;text-align:left;
+           font-weight:700;font-size:9px;color:#555;border-bottom:2px solid #ddd}
+  tbody td{padding:5px 7px;border-bottom:1px solid #f0f0f4;vertical-align:middle}
+  tbody tr:nth-child(even) td{background:#fafafa}
+  tbody tr:last-child td{border-bottom:none}
+  .tc{text-align:center}
+  .mono{font-family:monospace}
+  .dim{color:#aaa}
+  .small{font-size:9.5px;line-height:1.5}
+ 
+  /* Disclaimer */
+  .disc{margin-top:14px;padding:9px 12px;background:#fff8e1;
+        border-left:3px solid #F5C842;border-radius:6px;
+        font-size:9.5px;color:#7a6500;line-height:1.6}
+ 
+  /* Footer */
+  .ft{margin-top:12px;padding-top:8px;border-top:1px solid #eee;
+      display:flex;justify-content:space-between;font-size:8.5px;color:#bbb}
+ 
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head><body>
+ 
+<div class="hd">
+  <div class="brand">
+    <div class="dot">FPS</div>
+    <div>
+      <div class="bname">Foot Plantar Sense</div>
+      <div class="bsub">Laporan Riwayat Monitoring Tekanan Plantar Kaki</div>
+    </div>
+  </div>
+  <div class="meta">
+    <strong>${patientName}</strong><br>
+    Dicetak: ${now}<br>
+    Total data: ${snaps.length} snapshot
+  </div>
+</div>
+ 
+<div class="st">Ringkasan</div>
+<div class="sc-row">
+  <div class="sc"><div class="sv" style="color:${scoreColor(avgScore)}">${avgScore}</div><div class="sl">Avg Balance Score</div></div>
+  <div class="sc"><div class="sv" style="color:#60607A">${avgHeel}%</div><div class="sl">Avg Heel Load</div></div>
+  <div class="sc"><div class="sv" style="color:#F5C842">${avgSym}%</div><div class="sl">Avg Simetri</div></div>
+  <div class="sc"><div class="sv" style="color:#22D48F">${countNormal}</div><div class="sl">Normal</div></div>
+  <div class="sc"><div class="sv" style="color:#F5C842">${countSedang}</div><div class="sl">Sedang</div></div>
+  <div class="sc"><div class="sv" style="color:#E7302A">${countAbnorm}</div><div class="sl">Abnormal</div></div>
+</div>
+ 
+<div class="st">Detail Snapshot</div>
+<table>
+  <thead>
+    <tr>
+      <th style="width:24px">No</th>
+      <th>Waktu</th>
+      <th class="tc">Balance Score</th>
+      <th class="tc">ASI</th>
+      <th class="tc">Heel Load</th>
+      <th class="tc">Klasifikasi</th>
+      <th class="tc">Gaya L / R</th>
+      <th class="tc">Pronasi L/R</th>
+      <th class="tc">Arch L/R</th>
+      <th>Catatan</th>
+    </tr>
+  </thead>
+  <tbody>${tableRows}</tbody>
+</table>
+ 
+<div class="disc">
+  ⚠ Laporan ini dihasilkan secara otomatis oleh sistem Foot Plantar Sense dan bersifat informatif.
+  Bukan merupakan diagnosis medis. Konsultasikan dengan tenaga medis atau fisioterapis untuk interpretasi klinis lebih lanjut.
+</div>
+ 
+<div class="ft">
+  <span>Foot Plantar Sense — IoT Plantar Pressure Monitoring</span>
+  <span>Dicetak: ${now}</span>
+</div>
+ 
+<script>window.onload=function(){setTimeout(function(){window.print();},350)};<\/script>
+</body></html>`);
+  win.document.close();
+}

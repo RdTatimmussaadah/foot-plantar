@@ -74,7 +74,7 @@ function updateBalanceUI(data) {
   const cls   = data.classification;
 
   // ── Gauge ──
-  document.getElementById('b-score').textContent = score.toFixed(0);
+  document.getElementById('b-score').textContent = score;
   const arc = document.getElementById('gauge-arc');
   const offset = GAUGE_CIRCUMFERENCE * (1 - score / 100);
   arc.style.strokeDashoffset = offset;
@@ -104,11 +104,11 @@ function updateBalanceUI(data) {
   setZoneBar('z-heel',   'z-heel-pct',   data.zones.heel);
 
   // ── Classification card ──
-  document.getElementById('cls-emoji').textContent = cls.emoji;
-  document.getElementById('cls-name').textContent  = cls.label;
-  document.getElementById('cls-score').textContent = `${score.toFixed(0)}`;
-  document.getElementById('cls-asi').textContent   = `${asi.toFixed(1)}%`;
-  document.getElementById('cls-heel').textContent  = `${hl.toFixed(1)}%`;
+  // document.getElementById('cls-emoji').textContent = cls.emoji;
+  // document.getElementById('cls-name').textContent  = cls.label;
+  // document.getElementById('cls-score').textContent = `${score.toFixed(0)}`;
+  // document.getElementById('cls-asi').textContent   = `${asi.toFixed(1)}%`;
+  // document.getElementById('cls-heel').textContent  = `${hl.toFixed(1)}%`;
 
   updatePronationUI(data.pronation);
   updateArchUI(data.archType);

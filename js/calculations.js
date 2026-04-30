@@ -230,7 +230,7 @@ function calcASI(leftNewton, rightNewton) {
 
   if (total === 0) return { fLeft: 0, fRight: 0, asi: 0 };
 
-  const asi = (Math.abs(fLeft - fRight) / (total)) * 100;
+  const asi = (Math.abs(fLeft - fRight) / (0.5 * total)) * 100;
   return {
     fLeft:  Math.round(fLeft),
     fRight: Math.round(fRight),

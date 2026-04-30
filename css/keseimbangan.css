@@ -17,6 +17,7 @@
   border: var(--border);
   border-radius: var(--radius-md);
   overflow: hidden;
+  grid-column: 1 / -1;
 }
 
 .score-body {
