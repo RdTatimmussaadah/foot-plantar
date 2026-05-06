@@ -192,8 +192,8 @@ function renderSnapRow(snap) {
   const pronL = snap.pronation ? snap.pronation.labelL : 'Normal';
   const pronR = snap.pronation ? snap.pronation.labelR : 'Normal';
   // Arch type — fallback '—' untuk snapshot lama
-  const archL     = snap.arch_label_l || null;
-  const archR     = snap.arch_label_r || null;
+  const archL     = snap.archType? snap.archType.arch_label_l || null : null;
+  const archR     = snap.archType? snap.archType.arch_label_r || null : null;
 
   const archColor = (label) =>
     label === 'Flat Foot'  ? 'var(--red)'  :
@@ -228,8 +228,9 @@ function renderSnapRow(snap) {
           <span class="snap-tag" style="color:#2266FF">R ${fR}N</span>
           <span class="snap-tag" style="color:var(--orange)">Pron L: ${pronL}</span>
           <span class="snap-tag" style="color:var(--orange)">Pron R: ${pronR}</span>
-          ${archTagL}
-          ${archTagR}
+          <span class="snap-tag" style="color:var(--orange)">Arch L: ${archL}</span>
+          <span class="snap-tag" style="color:var(--orange)">Arch R: ${archR}</span>
+          
         </div>
       </div>
       <span class="snap-score" style="color:${scoreColor}">${score.toFixed(0)}</span>

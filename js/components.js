@@ -184,6 +184,10 @@ function openSnapModal() {
           <div>Arch Kiri: <span id="sp-arch-l" style="font-weight:700">—</span></div>
           <div>Arch Kanan: <span id="sp-arch-r" style="font-weight:700">—</span></div>
         </div>
+        <div class="snap-arch-row">
+          <div>Pronasi Kiri: <span id="sp-pron-l" style="font-weight:700">—</span></div>
+          <div>Pronasi Kanan: <span id="sp-pron-r" style="font-weight:700">—</span></div>
+        </div>
         <!-- Totals row -->
         <div class="snap-totals-row">
           <div>Total Kiri: <span class="snap-tot-l" id="sp-total-l">—</span> N</div>
@@ -238,6 +242,24 @@ function _populateSnapPreview() {
     archR.textContent  = `${arch.emojiR} ${arch.labelR}`;
     archR.style.color  = arch.cssClassR === 'arch-flat' ? 'var(--red)'
                       : arch.cssClassR === 'arch-high' ? '#2266FF' : 'var(--green)';
+  }
+
+  // Pronation preview di modal
+  const pron = (typeof currentData !== 'undefined' && currentData)
+    ? currentData.pronation : null;
+  const pronColor = (cssClass) =>
+    cssClass === 'overpronation' ? 'var(--red)'
+    : cssClass === 'supination'  ? '#2266FF'
+    : 'var(--green)';
+  const elPronL = document.getElementById('sp-pron-l');
+  const elPronR = document.getElementById('sp-pron-r');
+  if (elPronL && pron) {
+    elPronL.textContent = pron.labelL || '—';
+    elPronL.style.color = pronColor(pron.cssClassL);
+  }
+  if (elPronR && pron) {
+    elPronR.textContent = pron.labelR || '—';
+    elPronR.style.color = pronColor(pron.cssClassR);
   }
 
   // Sensor kPa values
