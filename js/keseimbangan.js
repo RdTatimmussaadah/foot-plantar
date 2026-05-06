@@ -40,7 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
     startFirebaseListen(function(data) {
       // const filteredData = applyEMAFilter(data);
       // currentData = computeAll(filteredData);
-      updateBalanceUI(data); // atau updateBalanceUI(data)
+      currentData = data;
+      updateBalanceUI(currentData); // atau updateBalanceUI(data)
     });
     
     // onDataUpdate((data) => {

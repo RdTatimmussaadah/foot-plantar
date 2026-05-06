@@ -54,7 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
     startFirebaseListen(function(data) {
       // const filteredData = applyEMAFilter(data);
       // currentData = computeAll(filteredData);
-      updateUI(data); // atau updateBalanceUI(data)
+      currentData = data;
+      updateUI(currentData); // atau updateBalanceUI(data)
     });
   });
   
