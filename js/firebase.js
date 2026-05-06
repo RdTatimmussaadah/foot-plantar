@@ -147,8 +147,8 @@ function startFirebaseListen(callback) {
 
     // Compute all metrics from raw ESP32 data
     const withCalc = processRawDigital(raw);
-    const filtered = applyEMAFilter(withCalc);
-    const computed = computeAll(filtered);
+    // const filtered = applyEMAFilter(withCalc);
+    const computed = computeAll(withCalc);
     // const computed = computeAll(raw);
 
     // Write computed values back to Firebase current node

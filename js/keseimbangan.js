@@ -38,9 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // startSimulation();
 
     startFirebaseListen(function(data) {
-      const filteredData = applyEMAFilter(data);
-      currentData = computeAll(filteredData);
-      updateBalanceUI(currentData); // atau updateBalanceUI(data)
+      // const filteredData = applyEMAFilter(data);
+      // currentData = computeAll(filteredData);
+      updateBalanceUI(data); // atau updateBalanceUI(data)
     });
     
     // onDataUpdate((data) => {

@@ -400,9 +400,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // startSimulation();
 
     startFirebaseListen(function(data) {
-      const filteredData = applyEMAFilter(data);
-      currentData = computeAll(filteredData);
-      updateUI(currentData); // atau updateBalanceUI(data)
+      // const filteredData = applyEMAFilter(data);
+      // currentData = computeAll(filteredData);
+      updateUI(data); // atau updateBalanceUI(data)
     });
   });
   // requireAuth();
