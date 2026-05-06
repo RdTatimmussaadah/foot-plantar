@@ -3,6 +3,7 @@
  */
 'use strict';
 
+
 const SENSOR_NAMES = ['Hallux', 'Med. FF', 'Lat. FF', 'Heel'];
 let currentPosture = 'Berdiri';
 let currentData    = null;

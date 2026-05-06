@@ -401,7 +401,7 @@ function renderHistoryBars() {
 }
 
 // ── Snapshot support ──
-function recordSnapshot() {
-  showToast('Snapshot direkam dari halaman Keseimbangan.', 'success');
-}
-window.recordSnapshot = recordSnapshot;
+// function recordSnapshot() {
+//   showToast('Snapshot direkam dari halaman Keseimbangan.', 'success');
+// }
+// window.recordSnapshot = recordSnapshot;

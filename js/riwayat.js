@@ -3,9 +3,9 @@
  */
 'use strict';
 
-let currentData = null; // needed for snapshot modal
+var currentData = null; // needed for snapshot modal
 
-let _firebaseHistory = [];
+var _firebaseHistory = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   const sidebarEl = document.getElementById('sidebar');

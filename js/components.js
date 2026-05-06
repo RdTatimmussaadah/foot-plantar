@@ -279,7 +279,7 @@ function saveSnapshot() {
 
 
   // Tetap simpan ke local simulation (untuk tampil di riwayat sesi ini)
-  recordSnapshot(currentData, posture, note);
+  // recordSnapshot(currentData, posture, note);
 
   // Simpan ke Firebase
   if (typeof firebaseRecordSnapshot === 'function') {
