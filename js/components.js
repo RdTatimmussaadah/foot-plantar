@@ -221,7 +221,9 @@ function _populateSnapPreview() {
   const d = currentData;
 
   // Postur
-  const posture = (typeof currentPosture !== 'undefined') ? currentPosture : 'Berdiri';
+  // const posture = (typeof currentPosture !== 'undefined') ? currentPosture : 'Berdiri';
+  const posture = localStorage.getItem('fps_currentPosture')
+  || (typeof currentPosture !== 'undefined' ? currentPosture : 'Berdiri');
   const postureIcons = { 'Berdiri':'🧍', 'Jongkok':'🏋️', '1 Kaki':'🦵', '2 Kaki':'👣' };
   const ic = document.getElementById('snap-postur-ic');
   const lb = document.getElementById('snap-postur-lbl');
@@ -297,8 +299,9 @@ function saveSnapshot() {
   }
 
   const note    = document.getElementById('snap-note-inp')?.value || '';
-  const posture = (typeof currentPosture !== 'undefined') ? currentPosture : 'Berdiri';
-
+  // const posture = (typeof currentPosture !== 'undefined') ? currentPosture : 'Berdiri';
+  const posture = localStorage.getItem('fps_currentPosture')
+  || (typeof currentPosture !== 'undefined' ? currentPosture : 'Berdiri');
 
   // Tetap simpan ke local simulation (untuk tampil di riwayat sesi ini)
   // recordSnapshot(currentData, posture, note);

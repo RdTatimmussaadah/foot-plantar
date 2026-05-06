@@ -503,6 +503,7 @@ function renderSensorRows(containerId, newtonArr, digitalArr) {
 // ============================================================
 function selectPosture(label, btn) {
   currentPosture = label;
+  localStorage.setItem('fps_currentPosture', label);
   document.getElementById('posture-badge').textContent = label;
   document.querySelectorAll('.posture-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -573,6 +574,7 @@ function detectPosture(data) {
  */
 function updatePostureUI(result) {
   currentPosture = result.label;
+  localStorage.setItem('fps_currentPosture', result.label);
 
   // Badge di header card
   const badge = document.getElementById('posture-badge');
