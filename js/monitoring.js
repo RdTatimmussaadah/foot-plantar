@@ -500,12 +500,12 @@ function renderSensorRows(containerId, newtonArr, digitalArr) {
 // ============================================================
 // POSTURE SELECTOR
 // ============================================================
-// function selectPosture(label, btn) {
-//   currentPosture = label;
-//   document.getElementById('posture-badge').textContent = label;
-//   document.querySelectorAll('.posture-btn').forEach(b => b.classList.remove('active'));
-//   btn.classList.add('active');
-// }
+function selectPosture(label, btn) {
+  currentPosture = label;
+  document.getElementById('posture-badge').textContent = label;
+  document.querySelectorAll('.posture-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
 
 // ============================================================
 // DETEKSI POSTUR — Rule-based dummy

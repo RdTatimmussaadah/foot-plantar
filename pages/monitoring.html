@@ -61,7 +61,7 @@
                 <div class="heatmap-legend">
                   <span
                     style="
-                      color: #0000ff ;
+                      color: #0000ff;
                       font-size: 9px;
                       font-family: var(--font-mono);
                     "
@@ -129,28 +129,28 @@
 
             <!-- POSTURE LABEL -->
             <!-- <div class="posture-card">
-          <div class="posture-card-header">
-            <div>
-              <div class="card-section-title" style="margin:0 0 2px">LABEL POSTUR</div>
-              <div style="font-size:11px;font-weight:700">Postur Saat Ini</div>
-            </div>
-            <span class="posture-badge" id="posture-badge">Berdiri</span>
-          </div>
-          <div class="posture-grid">
-            <button class="posture-btn active" data-g="Berdiri" onclick="selectPosture('Berdiri',this)">
-              <img src="../assets/images/standup-icon.png" alt="standup-icon" class="icon" style="margin-bottom: 0px!important;">
-              <span>Berdiri</span>
-            </button>
-            <button class="posture-btn" data-g="Jongkok" onclick="selectPosture('Jongkok',this)">
-              <img src="../assets/images/jongkok-icon.png" alt="standup-icon" class="icon" style="margin-bottom: 0px!important;">
-              <span>Jongkok</span>
-            </button>
-            <button class="posture-btn" data-g="1 Kaki" onclick="selectPosture('1 Kaki',this)">
-              <img src="../assets/images/onefoot-icon.png" alt="standup-icon" class="icon" style="margin-bottom: 0px!important;">
-              <span>1 Kaki</span>
-            </button>
-          </div>
-        </div> -->
+              <div class="posture-card-header">
+                <div>
+                  <div class="card-section-title" style="margin:0 0 2px">LABEL POSTUR</div>
+                  <div style="font-size:11px;font-weight:700">Postur Saat Ini</div>
+                </div>
+                <span class="posture-badge" id="posture-badge">Berdiri</span>
+              </div>
+              <div class="posture-grid">
+                <button class="posture-btn active" data-g="Berdiri" onclick="selectPosture('Berdiri',this)">
+                  <img src="../assets/images/standup-icon.png" alt="standup-icon" class="icon" style="margin-bottom: 0px!important;">
+                  <span>Berdiri</span>
+                </button>
+                <button class="posture-btn" data-g="Jongkok" onclick="selectPosture('Jongkok',this)">
+                  <img src="../assets/images/jongkok-icon.png" alt="standup-icon" class="icon" style="margin-bottom: 0px!important;">
+                  <span>Jongkok</span>
+                </button>
+                <button class="posture-btn" data-g="1 Kaki" onclick="selectPosture('1 Kaki',this)">
+                  <img src="../assets/images/onefoot-icon.png" alt="standup-icon" class="icon" style="margin-bottom: 0px!important;">
+                  <span>1 Kaki</span>
+                </button>
+              </div>
+            </div> -->
 
             <!-- ── POSTURE CARD ── -->
             <div class="posture-card">
@@ -163,7 +163,6 @@
                 >
               </div>
 
-              <!-- Hasil deteksi utama -->
               <div class="posture-result">
                 <img
                   id="posture-icon"
@@ -181,7 +180,7 @@
                 </div>
               </div>
 
-              <!-- Panel per postur — highlight yang aktif -->
+
               <div class="posture-panels">
                 <div class="posture-panel" data-posture="Berdiri">
                   <img
@@ -209,11 +208,13 @@
                 </div>
               </div>
             </div>
+
+
           </div>
         </main>
       </div>
     </div>
-    
+
     <div class="toast-container" id="toast-container"></div>
 
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>

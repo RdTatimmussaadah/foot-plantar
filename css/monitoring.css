@@ -263,12 +263,12 @@
   margin: 0 0 12px;
   line-height: 1.5;
 }
-/* .posture-grid {
+.posture-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-} */
-/* .posture-btn {
+}
+.posture-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -282,7 +282,7 @@
   font-weight: 700;
   cursor: pointer;
   transition: all .2s;
-} */
+}
 .posture-btn:hover {
   border-color: var(--text-secondary);
   color: var(--text-primary);
