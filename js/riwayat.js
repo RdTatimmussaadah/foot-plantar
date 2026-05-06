@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderHistoryList();
       renderSummaryStats();
       drawTrendCharts();
-      renderHistoryBars();
+      // renderHistoryBars();
       // renderHistoryBars();
     });
 
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // const filteredData = applyEMAFilter(data);
       // currentData = computeAll(filteredData);
       currentData = data;
-      updateUI(currentData); // atau updateBalanceUI(data)
+      // updateUI(currentData); // atau updateBalanceUI(data)
     });
   });
   

@@ -105,7 +105,8 @@
 <script src="../js/components.js"></script>
 <script>
   let currentData    = null;
-  let currentPosture = 'Berdiri';
+  // let currentPosture = 'Berdiri';
+  // let currentPosture = localStorage.getItem('fps_currentPosture') || 'Berdiri';
 
   document.addEventListener('DOMContentLoaded', () => {
     const sidebarEl = document.getElementById('sidebar');
@@ -128,9 +129,9 @@
         }
       });
 
-      onDataUpdate((data) => {
-        const filteredData = applyEMAFilter(data);
-        currentData = computeAll(filteredData);
+      startFirebaseListen((data) => {
+        // const filteredData = applyEMAFilter(data);
+        currentData = data;
         // updateUI(currentData);
       });
       // startSimulation();
