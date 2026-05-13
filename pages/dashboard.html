@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard — Foot Plantar Monitoring</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/variables.css" />
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+  </head>
+
+  <body>
+    <div class="app-layout">
+      <aside class="app-sidebar" id="sidebar"></aside>
+
+      <div class="app-main">
+        <header class="app-topbar" id="topbar"></header>
+
+        <main class="app-content">
+          <div class="dashboard-grid">
+            <!-- MONITORING -->
+            <section class="dashboard-monitoring">
+              <div class="monitoring-grid">
+                <!-- HEATMAP -->
+                <div class="heatmap-card">
+                  <div class="heatmap-header">
+                    <div class="card-title">PETA TEKANAN PLANTAR</div>
+                    <div style="text-align: right">
+                      <div
+                        style="
+                          font-size: 11px;
+                          font-weight: 700;
+                          color: var(--text-secondary);
+                        "
+                      >
+                        Distribusi 4 Sensor
+                      </div>
+                      <div
+                        style="
+                          font-family: var(--font-mono);
+                          font-size: 10px;
+                          color: var(--text-dim);
+                        "
+                        id="total-force-label"
+                      >
+                        Total: — N
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="heatmap-body">
+                    <div class="foot-labels-row">
+                      <span class="foot-side-lbl">KIRI</span>
+                      <span class="foot-side-lbl">KANAN</span>
+                    </div>
+
+                    <div class="feet-container">
+                      <div class="foot-wrap">
+                        <canvas id="heatmap-L" width="130" height="280"></canvas>
+                      </div>
+                      <div class="foot-wrap">
+                        <canvas id="heatmap-R" width="130" height="280"></canvas>
+                      </div>
+                    </div>
+
+                    <div class="heatmap-legend">
+                      <span
+                        style="
+                          color: #0000ff;
+                          font-size: 9px;
+                          font-family: var(--font-mono);
+                        "
+                        >Low</span
+                      >
+                      <div class="legend-gradient"></div>
+                      <span
+                        style="
+                          color: #ff0000;
+                          font-size: 9px;
+                          font-family: var(--font-mono);
+                        "
+                        >High</span
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <!-- METRICS -->
+                <div class="metrics-row">
+                  <div class="metric-card">
+                    <img
+                      src="../assets/images/balance-icon.png"
+                      alt="balance-icon"
+                      class="icon"
+                    />
+                    <div class="mc-val" id="m-balance" style="color: var(--green)">
+                      —
+                    </div>
+                    <div class="mc-unit">%</div>
+                    <div class="mc-lbl">Simetri L/R</div>
+                    <div class="mc-sub" id="m-balance-sub">batas min 85%</div>
+                    <div class="mc-glow" style="background: var(--green)"></div>
+                  </div>
+                </div>
+
+                <!-- POSTURE -->
+                <div class="posture-card">
+                  <div class="posture-card-header">
+                    <div class="card-section-title" style="margin: 0 0 2px">
+                      DETEKSI POSTUR
+                    </div>
+                    <span class="posture-badge" id="posture-badge">
+                      Mendeteksi...
+                    </span>
+                  </div>
+
+                  <div class="posture-result">
+                    <div class="posture-result-content">
+                      <img
+                        id="posture-icon"
+                        src="../assets/images/standup-icon.png"
+                        alt="postur"
+                        class="posture-result-icon"
+                      />
+                      <div class="posture-result-info">
+                        <div class="posture-result-label" id="posture-label">
+                          Mendeteksi...
+                        </div>
+                        <div class="posture-result-source" id="posture-source">
+                          Menghitung data sensor...
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ANALISIS -->
+            <section class="dashboard-analysis">
+              <div class="balance-grid">
+                <div class="score-card">
+                  <div class="detail-card-header" style="padding: var(--space-md)">
+                    <span class="card-title">STABILITAS POSTUR (CoP)</span>
+                    <span class="badge" id="b-status-badge">Menganalisis...</span>
+                  </div>
+
+                  <div class="cop-visualizer-container">
+                    <div class="cop-radar">
+                      <div class="radar-cross-h"></div>
+                      <div class="radar-cross-v"></div>
+                      <div class="radar-circle ring-1"></div>
+                      <div class="radar-circle ring-2"></div>
+                      <div class="radar-circle ring-3"></div>
+
+                      <div id="cop-dot" class="cop-dot"></div>
+                    </div>
+
+                    <div class="cop-feedback-box">
+                      <div
+                        id="cop-feedback-text"
+                        style="
+                          font-size: 14px;
+                          font-weight: 800;
+                          color: var(--text-primary);
+                        "
+                      >
+                        Menunggu data...
+                      </div>
+                      <div
+                        id="cop-coordinate"
+                        style="
+                          font-family: var(--font-mono);
+                          font-size: 10px;
+                          color: var(--text-dim);
+                          margin-top: 4px;
+                        "
+                      >
+                        X: 0.0, Y: 0.0
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="diagnosis-container">
+                  <div class="card diagnosis-card">
+                    <div class="diagnosis-header left-theme">
+                      <div class="diag-title-wrap">
+                        <span class="diag-side">KAKI KIRI</span>
+                        <h2 class="diag-label" id="final-label-l">
+                          Menganalisis...
+                        </h2>
+                      </div>
+                      <div class="diag-icon-svg" id="svg-l"></div>
+                    </div>
+
+                    <div class="diagnosis-content">
+                      <div class="diag-row">
+                        <div class="diag-item">
+                          <span class="diag-key">STRUKTUR (ARCH)</span>
+                          <span class="diag-val" id="arch-val-l">—</span>
+                        </div>
+                        <div class="diag-item">
+                          <span class="diag-key">GERAKAN (POSISI)</span>
+                          <span class="diag-val" id="pron-val-l">—</span>
+                        </div>
+                      </div>
+
+                      <div class="diag-explanation" id="exp-l">
+                        Harap berdiri tegak di atas sensor untuk memulai analisis...
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card diagnosis-card">
+                    <div class="diagnosis-header right-theme">
+                      <div class="diag-title-wrap">
+                        <span class="diag-side">KAKI KANAN</span>
+                        <h2 class="diag-label" id="final-label-r">
+                          Menganalisis...
+                        </h2>
+                      </div>
+                      <div class="diag-icon-svg" id="svg-r"></div>
+                    </div>
+
+                    <div class="diagnosis-content">
+                      <div class="diag-row">
+                        <div class="diag-item">
+                          <span class="diag-key">STRUKTUR (ARCH)</span>
+                          <span class="diag-val" id="arch-val-r">—</span>
+                        </div>
+                        <div class="diag-item">
+                          <span class="diag-key">GERAKAN (POSISI)</span>
+                          <span class="diag-val" id="pron-val-r">—</span>
+                        </div>
+                      </div>
+
+                      <div class="diag-explanation" id="exp-r">
+                        Harap berdiri tegak di atas sensor untuk memulai analisis...
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <script src="../js/calculations.js"></script>
+    <script src="../js/firebase.js"></script>
+    <script src="../js/components.js"></script>
+    <script src="../js/dashboard.js"></script>
+  </body>
+</html>

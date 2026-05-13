@@ -1,4 +1,4 @@
-# Foot Plantar Sense — IoT Monitoring Website
+# Foot Plantar Monitoring — IoT Monitoring Website
 
 Website monitoring tekanan plantar kaki berbasis IoT dengan 8 sensor FSR402.
 Dibangun dengan **Vanilla HTML, CSS, dan JavaScript** murni — tanpa framework.

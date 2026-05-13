@@ -19,10 +19,10 @@
           <div class="brand-icon">
             <img
               src="../assets/images/logo-foot.png"
-              alt="Foot Plantar Sense Logo"
+              alt="Foot Plantar Monitoring Logo"
             />
           </div>
-          <div class="brand-name">Foot Plantar <span>Sense</span></div>
+          <div class="brand-name">Foot Plantar <span>Monitoring</span></div>
         </div>
         <p class="auth-tagline">
           Monitoring tekanan plantar kaki untuk keseimbangan &amp; rehabilitasi
@@ -91,14 +91,6 @@
               <span class="key">TB / BB</span
               ><span class="val" id="c_tb">—</span>
             </div>
-            <div class="confirm-row">
-              <span class="key">Gol. Darah</span
-              ><span class="val" id="c_blood">—</span>
-            </div>
-            <div class="confirm-row">
-              <span class="key">Alamat</span
-              ><span class="val" id="c_address">—</span>
-            </div>
           </div>
 
           <div class="btn-group">
@@ -117,7 +109,7 @@
               Daftar Sekarang
             </button>
           </div>
-          
+
           <p class="auth-switch">
             Sudah punya akun? <a href="login.html">Masuk</a>
           </p>
@@ -156,10 +148,6 @@
         document.getElementById("c_dob").textContent = ageStr;
         document.getElementById("c_gender").textContent =
           sessionStorage.getItem("reg_gender") || "—";
-        document.getElementById("c_blood").textContent =
-          sessionStorage.getItem("reg_blood") || "—";
-        document.getElementById("c_address").textContent =
-          sessionStorage.getItem("reg_address") || "—";
 
         const h = sessionStorage.getItem("reg_height");
         const w = sessionStorage.getItem("reg_weight");
@@ -192,14 +180,12 @@
               gender: sessionStorage.getItem("reg_gender"),
               height: sessionStorage.getItem("reg_height"),
               weight: sessionStorage.getItem("reg_weight"),
-              blood_type: sessionStorage.getItem("reg_blood"),
-              address: sessionStorage.getItem("reg_address"),
             };
             return firebaseSaveProfile(profil);
           })
           .then(function () {
             sessionStorage.clear();
-            window.location.href = "monitoring.html";
+            window.location.href = "dashboard.html";
           })
           .catch(function (err) {
             btn.textContent = "Daftar Sekarang";

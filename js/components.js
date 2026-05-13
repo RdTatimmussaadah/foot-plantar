@@ -18,69 +18,73 @@ const Icons = {
 // SIDEBAR
 // ============================================================
 function renderSidebar(container, activePage) {
-  const patient = getActivePatient();
-  const navItems = [
-    { id: 'monitor',      label: 'Monitor',       icon: Icons.monitor,  href: '../pages/monitoring.html' },
-    { id: 'keseimbangan', label: 'Analisis',      icon: Icons.balance,  href: '../pages/analisis.html' },
-    { id: 'riwayat',      label: 'Riwayat',       icon: Icons.history,  href: '../pages/riwayat.html' },
-    { id: 'profil',       label: 'Profil Pasien', icon: Icons.profile,  href: '../pages/profil.html' },
-  ];
-
-  const navHTML = navItems.map(item => `
-    <a class="nav-item ${activePage === item.id ? 'active' : ''}" href="${item.href}">
-      ${item.icon}<span>${item.label}</span>
-    </a>
-  `).join('');
-
-  // <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round">
-  //   <ellipse cx="12" cy="15" rx="6" ry="7"/>
-  //   <path d="M9 8c0-1.66 1.34-3 3-3s3 1.34 3 3"/>
-  //   <circle cx="12" cy="15" r="2"/>
-  // </svg>
-  container.innerHTML = `
-    <div class="sidebar-logo">
-      <div class="logo-icon">
-        <img src="../assets/images/logo-foot.png" alt="FPS Logo" style="width:25px;height:25px;object-fit:contain">
-      </div>
-      <div class="logo-text">Foot Plantar <span>Sense</span></div>
-    </div>
-
-    <div class="sidebar-patient">
-      <div class="patient-avatar">${patient.initials}</div>
-      <div class="patient-info">
-        <div class="patient-name">${patient.name}</div>
-        <div class="patient-meta">${patient.age} th · ${patient.gender}</div>
-      </div>
-    </div>
-
-    <div class="sidebar-nav-label">MENU UTAMA</div>
-    <nav class="sidebar-nav">${navHTML}</nav>
-
-    <div class="sidebar-bottom">
-      <button class="logout-btn" onclick="openLogoutModal()">
-        ${Icons.logout}<span>Keluar dari Akun</span>
-      </button>
-    </div>
-  `;
-
+  // Sidebar tidak dirender — navigasi sudah pindah ke topbar
+  // Container tetap ada di DOM tapi display:none via CSS (base.css)
+  container.innerHTML = '';
   container.dataset.active = activePage;
+ 
+  // Fallback: kalau topbar belum dirender, render sekarang
+  const topbarEl = document.getElementById('topbar');
+  if (topbarEl && topbarEl.innerHTML.trim() === '') {
+    renderTopbar(topbarEl, '');
+  }
 }
 
 // ============================================================
 // TOPBAR
 // ============================================================
 function renderTopbar(container, pageTitle) {
+  // Deteksi halaman aktif dari URL
+  const path = window.location.pathname;
+  const isMonitor  = path.includes('dashboard');
+  const isLaporan  = path.includes('laporan');
+ 
+  const patient = getActivePatient();
+  const initials = (patient.name || 'P')
+    .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+ 
   container.innerHTML = `
-    <div class="topbar-title">${pageTitle}</div>
-    <div class="topbar-actions">
+    <!-- Kiri: Logo -->
+    <div class="topbar-left">
+      <div class="logo-icon">
+        <img src="../assets/images/logo-foot.png"
+             alt="FPS Logo"
+             style="width:20px;height:20px;object-fit:contain"
+             onerror="this.style.display='none'"
+        />
+      </div>
+      <span class="topbar-title">Foot Plantar <span>Monitoring</span></span>
+    </div>
+ 
+    <!-- Tengah: Navigasi 2 tab -->
+    <div class="topbar-nav">
+      <button
+        class="nav-tab ${isMonitor ? 'active' : ''}"
+        onclick="window.location.href='../pages/dashboard.html'"
+      >Dashboard</button>
+      <button
+        class="nav-tab ${isLaporan ? 'active' : ''}"
+        onclick="window.location.href='../pages/laporan.html'"
+      >Laporan</button>
+    </div>
+ 
+    <!-- Kanan: Rekam + User -->
+    <div class="topbar-right">
       <button class="btn-snapshot" onclick="openSnapModal()">
-        ${Icons.rec} Rekam Snapshot
+        <svg width="10" height="10" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
+        Rekam Snapshot
       </button>
-      <!--
-      <button class="btn-export" onclick="exportData()">
-        ${Icons.download} Export
+      <div class="user-chip">
+        <div class="patient-avatar">${initials}</div>
+        <span class="patient-name">${patient.name || 'Pasien'}</span>
+      </div>
+      <button class="logout-btn" onclick="openLogoutModal()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M10 2h3a1 1 0 011 1v10a1 1 0 01-1 1h-3M7 11l3-3-3-3M10 8H2"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Keluar
       </button>
-      -->
     </div>
   `;
 }
@@ -140,6 +144,7 @@ function doLogout() {
 // ============================================================
 function openSnapModal() {
   let ov = document.getElementById('modal-snap-ov');
+
   if (!ov) {
     ov = document.createElement('div');
     ov.id = 'modal-snap-ov';
@@ -147,18 +152,20 @@ function openSnapModal() {
     ov.innerHTML = `
       <div class="modal-box snap-modal-box" id="modal-snap-box">
         <div class="modal-title" style="margin-bottom:3px">⏺ Rekam Snapshot</div>
-        <div class="modal-sub" style="margin-bottom:14px">Menyimpan data sensor saat ini ke riwayat</div>
+        <div class="modal-sub" style="margin-bottom:14px">
+          Menyimpan data CoP, struktur kaki, gerakan, dan sensor saat ini ke riwayat
+        </div>
 
-        <!-- Postur aktif -->
         <div class="snap-postur-row" id="snap-postur-row">
           <span class="snap-postur-ic" id="snap-postur-ic">🧍</span>
           <div>
-            <div style="font-size:9px;color:var(--text-secondary);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em">Postur</div>
+            <div style="font-size:9px;color:var(--text-secondary);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em">
+              Postur
+            </div>
             <div style="font-size:13px;font-weight:800;color:var(--red)" id="snap-postur-lbl">Berdiri</div>
           </div>
         </div>
 
-        <!-- Preview 8 sensor -->
         <div class="snap-sensor-preview" id="snap-sensor-preview">
           <div class="snap-sensor-col">
             <div class="snap-sensor-side-lbl left">● KIRI</div>
@@ -169,7 +176,9 @@ function openSnapModal() {
               <div class="snap-sv"><div class="snap-sv-val snap-sv-warn" id="sp-el">—</div><div class="snap-sv-k">Heel</div></div>
             </div>
           </div>
+
           <div class="snap-sensor-divider"></div>
+
           <div class="snap-sensor-col">
             <div class="snap-sensor-side-lbl right">● KANAN</div>
             <div class="snap-sensor-grid">
@@ -180,22 +189,29 @@ function openSnapModal() {
             </div>
           </div>
         </div>
+
         <div class="snap-arch-row">
-          <div>Arch Kiri: <span id="sp-arch-l" style="font-weight:700">—</span></div>
-          <div>Arch Kanan: <span id="sp-arch-r" style="font-weight:700">—</span></div>
+          <div>Struktur Kiri: <span id="sp-arch-l" style="font-weight:700">—</span></div>
+          <div>Struktur Kanan: <span id="sp-arch-r" style="font-weight:700">—</span></div>
         </div>
+
         <div class="snap-arch-row">
-          <div>Pronasi Kiri: <span id="sp-pron-l" style="font-weight:700">—</span></div>
-          <div>Pronasi Kanan: <span id="sp-pron-r" style="font-weight:700">—</span></div>
+          <div>Gerakan Kiri: <span id="sp-pron-l" style="font-weight:700">—</span></div>
+          <div>Gerakan Kanan: <span id="sp-pron-r" style="font-weight:700">—</span></div>
         </div>
-        <!-- Totals row -->
+
         <div class="snap-totals-row">
           <div>Total Kiri: <span class="snap-tot-l" id="sp-total-l">—</span> N</div>
           <div>Total Kanan: <span class="snap-tot-r" id="sp-total-r">—</span> N</div>
-          <div>Balance: <span class="snap-tot-b" id="sp-balance">—</span></div>
+          <div>CoP: <span class="snap-tot-b" id="sp-cop-status">—</span></div>
         </div>
 
-        <!-- Catatan -->
+        <div class="snap-totals-row" style="margin-top:6px">
+          <div>X: <span id="sp-cop-x" style="font-weight:700">—</span> cm</div>
+          <div>Y: <span id="sp-cop-y" style="font-weight:700">—</span> cm</div>
+          <div>Deviasi: <span id="sp-cop-distance" style="font-weight:700">—</span> cm</div>
+        </div>
+
         <div class="snap-note-wrap">
           <label class="snap-note-lbl">💬 &nbsp;Catatan (opsional)</label>
           <textarea class="snap-note-input" id="snap-note-inp" placeholder="Contoh: sebelum terapi, kondisi nyeri, dll..." rows="2"></textarea>
@@ -207,83 +223,89 @@ function openSnapModal() {
         </div>
       </div>
     `;
-    ov.addEventListener('click', (e) => { if (e.target === ov) closeSnapModal(); });
+
+    ov.addEventListener('click', (e) => {
+      if (e.target === ov) closeSnapModal();
+    });
+
     document.body.appendChild(ov);
   }
 
-  // Populate preview from currentData (global set by monitoring.js)
   _populateSnapPreview();
   requestAnimationFrame(() => ov.classList.add('show'));
 }
 
 function _populateSnapPreview() {
   if (typeof currentData === 'undefined' || !currentData) return;
+
   const d = currentData;
 
-  // Postur
-  // const posture = (typeof currentPosture !== 'undefined') ? currentPosture : 'Berdiri';
-  const posture = localStorage.getItem('fps_currentPosture')
-  || (typeof currentPosture !== 'undefined' ? currentPosture : 'Berdiri');
-  const postureIcons = { 'Berdiri':'🧍', 'Jongkok':'🏋️', '1 Kaki':'🦵', '2 Kaki':'👣' };
+  const posture =
+    localStorage.getItem('fps_currentPosture') ||
+    (typeof currentPosture !== 'undefined' ? currentPosture : 'Berdiri');
+
+  const postureIcons = {
+    'Berdiri': '🧍',
+    'Jongkok': '🏋️',
+    '1 Kaki': '🦵',
+    '2 Kaki': '👣',
+  };
+
   const ic = document.getElementById('snap-postur-ic');
   const lb = document.getElementById('snap-postur-lbl');
+
   if (ic) ic.textContent = postureIcons[posture] || '🧍';
   if (lb) lb.textContent = posture;
 
-  // Arch type preview di modal
-  const arch = (typeof currentData !== 'undefined' && currentData)
-    ? currentData.archType : null;
-  const archL = document.getElementById('sp-arch-l');
-  const archR = document.getElementById('sp-arch-r');
-  if (archL && arch) {
-    archL.textContent  = `${arch.emojiL} ${arch.labelL}`;
-    archL.style.color  = arch.cssClassL === 'arch-flat' ? 'var(--red)'
-                      : arch.cssClassL === 'arch-high' ? '#2266FF' : 'var(--green)';
-  }
-  if (archR && arch) {
-    archR.textContent  = `${arch.emojiR} ${arch.labelR}`;
-    archR.style.color  = arch.cssClassR === 'arch-flat' ? 'var(--red)'
-                      : arch.cssClassR === 'arch-high' ? '#2266FF' : 'var(--green)';
-  }
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
 
-  // Pronation preview di modal
-  const pron = (typeof currentData !== 'undefined' && currentData)
-    ? currentData.pronation : null;
-  const pronColor = (cssClass) =>
-    cssClass === 'overpronation' ? 'var(--red)'
-    : cssClass === 'supination'  ? '#2266FF'
-    : 'var(--green)';
-  const elPronL = document.getElementById('sp-pron-l');
-  const elPronR = document.getElementById('sp-pron-r');
-  if (elPronL && pron) {
-    elPronL.textContent = pron.labelL || '—';
-    elPronL.style.color = pronColor(pron.cssClassL);
-  }
-  if (elPronR && pron) {
-    elPronR.textContent = pron.labelR || '—';
-    elPronR.style.color = pronColor(pron.cssClassR);
-  }
+  const setColor = (id, color) => {
+    const el = document.getElementById(id);
+    if (el) el.style.color = color;
+  };
 
-  // Sensor kPa values
-  const lN = d.left_fsr_newton  || [0,0,0,0];
-  const rN = d.right_fsr_newton || [0,0,0,0];
-  // const toKpa = n => Math.round(n * 0.82);
+  const lN = toSnapshotForceArray(d.left_fsr_newton);
+  const rN = toSnapshotForceArray(d.right_fsr_newton);
 
-  const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
-  // set('sp-hl', toKpa(lN[0])); set('sp-ml', toKpa(lN[1]));
-  // set('sp-ll', toKpa(lN[2])); set('sp-el', toKpa(lN[3]));
-  // set('sp-hr', toKpa(rN[0])); set('sp-mr', toKpa(rN[1]));
-  // set('sp-lr', toKpa(rN[2])); set('sp-er', toKpa(rN[3]));
-  set('sp-hl', lN[0]); set('sp-ml', lN[1]);
-  set('sp-ll', lN[2]); set('sp-el', lN[3]);
-  set('sp-hr', rN[0]); set('sp-mr', rN[1]);
-  set('sp-lr', rN[2]); set('sp-er', rN[3]);
+  set('sp-hl', lN[0]);
+  set('sp-ml', lN[1]);
+  set('sp-ll', lN[2]);
+  set('sp-el', lN[3]);
+  set('sp-hr', rN[0]);
+  set('sp-mr', rN[1]);
+  set('sp-lr', rN[2]);
+  set('sp-er', rN[3]);
 
-  const fL = Math.round(lN.reduce((a,b)=>a+b,0));
-  const fR = Math.round(rN.reduce((a,b)=>a+b,0));
+  const fL = Math.round(lN.reduce((a, b) => a + b, 0));
+  const fR = Math.round(rN.reduce((a, b) => a + b, 0));
+
   set('sp-total-l', fL);
   set('sp-total-r', fR);
-  set('sp-balance', (d.balanceScore||0).toFixed(0));
+
+  const arch = getSnapshotArchPreview(d);
+  const motion = getSnapshotMotionPreview(d);
+
+  set('sp-arch-l', arch.left);
+  set('sp-arch-r', arch.right);
+  set('sp-pron-l', motion.left);
+  set('sp-pron-r', motion.right);
+
+  setColor('sp-arch-l', getSnapshotStructureColor(arch.left));
+  setColor('sp-arch-r', getSnapshotStructureColor(arch.right));
+  setColor('sp-pron-l', getSnapshotMotionColor(motion.left));
+  setColor('sp-pron-r', getSnapshotMotionColor(motion.right));
+
+  const cop = computeSnapshotCop(d);
+  set('sp-cop-status', cop.label);
+  set('sp-cop-x', cop.x.toFixed(2));
+  set('sp-cop-y', cop.y.toFixed(2));
+  set('sp-cop-distance', cop.distance.toFixed(2));
+
+  setColor('sp-cop-status', getSnapshotCopColor(cop.label));
+  setColor('sp-cop-distance', getSnapshotCopColor(cop.label));
 }
 
 function closeSnapModal() {
@@ -293,59 +315,209 @@ function closeSnapModal() {
 
 function saveSnapshot() {
   closeSnapModal();
+
   if (typeof currentData === 'undefined' || !currentData) {
     showToast('Data sensor belum tersedia.', 'error');
     return;
   }
 
-  const note    = document.getElementById('snap-note-inp')?.value || '';
-  // const posture = (typeof currentPosture !== 'undefined') ? currentPosture : 'Berdiri';
-  const posture = localStorage.getItem('fps_currentPosture')
-  || (typeof currentPosture !== 'undefined' ? currentPosture : 'Berdiri');
+  const note = document.getElementById('snap-note-inp')?.value || '';
+  const posture =
+    localStorage.getItem('fps_currentPosture') ||
+    (typeof currentPosture !== 'undefined' ? currentPosture : 'Berdiri');
 
-  // Tetap simpan ke local simulation (untuk tampil di riwayat sesi ini)
-  // recordSnapshot(currentData, posture, note);
+  const cop = computeSnapshotCop(currentData);
 
-  // Simpan ke Firebase
   if (typeof firebaseRecordSnapshot === 'function') {
     firebaseRecordSnapshot(currentData, posture, note)
-      .then(function() {
-        showToast('✅ Snapshot tersimpan — ' + posture, 'success');
+      .then(function () {
+        showToast(`✅ Snapshot tersimpan — CoP ${cop.label}`, 'success');
       })
-      .catch(function(err) {
+      .catch(function (err) {
         console.warn('Firebase snapshot gagal:', err);
-        showToast('✅ Snapshot tersimpan lokal — ' + posture, 'success');
+        showToast(`Snapshot gagal disimpan: ${err}`, 'error');
       });
   } else {
-    showToast('✅ Snapshot tersimpan — ' + posture, 'success');
+    showToast(`✅ Snapshot tersimpan — CoP ${cop.label}`, 'success');
   }
 
-  if (document.getElementById('snap-note-inp')) {
-    document.getElementById('snap-note-inp').value = '';
+  const noteInput = document.getElementById('snap-note-inp');
+  if (noteInput) noteInput.value = '';
+
+  if (typeof renderHistoryList === 'function') renderHistoryList();
+  if (typeof renderSummaryStats === 'function') renderSummaryStats();
+  if (typeof drawTrendCharts === 'function') drawTrendCharts();
+}
+
+const SNAPSHOT_SENSOR_COORDS = {
+  L0: { x: -6.5, y: 7.5 },
+  L1: { x: -8.5, y: 0.5 },
+  L2: { x: -12.5, y: 0.0 },
+  L3: { x: -10.0, y: -9.5 },
+  R0: { x: 6.5, y: 7.5 },
+  R1: { x: 8.5, y: 0.5 },
+  R2: { x: 12.5, y: 0.0 },
+  R3: { x: 10.0, y: -9.5 },
+};
+
+function toSnapshotForceArray(arr) {
+  if (!Array.isArray(arr)) return [0, 0, 0, 0];
+
+  return [0, 1, 2, 3].map((i) => {
+    const n = Number(arr[i]);
+    return Number.isFinite(n) ? n : 0;
+  });
+}
+
+function computeSnapshotCop(data) {
+  data = data || {};
+
+  const lN = toSnapshotForceArray(data.left_fsr_newton);
+  const rN = toSnapshotForceArray(data.right_fsr_newton);
+
+  let totalForce =
+    lN.reduce((a, b) => a + b, 0) +
+    rN.reduce((a, b) => a + b, 0);
+
+  if (!totalForce || totalForce <= 0) {
+    totalForce =
+      Number(data.totalForce) ||
+      Number(data.total_force) ||
+      Number(data.totalWeight) ||
+      0;
   }
 
-  if (typeof renderHistoryList === 'function') {
-    renderHistoryList();
-    renderSummaryStats();
-    drawTrendCharts();
+  if (!totalForce || totalForce <= 0) {
+    return {
+      x: 0,
+      y: 0,
+      distance: 0,
+      status: 'TIDAK ADA DATA',
+      label: 'TIDAK ADA DATA',
+      valid: false,
+    };
   }
-  // closeSnapModal();
-  // if (typeof currentData === 'undefined' || !currentData) {
-  //   showToast('Data sensor belum tersedia.', 'error');
-  //   return;
-  // }
-  // const note = document.getElementById('snap-note-inp')?.value || '';
-  // const posture = (typeof currentPosture !== 'undefined') ? currentPosture : 'Berdiri';
-  // const snap = recordSnapshot(currentData, posture, note);
-  // document.getElementById('snap-note-inp') && (document.getElementById('snap-note-inp').value = '');
-  // showToast(`✅ Snapshot disimpan — ${posture} · ${currentData.classification.label}`, 'success');
 
-  // // Refresh riwayat if on that page
-  // if (typeof renderHistoryList === 'function') {
-  //   renderHistoryList();
-  //   renderSummaryStats();
-  //   drawTrendCharts();
-  // }
+  let sumX = 0;
+  let sumY = 0;
+
+  for (let i = 0; i < 4; i++) {
+    sumX += lN[i] * SNAPSHOT_SENSOR_COORDS[`L${i}`].x;
+    sumY += lN[i] * SNAPSHOT_SENSOR_COORDS[`L${i}`].y;
+
+    sumX += rN[i] * SNAPSHOT_SENSOR_COORDS[`R${i}`].x;
+    sumY += rN[i] * SNAPSHOT_SENSOR_COORDS[`R${i}`].y;
+  }
+
+  const x = sumX / totalForce;
+  const y = sumY / totalForce;
+  const distance = Math.sqrt((x * x) + (y * y));
+  const label = getSnapshotCopLabel(distance);
+
+  return {
+    x,
+    y,
+    distance,
+    status: label === 'STABIL' ? 'NORMAL' : label,
+    label,
+    valid: true,
+  };
+}
+
+function getSnapshotCopLabel(distance) {
+  if (distance < 2.5) return 'STABIL';
+  if (distance <= 4.5) return 'SEDANG';
+  return 'ABNORMAL';
+}
+
+function getSnapshotCopColor(label) {
+  if (label === 'STABIL') return 'var(--green)';
+  if (label === 'SEDANG') return 'var(--yellow)';
+  if (label === 'ABNORMAL') return 'var(--red)';
+  return 'var(--text-secondary)';
+}
+
+function getSnapshotArchPreview(data) {
+  const archType = data.archType || {};
+
+  return {
+    left: normalizeSnapshotLabel(
+      data.arch_label_l ||
+      data.arch_l ||
+      data.left_arch ||
+      archType.arch_label_l ||
+      archType.labelL ||
+      archType.left ||
+      'Normal'
+    ),
+    right: normalizeSnapshotLabel(
+      data.arch_label_r ||
+      data.arch_r ||
+      data.right_arch ||
+      archType.arch_label_r ||
+      archType.labelR ||
+      archType.right ||
+      'Normal'
+    ),
+  };
+}
+
+function getSnapshotMotionPreview(data) {
+  const pronation = data.pronation || {};
+
+  return {
+    left: normalizeSnapshotLabel(
+      data.pronation_label_l ||
+      data.pron_label_l ||
+      data.left_pronation ||
+      pronation.labelL ||
+      pronation.left ||
+      'Normal'
+    ),
+    right: normalizeSnapshotLabel(
+      data.pronation_label_r ||
+      data.pron_label_r ||
+      data.right_pronation ||
+      pronation.labelR ||
+      pronation.right ||
+      'Normal'
+    ),
+  };
+}
+
+function normalizeSnapshotLabel(label) {
+  const raw = String(label || '').trim();
+  if (!raw || raw === '—') return 'Normal';
+
+  const lower = raw.toLowerCase();
+
+  if (lower.includes('flat')) return 'Flat Foot';
+  if (lower.includes('high')) return 'High Arch';
+  if (lower.includes('over')) return 'Overpronation';
+  if (lower.includes('supin')) return 'Supinasi';
+  if (lower.includes('normal') || lower.includes('netral')) return 'Normal';
+
+  return raw;
+}
+
+function getSnapshotStructureColor(label) {
+  const text = normalizeSnapshotLabel(label);
+
+  if (text === 'Normal') return 'var(--green)';
+  if (text === 'Flat Foot') return 'var(--red)';
+  if (text === 'High Arch') return '#2266FF';
+
+  return 'var(--text-secondary)';
+}
+
+function getSnapshotMotionColor(label) {
+  const text = normalizeSnapshotLabel(label);
+
+  if (text === 'Normal') return 'var(--green)';
+  if (text === 'Overpronation') return 'var(--red)';
+  if (text === 'Supinasi') return '#2266FF';
+
+  return 'var(--text-secondary)';
 }
 
 // Expose
@@ -443,6 +615,12 @@ function loadPatientToSidebar() {
       renderSidebar(sidebar, activePage);
       sidebar.dataset.active = activePage;
     }
+
+    const topbar = document.getElementById('topbar');
+    if (topbar) {
+      renderTopbar(topbar, '');
+    }
+    
   });
 }
 

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Masuk — Foot Plantar Sense</title>
+    <title>Masuk — Foot Plantar Monitoring</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
       rel="stylesheet"
@@ -27,10 +27,10 @@
             </svg> -->
               <img
                 src="../assets/images/logo-foot.png"
-                alt="Foot Plantar Sense Logo"
+                alt="Foot Plantar Monitoring Logo"
               />
             </div>
-            <div class="brand-name">Foot Plantar <span>Sense</span></div>
+            <div class="brand-name">Foot Plantar <span>Monitoring</span></div>
           </div>
         </div>
         <p class="auth-tagline">
@@ -118,10 +118,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="../js/firebase.js"></script>
-    
+
     <script>
       auth.onAuthStateChanged(function (user) {
-        if (user) window.location.href = "monitoring.html";
+        if (user) window.location.href = "dashboard.html";
       });
 
       function handleLogin() {
@@ -139,7 +139,7 @@
 
         firebaseLogin(email, password)
           .then(function () {
-            window.location.href = "monitoring.html";
+            window.location.href = "dashboard.html";
           })
           .catch(function (err) {
             btn.textContent = "Masuk";
@@ -161,17 +161,22 @@
       }
 
       function tampilError(pesan) {
-        let el = document.getElementById('login-error');
+        let el = document.getElementById("login-error");
         if (!el) {
-          el = document.createElement('div');
-          el.id = 'login-error';
+          el = document.createElement("div");
+          el.id = "login-error";
           el.style.cssText = [
-            'color:#E7302A', 'font-size:12px', 'font-weight:600',
-            'text-align:center', 'margin-bottom:10px',
-            'padding:8px 12px', 'background:rgba(231,48,42,0.08)',
-            'border-radius:8px', 'border:1px solid rgba(231,48,42,0.2)'
-          ].join(';');
-          document.querySelector('.btn-primary').before(el);
+            "color:#E7302A",
+            "font-size:12px",
+            "font-weight:600",
+            "text-align:center",
+            "margin-bottom:10px",
+            "padding:8px 12px",
+            "background:rgba(231,48,42,0.08)",
+            "border-radius:8px",
+            "border:1px solid rgba(231,48,42,0.2)",
+          ].join(";");
+          document.querySelector(".btn-primary").before(el);
         }
         el.textContent = pesan;
       }

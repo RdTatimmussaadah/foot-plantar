@@ -175,49 +175,297 @@ function startFirebaseListen(callback) {
    ============================================================ */
 
 
+// function firebaseRecordSnapshot(computedData, postureLabel = 'Berdiri', note = '') {
+//   const uid = getCurrentUID();
+//   if (!uid) return Promise.reject('Belum login');
+  
+//   const now  = new Date();
+//   const snap = {
+//     posture:          postureLabel,
+//     note,
+//     snapshot_time:    now.toLocaleString('id-ID'),
+
+//     left_fsr_newton:  computedData.left_fsr_newton,
+//     right_fsr_newton: computedData.right_fsr_newton,
+//     left_fsr_percent: computedData.left_fsr_percent,
+//     right_fsr_percent:computedData.right_fsr_percent,
+
+//     total_weight:     computedData.weight,
+//     total_force:      computedData.totalForce,
+//     balance_score:    computedData.balanceScore,
+//     asi:              computedData.asi,
+//     heel_load:        computedData.heelLoad,
+//     left_percent:     computedData.leftPercent,
+//     right_percent:    computedData.rightPercent,
+//     classification:   computedData.classification.status,
+//     zones:            computedData.zones,
+//     pronation: {
+//       ratioL: computedData.pronation.ratioL,
+//       ratioR: computedData.pronation.ratioR,
+//       labelL: computedData.pronation.labelL,
+//       labelR: computedData.pronation.labelR,
+//     },
+
+//     archType:{
+//       arch_label_l:    computedData.archType.labelL    || null,
+//       arch_label_r:    computedData.archType.labelR    || null,
+//       arch_heel_l:     computedData.archType.heelRatioL ?? null,
+//       arch_heel_r:     computedData.archType.heelRatioR ?? null,
+//       arch_ff_l:       computedData.archType.ffRatioL  ?? null,
+//       arch_ff_r:       computedData.archType.ffRatioR  ?? null,
+//     }
+//   };
+
+//   return db.ref(`users/${uid}/history`).push(snap);
+// }
+
 function firebaseRecordSnapshot(computedData, postureLabel = 'Berdiri', note = '') {
   const uid = getCurrentUID();
   if (!uid) return Promise.reject('Belum login');
-  
-  const now  = new Date();
+
+  computedData = computedData || {};
+
+  const now = new Date();
+  const cop = computeFirebaseSnapshotCop(computedData);
+  const structure = getFirebaseSnapshotArch(computedData);
+  const motion = getFirebaseSnapshotMotion(computedData);
+
   const snap = {
-    posture:          postureLabel,
+    posture: postureLabel,
     note,
-    snapshot_time:    now.toLocaleString('id-ID'),
+    snapshot_time: now.toLocaleString('id-ID'),
+    tanggal: now.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }),
+    jam: now.toLocaleTimeString('id-ID', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
 
-    left_fsr_newton:  computedData.left_fsr_newton,
-    right_fsr_newton: computedData.right_fsr_newton,
-    left_fsr_percent: computedData.left_fsr_percent,
-    right_fsr_percent:computedData.right_fsr_percent,
+    left_fsr_newton: computedData.left_fsr_newton || [0, 0, 0, 0],
+    right_fsr_newton: computedData.right_fsr_newton || [0, 0, 0, 0],
+    left_fsr_percent: computedData.left_fsr_percent || [0, 0, 0, 0],
+    right_fsr_percent: computedData.right_fsr_percent || [0, 0, 0, 0],
 
-    total_weight:     computedData.weight,
-    total_force:      computedData.totalForce,
-    balance_score:    computedData.balanceScore,
-    asi:              computedData.asi,
-    heel_load:        computedData.heelLoad,
-    left_percent:     computedData.leftPercent,
-    right_percent:    computedData.rightPercent,
-    classification:   computedData.classification.status,
-    zones:            computedData.zones,
-    pronation: {
-      ratioL: computedData.pronation.ratioL,
-      ratioR: computedData.pronation.ratioR,
-      labelL: computedData.pronation.labelL,
-      labelR: computedData.pronation.labelR,
+    total_weight: Number(computedData.weight) || Number(computedData.total_weight) || 0,
+    total_force: Number(computedData.totalForce) || Number(computedData.total_force) || 0,
+    asi: Number(computedData.asi) || 0,
+    heel_load: Number(computedData.heelLoad) || Number(computedData.heel_load) || 0,
+    left_percent: Number(computedData.leftPercent) || Number(computedData.left_percent) || 0,
+    right_percent: Number(computedData.rightPercent) || Number(computedData.right_percent) || 0,
+
+    cop_x: cop.x,
+    cop_y: cop.y,
+    cop_distance: cop.distance,
+    cop_status: cop.label,
+    cop_label: cop.label,
+    cop_valid: cop.valid,
+    cop: {
+      x: cop.x,
+      y: cop.y,
+      distance: cop.distance,
+      status: cop.status,
+      label: cop.label,
+      valid: cop.valid,
     },
 
-    archType:{
-      arch_label_l:    computedData.archType.labelL    || null,
-      arch_label_r:    computedData.archType.labelR    || null,
-      arch_heel_l:     computedData.archType.heelRatioL ?? null,
-      arch_heel_r:     computedData.archType.heelRatioR ?? null,
-      arch_ff_l:       computedData.archType.ffRatioL  ?? null,
-      arch_ff_r:       computedData.archType.ffRatioR  ?? null,
-    }
+    arch_label_l: structure.left,
+    arch_label_r: structure.right,
+    left_structure: structure.left,
+    right_structure: structure.right,
+
+    pronation_label_l: motion.left,
+    pronation_label_r: motion.right,
+    left_motion: motion.left,
+    right_motion: motion.right,
+
+    kelainan_kiri: combineFirebaseSnapshotCondition(structure.left, motion.left),
+    kelainan_kanan: combineFirebaseSnapshotCondition(structure.right, motion.right),
+
+    zones: computedData.zones || null,
+    pronation: {
+      ratioL: computedData.pronation?.ratioL ?? null,
+      ratioR: computedData.pronation?.ratioR ?? null,
+      labelL: motion.left,
+      labelR: motion.right,
+      cssClassL: computedData.pronation?.cssClassL || null,
+      cssClassR: computedData.pronation?.cssClassR || null,
+    },
+
+    archType: {
+      arch_label_l: structure.left,
+      arch_label_r: structure.right,
+      labelL: structure.left,
+      labelR: structure.right,
+      arch_heel_l: computedData.archType?.heelRatioL ?? computedData.archType?.arch_heel_l ?? null,
+      arch_heel_r: computedData.archType?.heelRatioR ?? computedData.archType?.arch_heel_r ?? null,
+      arch_ff_l: computedData.archType?.ffRatioL ?? computedData.archType?.arch_ff_l ?? null,
+      arch_ff_r: computedData.archType?.ffRatioR ?? computedData.archType?.arch_ff_r ?? null,
+    },
   };
 
   return db.ref(`users/${uid}/history`).push(snap);
 }
+
+const FIREBASE_SNAPSHOT_SENSOR_COORDS = {
+  L0: { x: -6.5, y: 7.5 },
+  L1: { x: -8.5, y: 0.5 },
+  L2: { x: -12.5, y: 0.0 },
+  L3: { x: -10.0, y: -9.5 },
+  R0: { x: 6.5, y: 7.5 },
+  R1: { x: 8.5, y: 0.5 },
+  R2: { x: 12.5, y: 0.0 },
+  R3: { x: 10.0, y: -9.5 },
+};
+
+function toFirebaseSnapshotForceArray(arr) {
+  if (!Array.isArray(arr)) return [0, 0, 0, 0];
+
+  return [0, 1, 2, 3].map((i) => {
+    const n = Number(arr[i]);
+    return Number.isFinite(n) ? n : 0;
+  });
+}
+
+function computeFirebaseSnapshotCop(data) {
+  data = data || {};
+
+  const lN = toFirebaseSnapshotForceArray(data.left_fsr_newton);
+  const rN = toFirebaseSnapshotForceArray(data.right_fsr_newton);
+
+  let totalForce =
+    lN.reduce((a, b) => a + b, 0) +
+    rN.reduce((a, b) => a + b, 0);
+
+  if (!totalForce || totalForce <= 0) {
+    totalForce =
+      Number(data.totalForce) ||
+      Number(data.total_force) ||
+      Number(data.totalWeight) ||
+      0;
+  }
+
+  if (!totalForce || totalForce <= 0) {
+    return {
+      x: 0,
+      y: 0,
+      distance: 0,
+      status: 'TIDAK ADA DATA',
+      label: 'TIDAK ADA DATA',
+      valid: false,
+    };
+  }
+
+  let sumX = 0;
+  let sumY = 0;
+
+  for (let i = 0; i < 4; i++) {
+    sumX += lN[i] * FIREBASE_SNAPSHOT_SENSOR_COORDS[`L${i}`].x;
+    sumY += lN[i] * FIREBASE_SNAPSHOT_SENSOR_COORDS[`L${i}`].y;
+
+    sumX += rN[i] * FIREBASE_SNAPSHOT_SENSOR_COORDS[`R${i}`].x;
+    sumY += rN[i] * FIREBASE_SNAPSHOT_SENSOR_COORDS[`R${i}`].y;
+  }
+
+  const x = sumX / totalForce;
+  const y = sumY / totalForce;
+  const distance = Math.sqrt((x * x) + (y * y));
+  const label = getFirebaseSnapshotCopLabel(distance);
+
+  return {
+    x,
+    y,
+    distance,
+    status: label === 'STABIL' ? 'NORMAL' : label,
+    label,
+    valid: true,
+  };
+}
+
+function getFirebaseSnapshotCopLabel(distance) {
+  if (distance < 2.5) return 'STABIL';
+  if (distance <= 4.5) return 'SEDANG';
+  return 'ABNORMAL';
+}
+
+function getFirebaseSnapshotArch(data) {
+  const archType = data.archType || {};
+
+  return {
+    left: normalizeFirebaseSnapshotLabel(
+      data.arch_label_l ||
+      data.arch_l ||
+      data.left_arch ||
+      archType.arch_label_l ||
+      archType.labelL ||
+      archType.left ||
+      'Normal'
+    ),
+    right: normalizeFirebaseSnapshotLabel(
+      data.arch_label_r ||
+      data.arch_r ||
+      data.right_arch ||
+      archType.arch_label_r ||
+      archType.labelR ||
+      archType.right ||
+      'Normal'
+    ),
+  };
+}
+
+function getFirebaseSnapshotMotion(data) {
+  const pronation = data.pronation || {};
+
+  return {
+    left: normalizeFirebaseSnapshotLabel(
+      data.pronation_label_l ||
+      data.pron_label_l ||
+      data.left_pronation ||
+      pronation.labelL ||
+      pronation.left ||
+      'Normal'
+    ),
+    right: normalizeFirebaseSnapshotLabel(
+      data.pronation_label_r ||
+      data.pron_label_r ||
+      data.right_pronation ||
+      pronation.labelR ||
+      pronation.right ||
+      'Normal'
+    ),
+  };
+}
+
+function normalizeFirebaseSnapshotLabel(label) {
+  const raw = String(label || '').trim();
+  if (!raw || raw === '—') return 'Normal';
+
+  const lower = raw.toLowerCase();
+
+  if (lower.includes('flat')) return 'Flat Foot';
+  if (lower.includes('high')) return 'High Arch';
+  if (lower.includes('over')) return 'Overpronation';
+  if (lower.includes('supin')) return 'Supinasi';
+  if (lower.includes('normal') || lower.includes('netral')) return 'Normal';
+
+  return raw;
+}
+
+function combineFirebaseSnapshotCondition(structure, motion) {
+  const structureNorm = normalizeFirebaseSnapshotLabel(structure);
+  const motionNorm = normalizeFirebaseSnapshotLabel(motion);
+
+  const structureNormal = structureNorm === 'Normal';
+  const motionNormal = motionNorm === 'Normal';
+
+  if (structureNormal && motionNormal) return 'Normal';
+  if (!structureNormal && !motionNormal) return `${structureNorm} dengan ${motionNorm}`;
+  if (!structureNormal) return structureNorm;
+  return motionNorm;
+}
+
 
 
 /* ============================================================
@@ -229,15 +477,24 @@ function firebaseLoadHistory(callback) {
   const uid = getCurrentUID();
   if (!uid) return;
 
+  // Listener '.on' akan terpanggil setiap ada data Masuk, Berubah, atau TERHAPUS
   db.ref(`users/${uid}/history`)
     .orderByKey()
-    .limitToLast(10)
     .on('value', (snapshot) => {
       const history = [];
       snapshot.forEach((child) => {
         history.unshift({ id: child.key, ...child.val() });
       });
-      callback(history);
+      
+      // Simpan ke variabel global
+      _firebaseHistory = history;
+      
+      // Jalankan semua fungsi render secara otomatis setiap ada perubahan di DB
+      renderHistoryList();
+      renderSummaryStats();
+      drawTrendCharts();
+
+      if (callback) callback(history);
     });
 }
 
@@ -259,6 +516,23 @@ function firebaseLoadProfile(callback) {
   db.ref(`users/${uid}/profile`).on('value', (snap) => {
     callback(snap.val());
   });
+}
+
+// Menghapus satu snapshot berdasarkan ID
+function firebaseDeleteSnapshot(snapId) {
+  const uid = getCurrentUID();
+  if (!uid) return Promise.reject('Belum login');
+  return db.ref(`users/${uid}/history/${snapId}`).remove();
+}
+
+// Menghapus seluruh riwayat
+function firebaseDeleteAllHistory() {
+  const uid = getCurrentUID();
+  if (!uid) return Promise.reject('Belum login');
+  if (confirm("Apakah Anda yakin ingin menghapus SELURUH riwayat? Tindakan ini tidak dapat dibatalkan.")) {
+    return db.ref(`users/${uid}/history`).remove();
+  }
+  return Promise.resolve(false);
 }
 
 

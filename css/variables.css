@@ -1,88 +1,92 @@
 /* ============================================================
-   variables.css
-   Design tokens & CSS custom properties
-   Foot Plantar Sense — IoT Monitoring System
+   variables.css — Light / Clean Health Theme
+   Foot Plantar Monitoring
    ============================================================ */
-
+ 
 :root {
-  /* === COLOR PALETTE === */
-  /* Backgrounds */
-  --bg-base:        #0A0A0E;   /* darkest — page background */
-  --bg-panel:       #11111A;   /* sidebar / left panel */
-  --bg-card:        #1C1C26;   /* cards & inputs */
-  --bg-card-alt:    #181820;   /* slightly darker card variant */
-  --bg-hover:       #2A2A3A;   /* hover state */
-
-  /* Brand */
-  --red:            #E7302A;   /* primary accent — Foot Plantar red */
-  --red-glow:       rgba(231, 48, 42, 0.20);
-  --red-glow-soft:  rgba(231, 48, 42, 0.08);
-
-  /* Text */
-  --text-primary:   #EEEEF5;   /* main text */
-  --text-secondary: #60607A;   /* muted / labels */
-  --text-dim:       #363648;   /* very faint — version strings */
-
-  /* Status colors */
-  --green:          #22D48F;   /* normal / good */
-  --green-glow:     rgba(34, 212, 143, 0.15);
-  --yellow:         #F5C842;   /* warning / moderate */
-  --yellow-glow:    rgba(245, 200, 66, 0.15);
-  --blue:           #2266FF;   /* info / live indicator */
-  --blue-light:     #229AC8;   /* chart / sensor accent */
-
-  /* Sensor highlight colors (used in sensor bars) */
-  --sensor-hallux:  #229AC8;
-  --sensor-medff:   #227BE9;
-  --sensor-latff:   #2299C9;
-  --sensor-heel:    #E7302A;
-
+  /* === BACKGROUNDS === */
+  --bg-base:        #F5F7FA;
+  --bg-panel:       #FFFFFF;
+  --bg-card:        #FFFFFF;
+  --bg-card-alt:    #F9FAFB;
+  --bg-hover:       #F0F3F8;
+ 
+  /* === BRAND === */
+  --accent:         #3B7BF6;
+  --accent-soft:    #EEF3FE;
+  --accent-border:  rgba(59,123,246,0.25);
+ 
+  /* === LEGACY — kept so JS/components yang referensi --red tidak error === */
+  --red:            #E84040;
+  --red-glow:       rgba(232,64,64,0.12);
+  --red-glow-soft:  rgba(232,64,64,0.06);
+ 
+  /* === STATUS === */
+  --green:          #18A96A;
+  --green-soft:     #E8F8F1;
+  --green-border:   rgba(24,169,106,0.25);
+  --yellow:         #F09900;
+  --yellow-soft:    #FEF7E8;
+  --yellow-border:  rgba(240,153,0,0.25);
+  --blue:           #3B7BF6;
+  --blue-light:     #60A5FA;
+ 
+  /* === TEXT === */
+  --text-primary:   #1A1D2E;
+  --text-secondary: #8890A8;
+  --text-dim:       #BCC2D0;
+ 
+  /* === BORDERS === */
+  --border-color:   #E4E8F0;
+  --border:         1px solid #E4E8F0;
+  --border-accent:  1px solid rgba(59,123,246,0.3);
+ 
+  /* === SENSOR COLORS === */
+  --sensor-hallux:  #3B7BF6;
+  --sensor-medff:   #8B5CF6;
+  --sensor-latff:   #06B6D4;
+  --sensor-heel:    #F09900;
+ 
   /* === TYPOGRAPHY === */
   --font-display:   'Nunito', sans-serif;
   --font-mono:      'JetBrains Mono', monospace;
-
-  /* Font sizes */
-  --text-xs:    10px;
-  --text-sm:    12px;
+ 
+  --text-xs:    11px;
+  --text-sm:    13px;
   --text-base:  14px;
   --text-md:    16px;
   --text-lg:    18px;
   --text-xl:    24px;
   --text-2xl:   30px;
-  --text-3xl:   35px;
-  --text-hero:  48px;
-
-  /* Font weights */
-  --fw-regular:    400;
-  --fw-semibold:   600;
-  --fw-bold:       700;
-  --fw-extrabold:  800;
-  --fw-black:      900;
-
+  --text-3xl:   36px;
+ 
+  --fw-regular:   400;
+  --fw-semibold:  600;
+  --fw-bold:      700;
+  --fw-extrabold: 800;
+  --fw-black:     900;
+ 
   /* === SPACING === */
   --space-xs:   4px;
   --space-sm:   8px;
-  --space-md:  16px;
-  --space-lg:  24px;
-  --space-xl:  32px;
-  --space-2xl: 48px;
-
-  /* === BORDERS === */
-  --border:        1px solid rgba(96, 96, 122, 0.15);
-  --border-accent: 1px solid rgba(231, 48, 42, 0.30);
+  --space-md:   16px;
+  --space-lg:   24px;
+  --space-xl:   32px;
+  --space-2xl:  48px;
+ 
+  /* === RADIUS === */
   --radius-sm:   8px;
-  --radius-md:  14px;
-  --radius-lg:  16px;
-  --radius-xl:  24px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
   --radius-full: 9999px;
-
+ 
   /* === SHADOWS === */
-  --shadow-red:   0 0 26px rgba(231, 48, 42, 0.20);
-  --shadow-card:  0 4px 20px rgba(0, 0, 0, 0.40);
-  --shadow-glow:  0 0 40px rgba(231, 48, 42, 0.12);
-
+  --shadow-card: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-sm:   0 1px 2px rgba(0,0,0,0.04);
+ 
   /* === LAYOUT === */
-  --sidebar-width: 220px;
-  --topbar-height:  66px;
-  --transition: 0.2s ease;
+  --topbar-height: 60px;
+  --sidebar-width: 0px;
+  --transition:    0.18s ease;
 }

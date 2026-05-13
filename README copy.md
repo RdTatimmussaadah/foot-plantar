@@ -1,4 +1,4 @@
-# Foot Plantar Sense — IoT Monitoring Website
+# Foot Plantar Monitoring — IoT Monitoring Website
 
 Website monitoring tekanan plantar kaki berbasis IoT dengan 8 sensor FSR402.
 Dibangun dengan **Vanilla HTML, CSS, dan JavaScript** murni — tanpa framework.
@@ -51,20 +51,20 @@ fps-project/
 
 Semua rumus ada di `js/calculations.js`. Referensi ilmiah:
 
-| Metrik | Formula | Referensi |
-|--------|---------|-----------|
-| **Berat Badan** | W = F_total / 9.81 | Sazonov et al. (2020) |
-| **ASI** | |(F_kiri - F_kanan)| / (0.5 × (F_kiri + F_kanan)) × 100% | Robinson et al. (1987) |
-| **Balance Score** | 100 - ASI | Błażkiewicz et al. (2014) |
-| **Heel Load** | (F_heel_kiri + F_heel_kanan) / F_total × 100% | Putti et al. (2007) |
+| Metrik            | Formula                                       | Referensi                 |
+| ----------------- | --------------------------------------------- | ------------------------- | ----------------------------------- | ---------------------- |
+| **Berat Badan**   | W = F_total / 9.81                            | Sazonov et al. (2020)     |
+| **ASI**           |                                               | (F_kiri - F_kanan)        | / (0.5 × (F_kiri + F_kanan)) × 100% | Robinson et al. (1987) |
+| **Balance Score** | 100 - ASI                                     | Błażkiewicz et al. (2014) |
+| **Heel Load**     | (F_heel_kiri + F_heel_kanan) / F_total × 100% | Putti et al. (2007)       |
 
 ### Klasifikasi (Wang et al., 2023)
 
-| Status | Balance Score | ASI | Heel Load |
-|--------|-------------|-----|-----------|
-| ✅ Normal | ≥ 90 | ≤ 10% | 50–65% |
-| ⚠️ Sedang | 80–89 | 11–20% | 40–49% atau 66–75% |
-| 🚨 Abnormal | < 80 | > 20% | < 40% atau > 75% |
+| Status      | Balance Score | ASI    | Heel Load          |
+| ----------- | ------------- | ------ | ------------------ |
+| ✅ Normal   | ≥ 90          | ≤ 10%  | 50–65%             |
+| ⚠️ Sedang   | 80–89         | 11–20% | 40–49% atau 66–75% |
+| 🚨 Abnormal | < 80          | > 20%  | < 40% atau > 75%   |
 
 ---
 
@@ -108,11 +108,13 @@ users/
 ## 🚀 Cara Menjalankan
 
 ### Fase 1 — Simulasi (sekarang)
+
 1. Buka `index.html` di browser (atau pakai Live Server di VS Code)
 2. Data sensor disimulasikan otomatis oleh `simulation.js`
 3. Tidak perlu koneksi internet (kecuali Google Fonts)
 
 ### Fase 2 — Firebase (nanti)
+
 1. Buat project Firebase di [console.firebase.google.com](https://console.firebase.google.com)
 2. Aktifkan **Realtime Database** dan **Authentication (Email/Password)**
 3. Buka `js/firebase.js` → isi `firebaseConfig` → uncomment semua kode
@@ -133,12 +135,12 @@ Semua design tokens ada di `css/variables.css`:
 
 ## 📌 Sensor Mapping
 
-| Index | Nama | Posisi |
-|-------|------|--------|
-| 0 | Hallux | Ibu jari |
-| 1 | Med. Forefoot | Depan tengah |
-| 2 | Lat. Forefoot | Depan sisi luar |
-| 3 | Heel | Tumit |
+| Index | Nama          | Posisi          |
+| ----- | ------------- | --------------- |
+| 0     | Hallux        | Ibu jari        |
+| 1     | Med. Forefoot | Depan tengah    |
+| 2     | Lat. Forefoot | Depan sisi luar |
+| 3     | Heel          | Tumit           |
 
 Masing-masing untuk kaki kiri (`left_fsr_*`) dan kanan (`right_fsr_*`).
 Total: **8 sensor FSR402**.

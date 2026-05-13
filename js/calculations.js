@@ -1,6 +1,6 @@
 /**
  * calculations.js
- * All sensor data calculations for Foot Plantar Sense
+ * All sensor data calculations for Foot Plantar Monitoring
  *
  * Data flow:
  *   ESP32 → Firebase (raw ADC/Newton/Percent per sensor)
