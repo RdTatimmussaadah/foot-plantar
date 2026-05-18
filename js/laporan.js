@@ -1333,6 +1333,53 @@ function exportCSV() {
    DELETE HANDLERS
    ============================================================ */
 
+// function handleDeleteSnap(event, snapId) {
+//   event.stopPropagation();
+
+//   if (!snapId) {
+//     showToast('ID snapshot tidak ditemukan.', 'error');
+//     return;
+//   }
+
+//   if (confirm('Hapus snapshot ini?')) {
+//     firebaseDeleteSnapshot(snapId)
+//       .then(() => showToast('Snapshot dihapus', 'success'))
+//       .catch(() => showToast('Gagal menghapus', 'error'));
+//   }
+// }
+
+// function handleDeleteAll() {
+//   firebaseDeleteAllHistory()
+//     .then((res) => {
+//       if (res !== false) showToast('Semua riwayat telah dibersihkan', 'success');
+//     })
+//     .catch(() => showToast('Gagal menghapus riwayat', 'error'));
+// }
+
+function showConfirm(message, callback) {
+  const modal = document.getElementById('confirm-modal');
+  const modalMessage = document.getElementById('modal-message');
+  const btnOk = document.getElementById('modal-ok');
+  const btnCancel = document.getElementById('modal-cancel');
+  const btnClose = document.getElementById('modal-close');
+
+  modalMessage.textContent = message;
+  modal.style.display = 'flex';
+
+  const closeModal = () => {
+    modal.style.display = 'none';
+    btnOk.onclick = null;
+  };
+
+  btnOk.onclick = () => {
+    closeModal();
+    callback(true);
+  };
+  btnCancel.onclick = closeModal;
+  btnClose.onclick = closeModal;
+}
+
+// Ganti fungsi delete snapshot
 function handleDeleteSnap(event, snapId) {
   event.stopPropagation();
 
@@ -1341,19 +1388,33 @@ function handleDeleteSnap(event, snapId) {
     return;
   }
 
-  if (confirm('Hapus snapshot ini?')) {
+  showConfirm('Hapus snapshot ini?', (ok) => {
+    if (!ok) return;
+
     firebaseDeleteSnapshot(snapId)
       .then(() => showToast('Snapshot dihapus', 'success'))
       .catch(() => showToast('Gagal menghapus', 'error'));
-  }
+  });
 }
 
 function handleDeleteAll() {
-  firebaseDeleteAllHistory()
-    .then((res) => {
-      if (res !== false) showToast('Semua riwayat telah dibersihkan', 'success');
-    })
-    .catch(() => showToast('Gagal menghapus riwayat', 'error'));
+  if (!_firebaseHistory || _firebaseHistory.length === 0) {
+    showToast('Belum ada snapshot untuk dihapus.', 'error');
+    return;
+  }
+
+  showConfirm(
+    'Hapus semua snapshot? Tindakan ini tidak bisa dibatalkan.',
+    (ok) => {
+      if (!ok) return;
+
+      firebaseDeleteAllHistory()
+        .then((res) => {
+          if (res !== false) showToast('Semua riwayat telah dibersihkan', 'success');
+        })
+        .catch(() => showToast('Gagal menghapus riwayat', 'error'));
+    }
+  );
 }
 
 /* ============================================================
@@ -1966,11 +2027,6 @@ function exportPDF() {
       <div class="info-row">
         <span class="info-label">Email</span>
         <span class="info-value">${escapeHtml(patientEmail)}</span>
-      </div>
-
-      <div class="info-row">
-        <span class="info-label">Alamat</span>
-        <span class="info-value">${escapeHtml(patientAddr)}</span>
       </div>
     </div>
   </div>

@@ -265,14 +265,14 @@ function firebaseRecordSnapshot(computedData, postureLabel = 'Berdiri', note = '
     cop_status: cop.label,
     cop_label: cop.label,
     cop_valid: cop.valid,
-    cop: {
-      x: cop.x,
-      y: cop.y,
-      distance: cop.distance,
-      status: cop.status,
-      label: cop.label,
-      valid: cop.valid,
-    },
+    // cop: {
+    //   x: cop.x,
+    //   y: cop.y,
+    //   distance: cop.distance,
+    //   status: cop.status,
+    //   label: cop.label,
+    //   valid: cop.valid,
+    // },
 
     arch_label_l: structure.left,
     arch_label_r: structure.right,
@@ -544,9 +544,7 @@ function firebaseDeleteSnapshot(snapId) {
 function firebaseDeleteAllHistory() {
   const uid = getCurrentUID();
   if (!uid) return Promise.reject('Belum login');
-  if (confirm("Apakah Anda yakin ingin menghapus SELURUH riwayat? Tindakan ini tidak dapat dibatalkan.")) {
-    return db.ref(`users/${uid}/history`).remove();
-  }
+  return db.ref(`users/${uid}/history`).remove();
   return Promise.resolve(false);
 }
 
