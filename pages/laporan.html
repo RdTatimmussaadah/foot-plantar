@@ -22,186 +22,221 @@
 
         <main class="app-content">
           <div class="laporan-grid">
-  <!-- TOP LEFT: PROFIL PASIEN -->
-  <section class="laporan-profile-col">
-    <div class="profile-identity-card">
-      <div class="profile-identity-header">
-        <div class="profile-avatar-lg" id="p-initials">...</div>
-        <div class="profile-name" id="p-name">....</div>
-        <div class="profile-meta" id="p-meta">.. th · ...</div>
-      </div>
+            <!-- TOP LEFT: PROFIL PASIEN -->
+            <section class="laporan-profile-col">
+              <div class="profile-identity-card">
+                <div class="profile-identity-header">
+                  <div class="profile-avatar-lg" id="p-initials">...</div>
+                  <div class="profile-name" id="p-name">....</div>
+                  <div class="profile-meta" id="p-meta">.. th · ...</div>
+                </div>
 
-      <div class="profile-contact-section">
-        <div class="card-title">Kontak</div>
+                <div class="profile-contact-section">
+                  <div class="card-title">Kontak</div>
 
-        <div class="profile-field-row">
-          <span class="profile-field-key">Email</span>
-          <span class="profile-field-val" id="p-email">—</span>
-        </div>
+                  <div class="profile-field-row">
+                    <span class="profile-field-key">Email</span>
+                    <span class="profile-field-val" id="p-email">—</span>
+                  </div>
 
-        <div class="profile-field-row">
-          <span class="profile-field-key">No. Telepon</span>
-          <span class="profile-field-val" id="p-phone">—</span>
-        </div>
-      </div>
-    </div>
+                  <div class="profile-field-row">
+                    <span class="profile-field-key">No. Telepon</span>
+                    <span class="profile-field-val" id="p-phone">—</span>
+                  </div>
+                </div>
+              </div>
 
-    <div class="biodata-card">
-      <div class="detail-card-header">
-        <span class="card-title">BIODATA PRIBADI</span>
-      </div>
+              <div class="biodata-card">
+                <div class="detail-card-header">
+                  <span class="card-title">BIODATA PRIBADI</span>
+                </div>
 
-      <div class="biodata-body">
-  <div class="biodata-grid">
-    <div class="biodata-field">
-      <span class="biodata-field-label">Nama Lengkap</span>
-      <span class="biodata-field-value" id="b-nama">—</span>
-    </div>
+                <div class="biodata-body">
+                  <div class="biodata-grid">
+                    <div class="biodata-field">
+                      <span class="biodata-field-label">Nama Lengkap</span>
+                      <span class="biodata-field-value" id="b-nama">—</span>
+                    </div>
 
-    <div class="biodata-field">
-      <span class="biodata-field-label">Tanggal Lahir / Umur</span>
+                    <div class="biodata-field">
+                      <span class="biodata-field-label"
+                        >Tanggal Lahir / Umur</span
+                      >
 
-      <div class="biodata-inline-value">
-        <span class="biodata-field-value" id="b-dob">—</span>
-        <span class="biodata-age-highlight" id="b-age">— tahun</span>
-      </div>
-    </div>
+                      <div class="biodata-inline-value">
+                        <span class="biodata-field-value" id="b-dob">—</span>
+                        <span class="biodata-age-highlight" id="b-age"
+                          >— tahun</span
+                        >
+                      </div>
+                    </div>
 
-    <div class="biodata-field">
-      <span class="biodata-field-label">Jenis Kelamin</span>
-      <span class="biodata-field-value" id="b-gender">—</span>
-    </div>
+                    <div class="biodata-field">
+                      <span class="biodata-field-label">Jenis Kelamin</span>
+                      <span class="biodata-field-value" id="b-gender">—</span>
+                    </div>
 
-    <div class="biodata-field">
-      <span class="biodata-field-label">Tinggi / Berat Badan</span>
-      <span class="biodata-field-value" id="b-tbbb">—</span>
-    </div>
-  </div>
-</div>
-    </div>
+                    <div class="biodata-field">
+                      <span class="biodata-field-label"
+                        >Tinggi / Berat Badan</span
+                      >
+                      <span class="biodata-field-value" id="b-tbbb">—</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-    <div class="history-export-row">
-      <button class="btn-export-red" onclick="exportPDF()" id="btn-pdf">
-        📄 Laporan PDF
-      </button>
-    </div>
-  </section>
+              <!-- <div class="history-export-row">
+                <button
+                  class="btn-export-red"
+                  onclick="exportPDF()"
+                  id="btn-pdf"
+                >
+                  📄 Laporan PDF
+                </button>
+              </div> -->
+            </section>
 
-  <!-- TOP RIGHT: KESIMPULAN + COP TERAKHIR -->
-  <section class="laporan-summary-col">
-    <div class="patient-conclusion-card">
-      <div class="report-card-header">
-        <span class="card-title">KESIMPULAN PASIEN</span>
-        <span class="report-mini-badge" id="latest-snapshot-meta">
-          Snapshot terakhir: —
-        </span>
-      </div>
+            <!-- TOP RIGHT: KESIMPULAN + COP TERAKHIR -->
+            <section class="laporan-summary-col">
+              <div class="patient-conclusion-card">
+                <div class="report-card-header">
+                  <span class="card-title">KESIMPULAN PASIEN</span>
+                  <span class="report-mini-badge" id="latest-snapshot-meta">
+                    Snapshot terakhir: —
+                  </span>
+                </div>
 
-      <div class="conclusion-main">
-        <div class="conclusion-status" id="latest-overall-status">
-          Menunggu data...
-        </div>
-        <div class="conclusion-text" id="latest-overall-desc">
-          Belum ada snapshot yang dapat dianalisis.
-        </div>
-      </div>
+                <div class="conclusion-main">
+                  <div class="conclusion-status" id="latest-overall-status">
+                    Menunggu data...
+                  </div>
+                  <div class="conclusion-text" id="latest-overall-desc">
+                    Belum ada snapshot yang dapat dianalisis.
+                  </div>
+                </div>
 
-      <div class="condition-grid">
-        <div class="condition-box">
-          <div class="condition-label">Struktur Kaki Kiri</div>
-          <div class="condition-value" id="latest-left-structure">—</div>
-        </div>
+                <div class="condition-grid">
+                  <div class="condition-box">
+                    <div class="condition-label">Struktur Kaki Kiri</div>
+                    <div class="condition-value" id="latest-left-structure">
+                      —
+                    </div>
+                  </div>
 
-        <div class="condition-box">
-          <div class="condition-label">Gerakan Kaki Kiri</div>
-          <div class="condition-value" id="latest-left-motion">—</div>
-        </div>
-        <div class="condition-box condition-box-accent">
-          <div class="condition-label">Stabilitas CoP</div>
-          <div class="condition-value" id="latest-cop-condition">—</div>
-        </div>
-        
-        <div class="condition-box">
-          <div class="condition-label">Struktur Kaki Kanan</div>
-          <div class="condition-value" id="latest-right-structure">—</div>
-        </div>
+                  <div class="condition-box">
+                    <div class="condition-label">Gerakan Kaki Kiri</div>
+                    <div class="condition-value" id="latest-left-motion">—</div>
+                  </div>
+                  <div class="condition-box condition-box-accent">
+                    <div class="condition-label">Stabilitas CoP</div>
+                    <div class="condition-value" id="latest-cop-condition">
+                      —
+                    </div>
+                  </div>
 
-        <div class="condition-box">
-          <div class="condition-label">Gerakan Kaki Kanan</div>
-          <div class="condition-value" id="latest-right-motion">—</div>
-        </div>
+                  <div class="condition-box">
+                    <div class="condition-label">Struktur Kaki Kanan</div>
+                    <div class="condition-value" id="latest-right-structure">
+                      —
+                    </div>
+                  </div>
 
-        <div class="condition-box">
-          <div class="condition-label">Jumlah Snapshot</div>
-          <div class="condition-value" id="total-snaps">—</div>
-        </div>
-      </div>
-    </div>
+                  <div class="condition-box">
+                    <div class="condition-label">Gerakan Kaki Kanan</div>
+                    <div class="condition-value" id="latest-right-motion">
+                      —
+                    </div>
+                  </div>
 
-    <div class="cop-history-card">
-      <div class="trend-header">
-        <span>RIWAYAT CoP</span>
-        <span class="trend-delta" id="cop-status-summary"></span>
-      </div>
+                  <div class="condition-box">
+                    <div class="condition-label">Jumlah Snapshot</div>
+                    <div class="condition-value" id="total-snaps">—</div>
+                  </div>
+                </div>
+              </div>
 
-      <div class="cop-history-visual">
-        <canvas id="cop-history-canvas" width="260" height="260"></canvas>
-      </div>
+              <div class="cop-history-card">
+                <div class="trend-header">
+                  <span>RIWAYAT CoP</span>
+                  <span class="trend-delta" id="cop-status-summary"></span>
+                </div>
 
-      <div class="cop-history-note" id="cop-history-note">
-        Menunggu data CoP terakhir...
-      </div>
-    </div>
-  </section>
+                <div class="cop-history-visual">
+                  <canvas
+                    id="cop-history-canvas"
+                    width="260"
+                    height="260"
+                  ></canvas>
+                </div>
 
-  <!-- MIDDLE: RINGKASAN RIWAYAT -->
-  <section class="laporan-overview-col">
-    <div class="summary-card simple-summary-card">
-      <div class="report-card-header">
-        <span class="card-title">RINGKASAN RIWAYAT</span>
-      </div>
+                <div class="cop-history-note" id="cop-history-note">
+                  Menunggu data CoP terakhir...
+                </div>
+              </div>
+            </section>
 
-      <div class="simple-summary-list">
-        <div class="simple-summary-row">
-          <span>Snapshot stabil</span>
-          <strong id="stable-snaps">—</strong>
-        </div>
+            <!-- MIDDLE: RINGKASAN RIWAYAT -->
+            <section class="laporan-overview-col">
+              <div class="summary-card simple-summary-card">
+                <div class="report-card-header">
+                  <span class="card-title">RINGKASAN RIWAYAT</span>
+                </div>
 
-        <div class="simple-summary-row">
-          <span>Snapshot perlu perhatian</span>
-          <strong id="attention-snaps">—</strong>
-        </div>
+                <div class="simple-summary-list">
+                  <div class="simple-summary-row">
+                    <span>Snapshot stabil</span>
+                    <strong id="stable-snaps">—</strong>
+                  </div>
 
-        <div class="simple-summary-row">
-          <span>Struktur dominan</span>
-          <strong id="dominant-structure">—</strong>
-        </div>
+                  <div class="simple-summary-row">
+                    <span>Snapshot perlu perhatian</span>
+                    <strong id="attention-snaps">—</strong>
+                  </div>
 
-        <div class="simple-summary-row">
-          <span>Gerakan dominan</span>
-          <strong id="dominant-motion">—</strong>
-        </div>
-      </div>
-    </div>
-  </section>
+                  <div class="simple-summary-row">
+                    <span>Struktur dominan</span>
+                    <strong id="dominant-structure">—</strong>
+                  </div>
 
-  <!-- BOTTOM: RIWAYAT SNAPSHOT -->
-  <section class="laporan-history-col">
-    <div class="history-list-col">
-      <div class="history-list-header">
-        <div>
-          <span class="card-title">RIWAYAT SNAPSHOT</span>
-        </div>
+                  <div class="simple-summary-row">
+                    <span>Gerakan dominan</span>
+                    <strong id="dominant-motion">—</strong>
+                  </div>
+                </div>
+              </div>
+            </section>
 
-        <button onclick="handleDeleteAll()" class="btn-delete-all">
-          🗑️ Hapus Semua Riwayat
-        </button>
-      </div>
+            <!-- BOTTOM: RIWAYAT SNAPSHOT -->
+            <section class="laporan-history-col">
+              <div class="history-list-col">
+                <div class="history-list-header">
+                  <div>
+                    <span class="card-title">RIWAYAT SNAPSHOT</span>
+                  </div>
 
-      <div id="history-list-body"></div>
-    </div>
-  </section>
-</div>
+                  <div class="history-header-actions">
+                    <button
+                      class="btn-pdf-action btn-history-action"
+                      onclick="exportPDF()"
+                      id="btn-pdf"
+                    >
+                      📄 Laporan PDF
+                    </button>
+
+                    <button
+                      onclick="handleDeleteAll()"
+                      class="btn-delete-all btn-history-action"
+                    >
+                      🗑️ Hapus Semua Riwayat
+                    </button>
+                  </div>
+                </div>
+
+                <div id="history-list-body"></div>
+              </div>
+            </section>
+          </div>
         </main>
       </div>
     </div>

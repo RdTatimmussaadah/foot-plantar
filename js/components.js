@@ -53,18 +53,18 @@ function renderTopbar(container, pageTitle) {
              onerror="this.style.display='none'"
         />
       </div>
-      <span class="topbar-title">Foot Plantar <span>Monitoring</span></span>
+      <span class="topbar-title">Foot Plantar Monitoring</span>
     </div>
  
     <!-- Tengah: Navigasi 2 tab -->
     <div class="topbar-nav">
       <button
         class="nav-tab ${isMonitor ? 'active' : ''}"
-        onclick="window.location.href='../pages/dashboard.html'"
+        onclick="window.location.href='dashboard.html'"
       >Dashboard</button>
       <button
         class="nav-tab ${isLaporan ? 'active' : ''}"
-        onclick="window.location.href='../pages/laporan.html'"
+        onclick="window.location.href='laporan.html'"
       >Laporan</button>
     </div>
  
@@ -240,22 +240,44 @@ function _populateSnapPreview() {
 
   const d = currentData;
 
-  const posture =
-    localStorage.getItem('fps_currentPosture') ||
-    (typeof currentPosture !== 'undefined' ? currentPosture : 'Berdiri');
+  // const posture =
+  //   localStorage.getItem('fps_currentPosture') ||
+  //   (typeof currentPosture !== 'undefined' ? currentPosture : 'Berdiri');
 
-  const postureIcons = {
-    'Berdiri': '🧍',
-    'Jongkok': '🏋️',
-    '1 Kaki': '🦵',
-    '2 Kaki': '👣',
-  };
+  // const postureIcons = {
+  //   'Berdiri': '🧍',
+  //   'Jongkok': '🏋️',
+  //   '1 Kaki': '🦵',
+  //   '2 Kaki': '👣',
+  // };
+
+  const postureML = localStorage.getItem('fps_currentPostureML') || '';
+const posture = {
+  'normal':            'Normal',
+  'condong_depan':     'Condong Depan',
+  'condong_belakang':  'Condong Belakang',
+  'condong_kanan':     'Condong Kanan',
+  'condong_kiri':      'Condong Kiri',
+}[postureML] || 'Belum Terdeteksi';
+
+const confidenceRaw = parseFloat(localStorage.getItem('fps_currentPostureMLConfidence') || '0');
+const confidencePct = (confidenceRaw * 100).toFixed(1);
+
+const postureIcons = {
+  'Normal':            '🧍',
+  'Condong Depan':     '⬆️',
+  'Condong Belakang':  '⬇️',
+  'Condong Kanan':     '➡️',
+  'Condong Kiri':      '⬅️',
+  'Belum Terdeteksi':  '❓',
+};
 
   const ic = document.getElementById('snap-postur-ic');
   const lb = document.getElementById('snap-postur-lbl');
 
   if (ic) ic.textContent = postureIcons[posture] || '🧍';
-  if (lb) lb.textContent = posture;
+  // if (lb) lb.textContent = posture;
+  if (lb) lb.textContent = `${posture}`;
 
   const set = (id, val) => {
     const el = document.getElementById(id);
@@ -322,9 +344,19 @@ function saveSnapshot() {
   }
 
   const note = document.getElementById('snap-note-inp')?.value || '';
-  const posture =
-    localStorage.getItem('fps_currentPosture') ||
-    (typeof currentPosture !== 'undefined' ? currentPosture : 'Berdiri');
+  // const posture =
+  //   localStorage.getItem('fps_currentPosture') ||
+  //   (typeof currentPosture !== 'undefined' ? currentPosture : 'Berdiri');
+
+  // BARU
+  const postureML = localStorage.getItem('fps_currentPostureML') || '';
+  const posture = {
+    'normal':            'Normal',
+    'condong_depan':     'Condong Depan',
+    'condong_belakang':  'Condong Belakang',
+    'condong_kanan':     'Condong Kanan',
+    'condong_kiri':      'Condong Kiri',
+  }[postureML] || 'Belum Terdeteksi';
 
   const cop = computeSnapshotCop(currentData);
 

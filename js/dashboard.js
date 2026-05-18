@@ -754,6 +754,9 @@ async function updatePostureMLSimple(data) {
 
     resultEl.textContent = label;
 
+    localStorage.setItem('fps_currentPostureML', result.rawLabel || '');
+    localStorage.setItem('fps_currentPostureMLConfidence', (result.confidence || 0).toFixed(4));
+
     box.classList.remove('is-loading', 'is-normal', 'is-warning');
 
     if (label.toLowerCase() === 'normal') {

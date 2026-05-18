@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Foot Plantar Monitoring</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #0f0f0f;
+      font-family: sans-serif;
+      color: #888;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <span>Memuat...</span>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="../js/firebase.js"></script>
+  <script>
+    // Tunggu auth state — redirect sesuai kondisi login
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        window.location.replace('dashboard.html');
+      } else {
+        window.location.replace('login.html');
+      }
+    });
+
+    // Fallback kalau Firebase lambat > 5 detik
+    setTimeout(function() {
+      window.location.replace('login.html');
+    }, 5000);
+  </script>
+</body>
+</html>
