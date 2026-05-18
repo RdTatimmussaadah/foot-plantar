@@ -136,6 +136,11 @@
                       </div>
                     </div>
                   </div>
+
+                  <div class="posture-ml-simple" id="posture-ml-simple">
+                    <span>Hasil ML</span>
+                    <strong id="ml-posture-result">Mendeteksi...</strong>
+                  </div>
                 </div>
               </div>
             </section>
@@ -258,9 +263,12 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
+    
     <script src="../js/calculations.js"></script>
     <script src="../js/firebase.js"></script>
     <script src="../js/components.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+    <script src="../js/posture_ml.js"></script>
     <script src="../js/dashboard.js"></script>
   </body>
 </html>

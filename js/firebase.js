@@ -477,24 +477,36 @@ function firebaseLoadHistory(callback) {
   const uid = getCurrentUID();
   if (!uid) return;
 
-  // Listener '.on' akan terpanggil setiap ada data Masuk, Berubah, atau TERHAPUS
   db.ref(`users/${uid}/history`)
     .orderByKey()
     .on('value', (snapshot) => {
       const history = [];
+
       snapshot.forEach((child) => {
         history.unshift({ id: child.key, ...child.val() });
       });
-      
-      // Simpan ke variabel global
-      _firebaseHistory = history;
-      
-      // Jalankan semua fungsi render secara otomatis setiap ada perubahan di DB
-      renderHistoryList();
-      renderSummaryStats();
-      drawTrendCharts();
 
-      if (callback) callback(history);
+      _firebaseHistory = history;
+
+      /*
+        Fungsi ini hanya ada di halaman tertentu.
+        Dashboard tidak punya renderHistoryList(), jadi harus dicek dulu.
+      */
+      if (typeof renderHistoryList === 'function') {
+        renderHistoryList();
+      }
+
+      if (typeof renderSummaryStats === 'function') {
+        renderSummaryStats();
+      }
+
+      if (typeof drawTrendCharts === 'function') {
+        drawTrendCharts();
+      }
+
+      if (typeof callback === 'function') {
+        callback(history);
+      }
     });
 }
 

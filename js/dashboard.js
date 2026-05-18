@@ -11,6 +11,8 @@ let currentPosture = 'Berdiri';
 let currentData = null;
 let _firebaseHistory = [];
 
+let _postureMLSeq = 0;
+
 // ============================================================
 // INIT
 // ============================================================
@@ -47,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function updateDashboardUI(data) {
   updateMonitoringUI(data);
   updateBalanceUI(data);
+  updatePostureMLSimple(data);
 }
 
 // ============================================================
@@ -161,9 +164,196 @@ function heatColor(ratio) {
   return [red, green, blue];
 }
 
+const SENSOR_DESC = [
+  "Hallux: Bagian ibu jari kaki, membantu menyeimbangkan tubuh dan mendorong langkah saat berjalan.",
+  "Med.FF: Bagian tengah depan kaki sisi ibu jari, menahan tekanan saat berdiri dan berjalan.",
+  "Lat.FF: Bagian depan kaki sisi kelingking, menyeimbangkan tekanan luar kaki saat berjalan.",
+  "Heel: Tumit kaki, menopang berat badan dan memberikan stabilitas saat berdiri."
+];
+
 // ============================================================
 // DRAW FOOT HEATMAP
 // ============================================================
+// function drawFootHeatmap(canvasId, values, maxVal, isLeft) {
+//   const cv = document.getElementById(canvasId);
+//   if (!cv) return;
+//   const W = CANVAS_W, H = CANVAS_H;
+//   cv.width = W; cv.height = H;
+//   const ctx = cv.getContext('2d');
+//   ctx.clearRect(0, 0, W, H);
+
+//   const footPath = buildFootPath(FOOT_COORDS_RAW, W, H, isLeft);
+
+//   // Sensor titik dalam canvas (disesuaikan flip)
+//   const bb = getBoundingBox(FOOT_COORDS_RAW);
+//   const bbW = bb.maxX - bb.minX;
+//   const bbH = bb.maxY - bb.minY;
+//   const pad = 4;
+//   const scaleX = (W - pad * 2) / bbW;
+//   const scaleY = (H - pad * 2) / bbH;
+
+//   const pts = SENSOR_POS.map(s => {
+//     let px = s.nx * (W - pad * 2) + pad;
+//     let py = s.ny * (H - pad * 2) + pad;
+//     if (isLeft) px = W - px;
+//     return {
+//       cx: px, cy: py,
+//       sx: W * 0.28, sy: H * 0.18,
+//       ratio: Math.min(1, (values[s.key] || 0) / maxVal)
+//     };
+//   });
+
+//   // IDW heatmap
+//   const imgData = ctx.createImageData(W, H);
+//   const d = imgData.data;
+//   for (let py = 0; py < H; py++) {
+//     for (let px = 0; px < W; px++) {
+//       let wSum = 0, rSum = 0;
+//       for (let k = 0; k < pts.length; k++) {
+//         const p = pts[k];
+//         const ex = (px - p.cx) / p.sx;
+//         const ey = (py - p.cy) / p.sy;
+//         const w  = 1 / (ex*ex + ey*ey + 0.001);
+//         wSum += w; rSum += w * p.ratio;
+//       }
+//       const [cr, cg, cb] = heatColor(rSum / wSum);
+//       const i = (py * W + px) * 4;
+//       d[i]=cr; d[i+1]=cg; d[i+2]=cb; d[i+3]=215;
+//     }
+//   }
+
+//   const off = document.createElement('canvas');
+//   off.width = W; off.height = H;
+//   off.getContext('2d').putImageData(imgData, 0, 0);
+
+//   // Background + clip ke shape kaki
+//   ctx.fillStyle = '#ffffff';    // Ganti jadi putih (atau 'transparent' jika ingin tembus pandang)
+// ctx.fillRect(0, 0, W, H);
+//   ctx.save();
+//   ctx.clip(footPath);
+//   ctx.drawImage(off, 0, 0);
+//   ctx.restore();
+
+//   // Outline kaki
+//   ctx.save();
+//   ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)'; // Ganti menjadi hitam transparan atau abu-abu
+//   ctx.lineWidth = 1.5;
+//   ctx.stroke(footPath);
+
+//   // Sensor dots + label + nilai
+//   // Sensor dots — tanpa label teks, pakai hover balloon di HTML
+//   SENSOR_POS.forEach((s, idx) => {
+//     const p = pts[idx];
+//     const val = values[s.key] || 0;
+//     const ratio = Math.min(1, val / maxVal);
+//     const [cr, cg, cb] = heatColor(ratio);
+
+//     // Halo
+//     ctx.beginPath();
+//     ctx.arc(p.cx, p.cy, 14, 0, Math.PI * 2);
+//     ctx.fillStyle = `rgba(${cr},${cg},${cb},0.18)`;
+//     ctx.fill();
+
+//     // Dot
+//     ctx.beginPath();
+//     ctx.arc(p.cx, p.cy, 7, 0, Math.PI * 2);
+//     ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
+//     ctx.fill();
+//     ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+//     ctx.lineWidth = 1.5;
+//     ctx.stroke();
+
+//     // Nilai ADC di atas dot
+//     ctx.shadowColor = 'rgba(0,0,0,0.95)';
+//     ctx.shadowBlur  = 5;
+//     ctx.fillStyle   = '#ffffff';
+//     ctx.font        = 'bold 11px JetBrains Mono, monospace';
+//     ctx.textAlign   = 'center';
+//     ctx.textBaseline = 'middle';
+//     ctx.fillText(Math.round(val), p.cx, p.cy - 18);
+//     ctx.shadowBlur  = 0;
+//   });
+
+//   ctx.restore();
+// }
+
+// function attachSensorTooltips(canvasId, sensorPos, values, maxVal, isLeft) {
+//   const cv = document.getElementById(canvasId);
+//   if (!cv) return;
+
+//   // Hapus overlay lama
+//   const oldOverlay = document.getElementById(canvasId + '-overlay');
+//   if (oldOverlay) oldOverlay.remove();
+
+//   const W = cv.offsetWidth || CANVAS_W;
+//   const H = cv.offsetHeight || CANVAS_H;
+//   const pad = 4;
+
+//   const overlay = document.createElement('div');
+//   overlay.id = canvasId + '-overlay';
+//   overlay.style.cssText = `
+//     position:absolute;inset:0;pointer-events:none;
+//   `;
+
+//   cv.parentElement.style.position = 'relative';
+//   cv.parentElement.appendChild(overlay);
+
+//   SENSOR_POS.forEach((s, idx) => {
+//     let px = s.nx * (W - pad * 2) + pad;
+//     let py = s.ny * (H - pad * 2) + pad;
+
+//     if (isLeft) px = W - px;
+
+//     const val = values[s.key] || 0;
+//     const ratio = Math.min(1, val / maxVal);
+//     const [cr, cg, cb] = heatColor(ratio);
+//     const color = `rgb(${cr},${cg},${cb})`;
+
+//     const dot = document.createElement('div');
+//     dot.style.cssText = `
+//       position:absolute;
+//       width:26px;height:26px;
+//       left:${px - 13}px;top:${py - 13}px;
+//       border-radius:50%;
+//       cursor:pointer;
+//       pointer-events:all;
+//       z-index:10;
+//     `;
+
+//     const tip = document.createElement('div');
+//     tip.style.cssText = `
+//       position:absolute;
+//       bottom:calc(100% + 8px);
+//       left:50%;transform:translateX(-50%);
+//       background:#1a1a2e;
+//       color:#fff;
+//       font-family:'Nunito',sans-serif;
+//       font-size:13px;
+//       font-weight:700;
+//       padding:7px 13px;
+//       border-radius:9px;
+//       white-space:nowrap;
+//       border:1.5px solid ${color};
+//       display:none;
+//       pointer-events:none;
+//       z-index:50;
+//       box-shadow:0 4px 16px rgba(0,0,0,0.4);
+//     `;
+
+//     tip.innerHTML = `
+//       <span style="color:${color};margin-right:6px;">●</span>
+//       ${s.label} &nbsp;·&nbsp;
+//       <span style="font-family:'JetBrains Mono',monospace;">${Math.round(val)} N</span>
+//     `;
+
+//     dot.appendChild(tip);
+//     dot.addEventListener('mouseenter', () => tip.style.display = 'block');
+//     dot.addEventListener('mouseleave', () => tip.style.display = 'none');
+//     overlay.appendChild(dot);
+//   });
+// }
+
+// Heatmap tetap sama
 function drawFootHeatmap(canvasId, values, maxVal, isLeft) {
   const cv = document.getElementById(canvasId);
   if (!cv) return;
@@ -174,13 +364,10 @@ function drawFootHeatmap(canvasId, values, maxVal, isLeft) {
 
   const footPath = buildFootPath(FOOT_COORDS_RAW, W, H, isLeft);
 
-  // Sensor titik dalam canvas (disesuaikan flip)
   const bb = getBoundingBox(FOOT_COORDS_RAW);
   const bbW = bb.maxX - bb.minX;
   const bbH = bb.maxY - bb.minY;
   const pad = 4;
-  const scaleX = (W - pad * 2) / bbW;
-  const scaleY = (H - pad * 2) / bbH;
 
   const pts = SENSOR_POS.map(s => {
     let px = s.nx * (W - pad * 2) + pad;
@@ -189,7 +376,9 @@ function drawFootHeatmap(canvasId, values, maxVal, isLeft) {
     return {
       cx: px, cy: py,
       sx: W * 0.28, sy: H * 0.18,
-      ratio: Math.min(1, (values[s.key] || 0) / maxVal)
+      ratio: Math.min(1, (values[s.key] || 0) / maxVal),
+      val: values[s.key] || 0,
+      label: s.label
     };
   });
 
@@ -216,27 +405,21 @@ function drawFootHeatmap(canvasId, values, maxVal, isLeft) {
   off.width = W; off.height = H;
   off.getContext('2d').putImageData(imgData, 0, 0);
 
-  // Background + clip ke shape kaki
-  ctx.fillStyle = '#ffffff';    // Ganti jadi putih (atau 'transparent' jika ingin tembus pandang)
-ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
   ctx.save();
   ctx.clip(footPath);
   ctx.drawImage(off, 0, 0);
   ctx.restore();
 
-  // Outline kaki
   ctx.save();
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)'; // Ganti menjadi hitam transparan atau abu-abu
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
   ctx.lineWidth = 1.5;
   ctx.stroke(footPath);
 
   // Sensor dots + label + nilai
-  // Sensor dots — tanpa label teks, pakai hover balloon di HTML
-  SENSOR_POS.forEach((s, idx) => {
-    const p = pts[idx];
-    const val = values[s.key] || 0;
-    const ratio = Math.min(1, val / maxVal);
-    const [cr, cg, cb] = heatColor(ratio);
+  pts.forEach(p => {
+    const [cr, cg, cb] = heatColor(p.ratio);
 
     // Halo
     ctx.beginPath();
@@ -253,25 +436,27 @@ ctx.fillRect(0, 0, W, H);
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    // Nilai ADC di atas dot
+    // Nilai sensor
     ctx.shadowColor = 'rgba(0,0,0,0.95)';
     ctx.shadowBlur  = 5;
     ctx.fillStyle   = '#ffffff';
     ctx.font        = 'bold 11px JetBrains Mono, monospace';
     ctx.textAlign   = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(Math.round(val), p.cx, p.cy - 18);
+    ctx.fillText(Math.round(p.val), p.cx, p.cy - 18);
+
+    // Label singkat sensor (ramah baca)
+    ctx.fillText(p.label, p.cx, p.cy + 16);
     ctx.shadowBlur  = 0;
   });
-
   ctx.restore();
 }
 
+// Tooltip hover tetap struktur lama, tapi sekarang deskripsi awam
 function attachSensorTooltips(canvasId, sensorPos, values, maxVal, isLeft) {
   const cv = document.getElementById(canvasId);
   if (!cv) return;
 
-  // Hapus overlay lama
   const oldOverlay = document.getElementById(canvasId + '-overlay');
   if (oldOverlay) oldOverlay.remove();
 
@@ -281,17 +466,13 @@ function attachSensorTooltips(canvasId, sensorPos, values, maxVal, isLeft) {
 
   const overlay = document.createElement('div');
   overlay.id = canvasId + '-overlay';
-  overlay.style.cssText = `
-    position:absolute;inset:0;pointer-events:none;
-  `;
-
+  overlay.style.cssText = `position:absolute;inset:0;pointer-events:none;`;
   cv.parentElement.style.position = 'relative';
   cv.parentElement.appendChild(overlay);
 
-  SENSOR_POS.forEach((s, idx) => {
+  SENSOR_POS.forEach((s) => {
     let px = s.nx * (W - pad * 2) + pad;
     let py = s.ny * (H - pad * 2) + pad;
-
     if (isLeft) px = W - px;
 
     const val = values[s.key] || 0;
@@ -302,39 +483,29 @@ function attachSensorTooltips(canvasId, sensorPos, values, maxVal, isLeft) {
     const dot = document.createElement('div');
     dot.style.cssText = `
       position:absolute;
-      width:26px;height:26px;
-      left:${px - 13}px;top:${py - 13}px;
+      width:32px;height:32px;
+      left:${px}px;top:${py}px;
+      transform:translate(-50%, -50%);
       border-radius:50%;
       cursor:pointer;
       pointer-events:all;
-      z-index:10;
+      z-index:50;
     `;
 
     const tip = document.createElement('div');
     tip.style.cssText = `
-      position:absolute;
-      bottom:calc(100% + 8px);
-      left:50%;transform:translateX(-50%);
-      background:#1a1a2e;
-      color:#fff;
-      font-family:'Nunito',sans-serif;
-      font-size:13px;
-      font-weight:700;
-      padding:7px 13px;
-      border-radius:9px;
-      white-space:nowrap;
-      border:1.5px solid ${color};
-      display:none;
-      pointer-events:none;
-      z-index:50;
-      box-shadow:0 4px 16px rgba(0,0,0,0.4);
-    `;
-
-    tip.innerHTML = `
-      <span style="color:${color};margin-right:6px;">●</span>
-      ${s.label} &nbsp;·&nbsp;
-      <span style="font-family:'JetBrains Mono',monospace;">${Math.round(val)} N</span>
-    `;
+  position:absolute;
+  bottom:calc(100% + 6px);
+  left:50%; transform:translateX(-50%);
+  background:#1a1a2e;color:#fff;
+  font-family:'Nunito',sans-serif; font-size:10px; font-weight:600;
+  padding:4px 6px; border-radius:5px;
+  white-space:normal; width:200px;
+  border:1.5px solid ${color};
+  display:none; pointer-events:none; z-index:50;
+  box-shadow:0 2px 12px rgba(0,0,0,0.4);
+`;
+    tip.innerText = SENSOR_DESC[s.key];
 
     dot.appendChild(tip);
     dot.addEventListener('mouseenter', () => tip.style.display = 'block');
@@ -549,6 +720,56 @@ function updatePostureUI(result) {
   document.querySelectorAll('.posture-panel').forEach(el => {
     el.classList.toggle('active', el.dataset.posture === result.label);
   });
+}
+
+// ============================================================
+// HASIL ML SEDERHANA
+// Tidak mengganti Deteksi Postur utama.
+// ============================================================
+
+async function updatePostureMLSimple(data) {
+  const seq = ++_postureMLSeq;
+  const box = document.getElementById('posture-ml-simple');
+  const resultEl = document.getElementById('ml-posture-result');
+
+  if (!box || !resultEl) return;
+
+  if (typeof predictPostureML !== 'function') {
+    box.classList.remove('is-normal', 'is-warning');
+    box.classList.add('is-loading');
+    resultEl.textContent = 'Model belum siap';
+    return;
+  }
+
+  box.classList.remove('is-normal', 'is-warning');
+  box.classList.add('is-loading');
+  resultEl.textContent = 'Mendeteksi...';
+
+  try {
+    const result = await predictPostureML(data);
+
+    if (seq !== _postureMLSeq) return;
+
+    const label = result && result.label ? result.label : 'Belum terdeteksi';
+
+    resultEl.textContent = label;
+
+    box.classList.remove('is-loading', 'is-normal', 'is-warning');
+
+    if (label.toLowerCase() === 'normal') {
+      box.classList.add('is-normal');
+    } else if (label.toLowerCase().includes('condong')) {
+      box.classList.add('is-warning');
+    }
+  } catch (err) {
+    console.warn('ML condong gagal:', err);
+
+    if (seq !== _postureMLSeq) return;
+
+    box.classList.remove('is-normal', 'is-warning');
+    box.classList.add('is-loading');
+    resultEl.textContent = 'Belum terbaca';
+  }
 }
 
 // ============================================================
