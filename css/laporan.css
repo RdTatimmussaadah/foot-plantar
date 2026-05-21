@@ -1220,3 +1220,11 @@
   font-size: 18px;
   cursor: pointer;
 }
+
+.snapshot-table .col-posture {
+  width: 120px;
+}
+
+.snapshot-table {
+  min-width: 980px;
+}

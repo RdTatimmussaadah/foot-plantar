@@ -111,9 +111,9 @@ function buildFootPath(coords, canvasW, canvasH, flipX) {
 // kaki kanan: ibu jari di kiri, kelingking di kanan
 // kaki kiri:  di-flip, ibu jari di kanan
 const SENSOR_POS = [
-  { key: 0, nx: 0.15, ny: 0.20, label: 'Hallux'  }, // ibu jari
-  { key: 1, nx: 0.35, ny: 0.47, label: 'Med.FF'  }, // medial forefoot (sisi ibu jari)
-  { key: 2, nx: 0.75, ny: 0.50, label: 'Lat.FF'  }, // lateral forefoot (sisi kelingking)
+  { key: 0, nx: 0.15, ny: 0.22, label: 'Hallux'  }, // ibu jari
+  { key: 1, nx: 0.35, ny: 0.40, label: 'Med.FF'  }, // medial forefoot (sisi ibu jari)
+  { key: 2, nx: 0.75, ny: 0.43, label: 'Lat.FF'  }, // lateral forefoot (sisi kelingking)
   { key: 3, nx: 0.50, ny: 0.87, label: 'Heel'    }, // tumit
 ];
 
@@ -443,7 +443,7 @@ function drawFootHeatmap(canvasId, values, maxVal, isLeft) {
     ctx.font        = 'bold 11px JetBrains Mono, monospace';
     ctx.textAlign   = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(Math.round(p.val), p.cx, p.cy - 18);
+    // ctx.fillText(Math.round(p.val), p.cx, p.cy - 18);
 
     // Label singkat sensor (ramah baca)
     ctx.fillText(p.label, p.cx, p.cy + 16);
@@ -670,114 +670,226 @@ function detectPosture(data) {
 /**
  * Update UI postur card berdasarkan hasil deteksi
  */
-function updatePostureUI(result) {
-  currentPosture = result.label;
-  localStorage.setItem('fps_currentPosture', result.label);
+// function updatePostureUI(result) {
+//   currentPosture = result.label;
+//   localStorage.setItem('fps_currentPosture', result.label);
 
-  // Badge di header card
-  const badge = document.getElementById('posture-badge');
-  if (badge) {
-    badge.textContent = result.label;
+//   // Badge di header card
+//   const badge = document.getElementById('posture-badge');
+//   if (badge) {
+//     badge.textContent = result.label;
 
-    const cfg = POSTURE_CONFIG[result.label];
+//     const cfg = POSTURE_CONFIG[result.label];
 
-    badge.style.color = cfg ? cfg.color : 'var(--text-secondary)';
-    badge.style.background = cfg ? cfg.color + '15' : '';
-    badge.style.border = cfg ? `1px solid ${cfg.color}40` : '';
-  }
+//     badge.style.color = cfg ? cfg.color : 'var(--text-secondary)';
+//     badge.style.background = cfg ? cfg.color + '15' : '';
+//     badge.style.border = cfg ? `1px solid ${cfg.color}40` : '';
+//   }
 
-  // Gambar ikon postur aktif
-  const iconEl = document.getElementById('posture-icon');
-  if (iconEl) {
-    const cfg = POSTURE_CONFIG[result.label];
+//   // Gambar ikon postur aktif
+//   const iconEl = document.getElementById('posture-icon');
+//   if (iconEl) {
+//     const cfg = POSTURE_CONFIG[result.label];
 
-    iconEl.src = cfg ? cfg.icon : '';
-    iconEl.style.display = cfg ? 'block' : 'none';
-  }
+//     iconEl.src = cfg ? cfg.icon : '';
+//     iconEl.style.display = cfg ? 'block' : 'none';
+//   }
 
-  // Label nama postur besar
-  const labelEl = document.getElementById('posture-label');
-  if (labelEl) {
-    const cfg = POSTURE_CONFIG[result.label];
+//   // Label nama postur besar
+//   const labelEl = document.getElementById('posture-label');
+//   if (labelEl) {
+//     const cfg = POSTURE_CONFIG[result.label];
 
-    labelEl.textContent = result.label;
-    labelEl.style.color = cfg ? cfg.color : 'var(--text-primary)';
-  }
+//     labelEl.textContent = result.label;
+//     labelEl.style.color = cfg ? cfg.color : 'var(--text-primary)';
+//   }
 
-  // Source tag — "Rule-based" atau "ML" nanti
-  const sourceEl = document.getElementById('posture-source');
-  if (sourceEl) {
-    sourceEl.textContent = result.source === 'ml'
-      ? `🤖 Model ML · ${(result.confidence * 100).toFixed(0)}%`
-      : '⚙️ Rule-based · menunggu model ML';
+//   // Source tag — "Rule-based" atau "ML" nanti
+//   const sourceEl = document.getElementById('posture-source');
+//   if (sourceEl) {
+//     sourceEl.textContent = result.source === 'ml'
+//       ? `🤖 Model ML · ${(result.confidence * 100).toFixed(0)}%`
+//       : '⚙️ Rule-based · menunggu model ML';
 
-    sourceEl.style.color = result.source === 'ml'
-      ? 'var(--green)'
-      : 'var(--text-dim)';
-  }
+//     sourceEl.style.color = result.source === 'ml'
+//       ? 'var(--green)'
+//       : 'var(--text-dim)';
+//   }
 
-  // Highlight panel yang sesuai
-  document.querySelectorAll('.posture-panel').forEach(el => {
-    el.classList.toggle('active', el.dataset.posture === result.label);
-  });
-}
+//   // Highlight panel yang sesuai
+//   document.querySelectorAll('.posture-panel').forEach(el => {
+//     el.classList.toggle('active', el.dataset.posture === result.label);
+//   });
+// }
 
 // ============================================================
 // HASIL ML SEDERHANA
 // Tidak mengganti Deteksi Postur utama.
 // ============================================================
 
+function updatePostureUI(result) {
+  currentPosture = result.label;
+  localStorage.setItem('fps_currentPosture', result.label);
+}
+
+// async function updatePostureMLSimple(data) {
+//   const seq = ++_postureMLSeq;
+//   const box = document.getElementById('posture-ml-simple');
+//   const resultEl = document.getElementById('ml-posture-result');
+
+//   if (!box || !resultEl) return;
+
+//   if (typeof predictPostureML !== 'function') {
+//     box.classList.remove('is-normal', 'is-warning');
+//     box.classList.add('is-loading');
+//     resultEl.textContent = 'Model belum siap';
+//     return;
+//   }
+
+//   box.classList.remove('is-normal', 'is-warning');
+//   box.classList.add('is-loading');
+//   resultEl.textContent = 'Mendeteksi...';
+
+//   try {
+//     const result = await predictPostureML(data);
+
+//     if (seq !== _postureMLSeq) return;
+
+//     const label = result && result.label ? result.label : 'Belum terdeteksi';
+
+//     resultEl.textContent = label;
+
+//     localStorage.setItem('fps_currentPostureML', result.rawLabel || '');
+//     localStorage.setItem('fps_currentPostureMLConfidence', (result.confidence || 0).toFixed(4));
+
+//     box.classList.remove('is-loading', 'is-normal', 'is-warning');
+
+//     if (label.toLowerCase() === 'normal') {
+//       box.classList.add('is-normal');
+//     } else if (label.toLowerCase().includes('condong')) {
+//       box.classList.add('is-warning');
+//     }
+//   } catch (err) {
+//     console.warn('ML condong gagal:', err);
+
+//     if (seq !== _postureMLSeq) return;
+
+//     box.classList.remove('is-normal', 'is-warning');
+//     box.classList.add('is-loading');
+//     resultEl.textContent = 'Belum terbaca';
+//   }
+// }
+
+// ============================================================
+// BALANCE ANALYSIS
+// ============================================================
+
 async function updatePostureMLSimple(data) {
   const seq = ++_postureMLSeq;
-  const box = document.getElementById('posture-ml-simple');
+  const box = document.getElementById('posture-result-box');
   const resultEl = document.getElementById('ml-posture-result');
 
   if (!box || !resultEl) return;
 
   if (typeof predictPostureML !== 'function') {
-    box.classList.remove('is-normal', 'is-warning');
-    box.classList.add('is-loading');
-    resultEl.textContent = 'Model belum siap';
+    _setPostureBoxState(box, resultEl, 'Model belum siap', 'loading');
     return;
   }
 
-  box.classList.remove('is-normal', 'is-warning');
-  box.classList.add('is-loading');
-  resultEl.textContent = 'Mendeteksi...';
+  _setPostureBoxState(box, resultEl, 'Mendeteksi...', 'loading');
 
   try {
     const result = await predictPostureML(data);
-
     if (seq !== _postureMLSeq) return;
 
     const label = result && result.label ? result.label : 'Belum terdeteksi';
 
-    resultEl.textContent = label;
-
     localStorage.setItem('fps_currentPostureML', result.rawLabel || '');
     localStorage.setItem('fps_currentPostureMLConfidence', (result.confidence || 0).toFixed(4));
 
-    box.classList.remove('is-loading', 'is-normal', 'is-warning');
+    let state = 'default';
+    if (label.toLowerCase() === 'normal') state = 'normal';
+    else if (label.toLowerCase().includes('condong')) state = 'warning';
 
-    if (label.toLowerCase() === 'normal') {
-      box.classList.add('is-normal');
-    } else if (label.toLowerCase().includes('condong')) {
-      box.classList.add('is-warning');
-    }
+    _setPostureBoxState(box, resultEl, label, state);
+
   } catch (err) {
-    console.warn('ML condong gagal:', err);
-
+    console.warn('ML postur gagal:', err);
     if (seq !== _postureMLSeq) return;
-
-    box.classList.remove('is-normal', 'is-warning');
-    box.classList.add('is-loading');
-    resultEl.textContent = 'Belum terbaca';
+    _setPostureBoxState(box, resultEl, 'Belum terbaca', 'loading');
   }
 }
 
-// ============================================================
-// BALANCE ANALYSIS
-// ============================================================
+// function _setPostureBoxState(box, resultEl, label, state) {
+//   box.classList.remove('is-normal', 'is-warning', 'is-loading');
+//   if (state === 'normal')  box.classList.add('is-normal');
+//   if (state === 'warning') box.classList.add('is-warning');
+//   if (state === 'loading') box.classList.add('is-loading');
+//   resultEl.textContent = label;
+// }
+
+function getPostureNote(label, state) {
+  const text = String(label || '').toLowerCase();
+
+  if (state === 'loading') {
+    return 'Sistem sedang membaca pola tekanan kaki untuk mendeteksi kecenderungan postur.';
+  }
+
+  if (text.includes('normal')) {
+    return 'Pola tekanan menunjukkan distribusi tumpuan yang relatif seimbang.';
+  }
+
+  if (text.includes('depan')) {
+    return 'Pola tekanan menunjukkan kecenderungan tumpuan tubuh ke arah depan.';
+  }
+
+  if (text.includes('belakang')) {
+    return 'Pola tekanan menunjukkan kecenderungan tumpuan tubuh ke arah belakang.';
+  }
+
+  if (text.includes('kiri')) {
+    return 'Pola tekanan menunjukkan kecenderungan tumpuan tubuh ke sisi kiri.';
+  }
+
+  if (text.includes('kanan')) {
+    return 'Pola tekanan menunjukkan kecenderungan tumpuan tubuh ke sisi kanan.';
+  }
+
+  return 'Data postur belum cukup jelas. Pembacaan dapat diulang untuk melihat pola tekanan dengan lebih baik.';
+}
+
+function _setPostureBoxState(box, resultEl, label, state) {
+  box.classList.remove('is-normal', 'is-warning', 'is-loading');
+
+  if (state === 'normal') {
+    box.classList.add('is-normal');
+  } else if (state === 'warning') {
+    box.classList.add('is-warning');
+  } else if (state === 'loading') {
+    box.classList.add('is-loading');
+  }
+
+  const POSTURE_EMOJI = {
+    'Normal': '🟢',
+    'Condong Depan': '⬆️',
+    'Condong Belakang': '⬇️',
+    'Condong Kiri': '⬅️',
+    'Condong Kanan': '➡️',
+    'Mendeteksi...': '⏳',
+    'Model belum siap': '⚠️',
+    'Belum terdeteksi': '❓',
+    'Belum terbaca': '❓'
+  };
+
+  const emoji = POSTURE_EMOJI[label] || '';
+  resultEl.textContent = `${emoji} ${label}`.trim();
+
+  const noteEl = document.getElementById('posture-note');
+  if (noteEl) {
+    noteEl.textContent = getPostureNote(label, state);
+  }
+}
+
 const interpretations = {
   "Flat Foot": {
     "Normal": "Lengkungan kaki rata, namun tumpuan stabil di tengah.",

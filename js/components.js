@@ -166,29 +166,7 @@ function openSnapModal() {
           </div>
         </div>
 
-        <div class="snap-sensor-preview" id="snap-sensor-preview">
-          <div class="snap-sensor-col">
-            <div class="snap-sensor-side-lbl left">● KIRI</div>
-            <div class="snap-sensor-grid">
-              <div class="snap-sv"><div class="snap-sv-val" id="sp-hl">—</div><div class="snap-sv-k">Hallux</div></div>
-              <div class="snap-sv"><div class="snap-sv-val" id="sp-ml">—</div><div class="snap-sv-k">Med.FF</div></div>
-              <div class="snap-sv"><div class="snap-sv-val" id="sp-ll">—</div><div class="snap-sv-k">Lat.FF</div></div>
-              <div class="snap-sv"><div class="snap-sv-val snap-sv-warn" id="sp-el">—</div><div class="snap-sv-k">Heel</div></div>
-            </div>
-          </div>
 
-          <div class="snap-sensor-divider"></div>
-
-          <div class="snap-sensor-col">
-            <div class="snap-sensor-side-lbl right">● KANAN</div>
-            <div class="snap-sensor-grid">
-              <div class="snap-sv"><div class="snap-sv-val" id="sp-hr">—</div><div class="snap-sv-k">Hallux</div></div>
-              <div class="snap-sv"><div class="snap-sv-val" id="sp-mr">—</div><div class="snap-sv-k">Med.FF</div></div>
-              <div class="snap-sv"><div class="snap-sv-val" id="sp-lr">—</div><div class="snap-sv-k">Lat.FF</div></div>
-              <div class="snap-sv"><div class="snap-sv-val snap-sv-warn" id="sp-er">—</div><div class="snap-sv-k">Heel</div></div>
-            </div>
-          </div>
-        </div>
 
         <div class="snap-arch-row">
           <div>Struktur Kiri: <span id="sp-arch-l" style="font-weight:700">—</span></div>
@@ -201,15 +179,8 @@ function openSnapModal() {
         </div>
 
         <div class="snap-totals-row">
-          <div>Total Kiri: <span class="snap-tot-l" id="sp-total-l">—</span> N</div>
-          <div>Total Kanan: <span class="snap-tot-r" id="sp-total-r">—</span> N</div>
-          <div>CoP: <span class="snap-tot-b" id="sp-cop-status">—</span></div>
-        </div>
 
-        <div class="snap-totals-row" style="margin-top:6px">
-          <div>X: <span id="sp-cop-x" style="font-weight:700">—</span> cm</div>
-          <div>Y: <span id="sp-cop-y" style="font-weight:700">—</span> cm</div>
-          <div>Deviasi: <span id="sp-cop-distance" style="font-weight:700">—</span> cm</div>
+          <div>CoP: <span class="snap-tot-b" id="sp-cop-status">—</span></div>
         </div>
 
         <div class="snap-note-wrap">

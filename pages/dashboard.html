@@ -39,7 +39,7 @@
                       >
                         Distribusi 4 Sensor
                       </div>
-                      <div
+                      <!-- <div
                         style="
                           font-family: var(--font-mono);
                           font-size: 10px;
@@ -48,7 +48,7 @@
                         id="total-force-label"
                       >
                         Total: — N
-                      </div>
+                      </div> -->
                     </div>
                   </div>
 
@@ -108,7 +108,7 @@
                 </div>
 
                 <!-- POSTURE -->
-                <div class="posture-card">
+                <!-- <div class="posture-card">
                   <div class="posture-card-header">
                     <div class="card-section-title" style="margin: 0 0 2px">
                       DETEKSI POSTUR
@@ -140,6 +140,32 @@
                   <div class="posture-ml-simple" id="posture-ml-simple">
                     <span>Hasil ML</span>
                     <strong id="ml-posture-result">Mendeteksi...</strong>
+                  </div>
+                </div> -->
+
+                <!-- POSTURE -->
+                <div class="posture-card">
+                  <div class="posture-card-header">
+                    <div class="card-section-title" style="margin: 0 0 2px">
+                      DETEKSI POSTUR
+                    </div>
+                    <span class="posture-badge" id="posture-badge"
+                      >ML Aktif</span
+                    >
+                  </div>
+
+                  <!-- Kotak postur — sekarang menampilkan hasil ML langsung -->
+                  <div class="posture-result" id="posture-result-box">
+                    <div class="posture-result-content">
+                      <div class="posture-ml-label-wrap">
+                        <!-- <span class="posture-ml-tag">ML</span> -->
+                        <strong id="ml-posture-result">Mendeteksi...</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="posture-note" id="posture-note">
+                    Sistem sedang membaca pola tekanan kaki untuk mendeteksi kecenderungan postur.
                   </div>
                 </div>
               </div>

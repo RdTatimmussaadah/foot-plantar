@@ -261,27 +261,29 @@ function renderHistoryList() {
 
         <div class="snapshot-table-wrap">
           <table class="snapshot-table">
-            <colgroup>
-              <col class="col-time" />
-              <col class="col-foot" />
-              <col class="col-foot" />
-              <col class="col-foot" />
-              <col class="col-foot" />
-              <col class="col-cop" />
-              <col class="col-action" />
-            </colgroup>
+<colgroup>
+  <col class="col-time" />
+  <col class="col-posture" />
+  <col class="col-foot" />
+  <col class="col-foot" />
+  <col class="col-foot" />
+  <col class="col-foot" />
+  <col class="col-cop" />
+  <col class="col-action" />
+</colgroup>
 
-            <thead>
-              <tr>
-                <th>Jam</th>
-                <th>Struktur Kiri</th>
-                <th>Gerakan Kiri</th>
-                <th>Struktur Kanan</th>
-                <th>Gerakan Kanan</th>
-                <th>CoP</th>
-                <th></th>
-              </tr>
-            </thead>
+<thead>
+  <tr>
+    <th>Jam</th>
+    <th>Postur</th>
+    <th>Struktur Kiri</th>
+    <th>Gerakan Kiri</th>
+    <th>Struktur Kanan</th>
+    <th>Gerakan Kanan</th>
+    <th>CoP</th>
+    <th></th>
+  </tr>
+</thead>
 
             <tbody>
               ${items.map((s, index) => renderSnapRow(s, index)).join('')}
@@ -306,6 +308,7 @@ function selectSnapshot(rowId) {
 
 function renderSnapRow(snap, index) {
   const summary = buildSnapshotSummary(snap);
+  const postureLabel = getSnapshotPostureLabel(snap);
 
   const rawId = snap.id || snap.snapshot_time || index;
   const rowId = `snap-row-${index}-${String(rawId).replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -317,6 +320,12 @@ function renderSnapRow(snap, index) {
         ${escapeHtml(summary.timeText)}
       </td>
 
+      <td>
+        <span class="snapshot-cell-value">
+          ${escapeHtml(postureLabel)}
+        </span>
+      </td>
+      
       <td>
         <span class="snapshot-cell-value" style="color:${summary.leftStructureColor}">
           ${escapeHtml(summary.leftStructure)}
@@ -1481,17 +1490,17 @@ function exportPDF() {
     minute: '2-digit',
   });
 
-  const avg = (arr) => arr.reduce((a, b) => a + b, 0) / (arr.length || 1);
+  // const avg = (arr) => arr.reduce((a, b) => a + b, 0) / (arr.length || 1);
 
-  const copList = snaps
-    .map(computeCopFromSnapshot)
-    .filter((cop) => cop.valid);
+  // const copList = snaps
+  //   .map(computeCopFromSnapshot)
+  //   .filter((cop) => cop.valid);
 
-  const copDistances = copList.map((cop) => cop.distance);
+  // const copDistances = copList.map((cop) => cop.distance);
 
-  const avgCop = copDistances.length ? avg(copDistances).toFixed(1) : '0.0';
-  const minCop = copDistances.length ? Math.min(...copDistances).toFixed(1) : '0.0';
-  const maxCop = copDistances.length ? Math.max(...copDistances).toFixed(1) : '0.0';
+  // const avgCop = copDistances.length ? avg(copDistances).toFixed(1) : '0.0';
+  // const minCop = copDistances.length ? Math.min(...copDistances).toFixed(1) : '0.0';
+  // const maxCop = copDistances.length ? Math.max(...copDistances).toFixed(1) : '0.0';
 
   const countStable = summaries.filter(
     (summary) => summary.copDashboardLabel === 'STABIL'
@@ -1509,71 +1518,53 @@ function exportPDF() {
     ? _fmtTime(snaps[0].snapshot_time)
     : '—';
 
-  const copValueColor = (value) => {
-    const n = parseFloat(value);
+  // const copValueColor = (value) => {
+  //   const n = parseFloat(value);
 
-    if (n <= 2.5) return '#1a7a4a';
-    if (n <= 4) return '#8a6200';
+  //   if (n <= 2.5) return '#1a7a4a';
+  //   if (n <= 4) return '#8a6200';
 
-    return '#9b1c1c';
-  };
+  //   return '#9b1c1c';
+  // };
 
-  const tableRows = snaps.map((snap, index) => {
-    const cop = computeCopFromSnapshot(snap);
-    const summary = buildSnapshotSummary(snap);
+const tableRows = snaps.map((snap, index) => {
+  const cop = computeCopFromSnapshot(snap);
+  const summary = buildSnapshotSummary(snap);
 
-    const lN = toForceArray(snap.left_fsr_newton);
-    const rN = toForceArray(snap.right_fsr_newton);
+  return `
+    <tr>
+      <td class="tc muted">${index + 1}</td>
+      <td class="nowrap">${escapeHtml(_fmtTime(snap.snapshot_time))}</td>
+      <td class="tc">${escapeHtml(snap.posture_ml || 'Berdiri')}</td>
 
-    const fL = lN.reduce((a, b) => a + b, 0).toFixed(0);
-    const fR = rN.reduce((a, b) => a + b, 0).toFixed(0);
+      <td>
+        <div class="foot-cell">
+          <strong>Kaki Kiri</strong>
+          <span>Struktur: ${escapeHtml(summary.leftStructure)}</span>
+          <span>Gerakan: ${escapeHtml(summary.leftMotion)}</span>
+        </div>
+      </td>
 
-    return `
-      <tr>
-        <td class="tc muted">${index + 1}</td>
-        <td class="nowrap">${escapeHtml(_fmtTime(snap.snapshot_time))}</td>
-        <td class="tc">${escapeHtml(snap.posture || 'Berdiri')}</td>
+      <td>
+        <div class="foot-cell">
+          <strong>Kaki Kanan</strong>
+          <span>Struktur: ${escapeHtml(summary.rightStructure)}</span>
+          <span>Gerakan: ${escapeHtml(summary.rightMotion)}</span>
+        </div>
+      </td>
 
-        <td>
-          <div class="foot-cell">
-            <strong>Kiri</strong>
-            <span>Struktur: ${escapeHtml(summary.leftStructure)}</span>
-            <span>Gerakan: ${escapeHtml(summary.leftMotion)}</span>
-          </div>
-        </td>
+      <td class="tc">
+        <span class="badge" style="background:${copStatusBg(cop)};color:${copPdfColor(cop)}">
+          ${escapeHtml(summary.copDashboardLabel)}
+        </span>
+      </td>
 
-        <td>
-          <div class="foot-cell">
-            <strong>Kanan</strong>
-            <span>Struktur: ${escapeHtml(summary.rightStructure)}</span>
-            <span>Gerakan: ${escapeHtml(summary.rightMotion)}</span>
-          </div>
-        </td>
-
-        <td class="tc">
-          <span class="badge" style="background:${copStatusBg(cop)};color:${copPdfColor(cop)}">
-            ${escapeHtml(summary.copDashboardLabel)}
-          </span>
-        </td>
-
-        <td class="tc strong" style="color:${copPdfColor(cop)}">
-          ${cop.distance.toFixed(1)} cm
-        </td>
-
-        <td class="tc small-txt">
-          X ${cop.x.toFixed(1)} / Y ${cop.y.toFixed(1)}
-        </td>
-
-        <td class="tc small-txt">
-          ${fL} N / ${fR} N
-        </td>
-
-        <td class="small-txt">
-          ${escapeHtml(snap.note || '—')}
-        </td>
-      </tr>
-    `;
-  }).join('');
+      <td class="small-txt">
+        ${escapeHtml(snap.note || '—')}
+      </td>
+    </tr>
+  `;
+}).join('');
 
   win.document.write(`<!DOCTYPE html>
 <html lang="id">
@@ -1840,6 +1831,10 @@ function exportPDF() {
     margin-top: 5px;
   }
 
+  .simple-summary {
+  grid-template-columns: repeat(4, 1fr);
+}
+
   .wide-value {
     font-size: 10.5px;
     line-height: 1.25;
@@ -1993,28 +1988,28 @@ function exportPDF() {
     </div>
 
     <div class="patient-panel">
-      <div class="panel-label">Antropometri</div>
+  <div class="panel-label">Antropometri</div>
 
-      <div class="info-row">
-        <span class="info-label">Tinggi Badan</span>
-        <span class="info-value">${escapeHtml(patientHeight)} cm</span>
-      </div>
+  <div class="info-row">
+    <span class="info-label">Tinggi Badan</span>
+    <span class="info-value">${escapeHtml(patientHeight)} cm</span>
+  </div>
 
-      <div class="info-row">
-        <span class="info-label">Berat Badan</span>
-        <span class="info-value">${escapeHtml(patientWeight)} kg</span>
-      </div>
+  <div class="info-row">
+    <span class="info-label">Berat Badan</span>
+    <span class="info-value">${escapeHtml(patientWeight)} kg</span>
+  </div>
 
-      <div class="info-row">
-        <span class="info-label">Rerata Deviasi CoP</span>
-        <span class="info-value" style="color:${copValueColor(avgCop)}">${avgCop} cm</span>
-      </div>
+  <div class="info-row">
+    <span class="info-label">Jumlah Pemeriksaan</span>
+    <span class="info-value">${snaps.length} snapshot</span>
+  </div>
 
-      <div class="info-row">
-        <span class="info-label">Rentang Deviasi CoP</span>
-        <span class="info-value">${minCop}–${maxCop} cm</span>
-      </div>
-    </div>
+  <div class="info-row">
+    <span class="info-label">Status Terakhir</span>
+    <span class="info-value">${escapeHtml(latestSummary.copDashboardLabel)}</span>
+  </div>
+</div>
 
     <div class="patient-panel">
       <div class="panel-label">Kontak</div>
@@ -2089,42 +2084,27 @@ function exportPDF() {
 
   <div class="section-title">Ringkasan Riwayat</div>
 
-  <div class="summary-grid">
-    <div class="summary-card">
-      <div class="summary-val">${snaps.length}</div>
-      <div class="summary-label">Total Snapshot</div>
-    </div>
-
-    <div class="summary-card">
-      <div class="summary-val" style="color:#1a7a4a">${countStable}</div>
-      <div class="summary-label">Snapshot Stabil</div>
-    </div>
-
-    <div class="summary-card">
-      <div class="summary-val" style="color:#9b1c1c">${countAttention}</div>
-      <div class="summary-label">Perlu Perhatian</div>
-    </div>
-
-    <div class="summary-card">
-      <div class="summary-val" style="color:${copValueColor(avgCop)}">${avgCop}</div>
-      <div class="summary-label">Avg Deviasi CoP</div>
-    </div>
-
-    <div class="summary-card">
-      <div class="summary-val" style="color:${copValueColor(minCop)}">${minCop}</div>
-      <div class="summary-label">Min Deviasi CoP</div>
-    </div>
-
-    <div class="summary-card">
-      <div class="summary-val" style="color:${copValueColor(maxCop)}">${maxCop}</div>
-      <div class="summary-label">Max Deviasi CoP</div>
-    </div>
-
-    <div class="summary-card">
-      <div class="summary-val wide-value">${escapeHtml(latestSummary.copDashboardLabel)}</div>
-      <div class="summary-label">Status Terakhir</div>
-    </div>
+  <div class="summary-grid simple-summary">
+  <div class="summary-card">
+    <div class="summary-val">${snaps.length}</div>
+    <div class="summary-label">Total Snapshot</div>
   </div>
+
+  <div class="summary-card">
+    <div class="summary-val" style="color:#1a7a4a">${countStable}</div>
+    <div class="summary-label">Snapshot Stabil</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-val" style="color:#9b1c1c">${countAttention}</div>
+    <div class="summary-label">Perlu Perhatian</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-val wide-value">${escapeHtml(latestSummary.copDashboardLabel)}</div>
+    <div class="summary-label">Status Terakhir</div>
+  </div>
+</div>
 
   <div class="summary-grid" style="grid-template-columns: 1fr 1fr; margin-top: 8px;">
     <div class="summary-card" style="text-align:left;">
@@ -2142,18 +2122,15 @@ function exportPDF() {
 
   <table>
     <thead>
-      <tr>
-        <th class="tc" style="width:28px">No</th>
-        <th>Waktu</th>
-        <th class="tc">Postur</th>
-        <th>Kaki Kiri</th>
-        <th>Kaki Kanan</th>
-        <th class="tc">Status CoP</th>
-        <th class="tc">Deviasi</th>
-        <th class="tc">CoP X/Y</th>
-        <th class="tc">Gaya L/R</th>
-        <th>Catatan</th>
-      </tr>
+<tr>
+  <th class="tc" style="width:28px">No</th>
+  <th>Waktu</th>
+  <th class="tc">Postur</th>
+  <th>Kaki Kiri</th>
+  <th>Kaki Kanan</th>
+  <th class="tc">Stabilitas</th>
+  <th>Catatan</th>
+</tr>
     </thead>
 
     <tbody>
@@ -2161,12 +2138,12 @@ function exportPDF() {
     </tbody>
   </table>
 
-  <div class="disclaimer">
-    Catatan: Laporan ini merangkum struktur kaki, gerakan kaki, serta stabilitas pusat tekanan
-    atau Center of Pressure (CoP). Deviasi CoP menunjukkan jarak pusat tekanan dari titik tengah
-    bidang tumpuan; nilai yang lebih kecil menunjukkan distribusi tekanan yang lebih stabil.
-    Interpretasi ini bersifat pendukung dan perlu dikonfirmasi dengan pemeriksaan klinis bila ditemukan pola abnormal berulang.
-  </div>
+<div class="disclaimer">
+  Catatan: Laporan ini merangkum hasil pembacaan tekanan plantar, pola struktur kaki,
+  gerakan kaki, dan stabilitas tubuh berdasarkan data snapshot. Hasil ini bersifat
+  pendukung awal dan perlu dikonfirmasi melalui pemeriksaan klinis apabila ditemukan
+  pola abnormal secara berulang.
+</div>
 
   <div class="footer">
     <span>Foot Plantar Monitoring — IoT Plantar Pressure Monitoring System</span>
@@ -2187,6 +2164,26 @@ function exportPDF() {
 /* ============================================================
    HELPERS
    ============================================================ */
+function getSnapshotPostureLabel(snap) {
+  const raw = String(
+    snap?.posture_ml ||
+    snap?.postureML ||
+    snap?.posture ||
+    ''
+  ).trim();
+
+  const labelMap = {
+    normal: 'Normal',
+    condong_depan: 'Condong Depan',
+    condong_belakang: 'Condong Belakang',
+    condong_kiri: 'Condong Kiri',
+    condong_kanan: 'Condong Kanan',
+  };
+
+  if (!raw) return '—';
+
+  return labelMap[raw] || raw;
+}
 
 function _fmtTime(raw) {
   try {

@@ -2,42 +2,6 @@
    dashboard.css — Combined Monitoring + Analisis page
    ============================================================ */
 
-/* ── DASHBOARD LAYOUT ONLY ── */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 340px minmax(0, 1fr);
-  gap: 14px;
-  align-items: start;
-}
-
-.dashboard-monitoring,
-.dashboard-analysis {
-  min-width: 0;
-}
-
-.dashboard-monitoring .monitoring-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
-  align-items: start;
-}
-
-.dashboard-monitoring .heatmap-card,
-.dashboard-monitoring .posture-card {
-  grid-column: auto;
-}
-
-.dashboard-analysis .balance-grid {
-  display: grid;
-  grid-template-columns: 340px minmax(0, 1fr);
-  gap: 14px;
-  align-items: start;
-}
-
-/* ============================================================
-   monitoring.css — Monitor page (light theme, 2-column)
-   ============================================================ */
-
 /* ── PAGE HEADER ── */
 .page-header {
   display: flex;
@@ -58,7 +22,7 @@
   margin-top: 2px;
 }
 
-/* ── STAT ROW (4 cards top) ── */
+/* ── STAT ROW ── */
 .stat-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -97,33 +61,115 @@
   font-weight: 600;
 }
 
-/* ── MAIN GRID ── */
-.monitoring-grid {
-  display: grid;
-  grid-template-columns: 310px 1fr;
-  gap: 14px;
-  align-items: start;
-}
+/* ============================================================
+   BASE CARD STYLE
+   ============================================================ */
 
-/* ── HEATMAP CARD (left column) ── */
-.heatmap-card {
+.heatmap-card,
+.posture-card,
+.score-card,
+.balance-card,
+.analisis-card,
+.sensor-card,
+.pronation-card,
+.arch-card,
+.diagnosis-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 18px;
-  grid-column: 1;
+}
+
+.posture-card,
+.score-card,
+.heatmap-card,
+.diagnosis-card {
+  box-sizing: border-box;
+}
+
+/* ============================================================
+   DASHBOARD FINAL LAYOUT
+   Heatmap kiri, Postur + CoP atas, Kaki kiri/kanan bawah
+   CoP menjadi patokan tinggi atas
+   ============================================================ */
+
+.app-content {
+  padding: 14px;
+  overflow-x: hidden;
+}
+
+.dashboard-monitoring,
+.dashboard-analysis,
+.dashboard-monitoring .monitoring-grid,
+.dashboard-analysis .balance-grid {
+  display: contents;
+}
+
+/* Layout utama */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(560px, 1.15fr)
+    minmax(300px, 0.65fr)
+    minmax(300px, 0.65fr);
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "heatmap posture cop"
+    "heatmap diagnosis diagnosis";
+  gap: 14px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.heatmap-card {
+  grid-area: heatmap;
+}
+
+.posture-card {
+  grid-area: posture;
+}
+
+.score-card {
+  grid-area: cop;
+}
+
+.diagnosis-container {
+  grid-area: diagnosis;
+}
+
+.metrics-row,
+.metric-card,
+.detail-card {
+  display: none !important;
+}
+
+/* ============================================================
+   HEATMAP
+   ============================================================ */
+
+.heatmap-card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .heatmap-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 14px;
+  flex: 0 0 auto;
+  margin-bottom: 16px;
 }
 
 .heatmap-body {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   gap: 10px;
 }
@@ -133,11 +179,12 @@
   width: 100%;
   justify-content: space-around;
   padding: 0 8px;
+  margin-bottom: 4px;
 }
 
 .foot-side-lbl {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text-secondary);
   letter-spacing: 0.06em;
@@ -145,23 +192,27 @@
 
 .feet-container {
   display: flex;
-  gap: 10px;
+  gap: 28px;
+  align-items: center;
   justify-content: center;
-  background: #ffffff; /* Ganti dari #0d0d14 ke putih */
-  border: 1px solid var(--border-color); /* Tambahkan border tipis agar rapi */
+  background: #ffffff;
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 15px 0;
+  width: 100%;
+}
+
+.foot-wrap,
+.foot-wrap canvas {
+  width: 220px;
+  height: 470px;
 }
 
 .foot-wrap {
-  width: 120px;
-  height: 240px;
   position: relative;
 }
 
 .foot-wrap canvas {
-  width: 120px;
-  height: 240px;
   display: block;
 }
 
@@ -172,11 +223,12 @@
   width: 100%;
   justify-content: center;
   padding-top: 2px;
+  margin-top: 8px;
 }
 
 .legend-gradient {
-  width: 130px;
-  height: 5px;
+  width: 220px;
+  height: 7px;
   border-radius: 3px;
   background: linear-gradient(
     90deg,
@@ -189,19 +241,30 @@
   );
 }
 
-/* Separator between heatmap and postur */
 .heatmap-card .section-sep {
   height: 1px;
   background: var(--border-color);
   margin: 16px 0;
 }
 
-/* ── POSTURE inside heatmap card ── */
+/* ============================================================
+   DETEKSI POSTUR
+   ============================================================ */
+
+/* .posture-card {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+  height: 100%;
+} */
+
 .posture-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  flex: 0 0 auto;
+  margin-bottom: 12px;
 }
 
 .posture-badge {
@@ -216,32 +279,77 @@
   border-color: var(--green-border);
 }
 
-/* Update Posture Result agar lebih rapih sebagai output tunggal */
+.posture-card {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
 .posture-result {
+  flex: 0 0 165px;
   background: var(--bg-base);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 20px;
+  padding: 18px;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100px;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.posture-note {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  margin-top: 12px;
+  background: var(--bg-base);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  line-height: 1.6;
+
+  display: flex;
+  align-items: center;
+}
+
+.posture-result.is-normal {
+  border-color: var(--green-border, #a3e6c4);
+  background: var(--green-soft, #e8fdf2);
+}
+
+.posture-result.is-warning {
+  border-color: rgba(231, 48, 42, 0.3);
+  background: rgba(231, 48, 42, 0.05);
+}
+
+.posture-result.is-loading {
+  border-color: var(--border-color);
+  background: var(--bg-base);
 }
 
 .posture-result-content {
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 100%;
   gap: 16px;
 }
 
 .posture-result-icon {
-  width: 48px;
-  height: 48px;
+  width: 54px;
+  height: 54px;
   object-fit: contain;
 }
 
 .posture-result-label {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 900;
   color: var(--text-primary);
   margin-bottom: 4px;
@@ -255,88 +363,378 @@
   letter-spacing: 0.05em;
 }
 
-/* ============================================================
-   HASIL ML SEDERHANA — tetap di dalam kotak Deteksi Postur
-   ============================================================ */
-
-.posture-ml-simple {
-  margin-top: 12px;
-  padding: 11px 13px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  background: var(--bg-base);
+.posture-ml-label-wrap {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-width: 0;
+  gap: 10px;
 }
 
-.posture-ml-simple span {
-  flex-shrink: 0;
+.posture-ml-tag {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 900;
-  color: var(--text-dim);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
 }
 
-.posture-ml-simple strong {
-  min-width: 0;
+#ml-posture-result {
   display: block;
-  font-size: 14px;
-  font-weight: 950;
+  font-size: 26px;
+  font-weight: 900;
   color: var(--text-primary);
-  text-align: right;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: center;
+  transition: color 0.3s;
 }
 
-.posture-ml-simple.is-normal strong {
+.posture-result.is-normal #ml-posture-result {
   color: var(--green);
 }
 
-.posture-ml-simple.is-warning strong {
+.posture-result.is-warning #ml-posture-result {
   color: var(--red);
 }
 
-.posture-ml-simple.is-loading strong {
+.posture-result.is-loading #ml-posture-result {
   color: var(--text-dim);
 }
 
-/* Hapus atau komentari .posture-panels karena sudah tidak digunakan */
 .posture-panels {
   display: none;
 }
 
-/* ── RIGHT COLUMN GRID ── */
-.right-col {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.posture-mini-desc {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.4;
 }
 
-.right-row-2 {
+.posture-info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 10px;
+  margin-top: 12px;
 }
 
-/* ── KESEIMBANGAN CARD ── */
-.balance-card {
-  background: var(--bg-card);
+.posture-info-item {
+  background: var(--bg-base);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 18px 20px;
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
 }
 
-.balance-arc-wrap {
+.posture-info-item span {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.posture-info-item strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+.posture-advice-box {
+  margin-top: 10px;
+  background: var(--bg-base);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 11px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ============================================================
+   CoP / STABILITAS POSTUR
+   ============================================================ */
+
+.score-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+  height: 100%;
+  overflow: hidden;
+}
+
+.score-card .detail-card-header {
+  flex: 0 0 auto;
+}
+
+.cop-visualizer-container {
+  flex: 1;
+  min-height: 0;
+  padding: 14px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cop-radar {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  background: var(--bg-base);
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.radar-cross-h,
+.radar-cross-v {
+  position: absolute;
+  background: var(--border-color);
+  z-index: 1;
+}
+
+.radar-cross-h {
+  width: 100%;
+  height: 1px;
+  top: 50%;
+  left: 0;
+}
+
+.radar-cross-v {
+  width: 1px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+}
+
+.radar-circle {
+  position: absolute;
+  border: 1px dashed var(--border-color);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.ring-1 {
+  width: 60px;
+  height: 60px;
+}
+
+.ring-2 {
+  width: 120px;
+  height: 120px;
+}
+
+.ring-3 {
+  width: 180px;
+  height: 180px;
+  opacity: 0.4;
+}
+
+.cop-dot {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 50%;
+  z-index: 10;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 15px var(--accent);
+  transition: all 0.15s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.cop-feedback-box {
+  width: 100%;
+  text-align: center;
+}
+
+/* ============================================================
+   DIAGNOSIS KAKI KIRI + KANAN
+   ============================================================ */
+
+.diagnosis-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 14px;
+  min-height: 0;
+}
+
+.diagnosis-card {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.diagnosis-header {
+  padding: 18px 20px;
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-card-alt);
+}
+
+.left-theme {
+  border-left: 4px solid var(--accent);
+}
+
+.right-theme {
+  border-left: 4px solid var(--yellow);
+}
+
+.diag-title-wrap {
+  min-width: 0;
+}
+
+.diag-side {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+}
+
+.diag-label {
+  font-size: 21px;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-top: 2px;
+  line-height: 1.15;
+}
+
+.diag-icon-svg {
+  width: 58px;
+  height: 58px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.diagnosis-content {
+  padding: 18px 20px;
+  flex: 1;
+}
+
+.diag-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.diag-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.diag-key {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.diag-val {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.diag-explanation {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   BALANCE LEGACY SUPPORT
+   ============================================================ */
+
+.balance-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.score-body {
+  padding: var(--space-md);
+}
+
+.score-gauge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.score-gauge {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-gauge svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotate(-90deg);
+}
+
+.gauge-track {
+  fill: none;
+  stroke: var(--border-color);
+  stroke-width: 10;
+}
+
+.gauge-fill {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s ease, stroke 0.4s ease;
+}
+
+.gauge-center {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.gauge-value {
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.gauge-max {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  font-family: var(--font-mono);
 }
 
 .gauge-score-center {
@@ -358,55 +756,149 @@
   margin-top: 2px;
 }
 
-.balance-desc {
+.balance-card {
+  padding: 18px 20px;
+}
+
+.balance-arc-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.balance-desc,
+.balance-desc-box {
   font-size: 13px;
   line-height: 1.6;
   color: var(--text-secondary);
   background: var(--bg-base);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
+  border: 1px solid var(--border-color);
+}
+
+.balance-desc {
   margin-bottom: 12px;
+}
+
+.balance-desc-box {
+  margin-top: 14px;
+}
+
+.lr-bars {
+  width: 100%;
+}
+
+.lr-bar-row {
+  margin-bottom: 10px;
+}
+
+.lr-bar-row:last-child {
+  margin-bottom: 0;
+}
+
+.lr-bar-labels,
+.lr-split-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.lr-split-labels {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.lr-label {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.left-label {
+  color: var(--accent);
+}
+
+.right-label {
+  color: var(--yellow);
+}
+
+.lr-bar-track,
+.lr-split-track {
+  height: 8px;
+  background: var(--bg-base);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.lr-split-track {
+  display: flex;
+}
+
+.lr-bar-left,
+.lr-split-l {
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.lr-bar-right,
+.lr-split-r {
+  height: 100%;
+  background: var(--yellow);
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.lr-split-l {
+  border-radius: var(--radius-full) 0 0 var(--radius-full);
+}
+
+.lr-split-r {
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
 }
 
 .lr-split-bar {
   margin-top: 4px;
 }
 
-.lr-split-labels {
+.lr-asymmetry-note {
   display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  font-weight: 700;
-  margin-bottom: 5px;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  font-family: var(--font-mono);
 }
 
-.lr-split-track {
-  height: 8px;
-  background: var(--bg-base);
-  border-radius: var(--radius-full);
-  overflow: hidden;
+.balance-right {
   display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.lr-split-l {
-  height: 100%;
-  background: var(--accent);
-  border-radius: var(--radius-full) 0 0 var(--radius-full);
-  transition: width 0.4s ease;
+/* ============================================================
+   ANALISIS CHIP / SENSOR SUPPORT
+   ============================================================ */
+
+.right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.lr-split-r {
-  height: 100%;
-  background: var(--yellow);
-  border-radius: 0 var(--radius-full) var(--radius-full) 0;
-  transition: width 0.4s ease;
+.right-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
 }
 
-/* ── ANALISIS CHIP (pronasi, arch) ── */
-.analisis-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+.analisis-card,
+.sensor-card {
   padding: 18px 20px;
 }
 
@@ -444,14 +936,6 @@
   font-size: 12px;
   color: var(--text-secondary);
   margin-top: 2px;
-}
-
-/* ── SENSOR VALUES CARD ── */
-.sensor-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 18px 20px;
 }
 
 .sensor-cols {
@@ -519,230 +1003,24 @@
   transition: width 0.35s ease;
 }
 
-/* ── METRICS ROW (legacy, kept for compat) ── */
-.metrics-row {
-  display: none;
-}
-
-.metric-card {
-  display: none;
-}
-
-/* Total force label */
 #total-force-label {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-dim);
 }
 
-/* ── POSTURE CARD (standalone, legacy compat) ── */
-.posture-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 18px 20px;
-}
-
-/* ── SENSOR BAR ROWS (legacy compat) ── */
-.detail-card {
-  display: none;
-}
-
-/* ── LIVE STATUS ── */
-.live-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--green);
-  animation: pulse-dot 2s ease infinite;
-}
-
-@keyframes pulse-dot {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.5;
-    transform: scale(0.8);
-  }
-}
-
 /* ============================================================
-   keseimbangan.css — Balance analysis page (light theme)
+   PRONATION / ARCH LEGACY SUPPORT
    ============================================================ */
 
-.balance-grid {
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 14px;
-  align-items: start;
-}
-
-/* ── SCORE CARD (left) ── */
-.score-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.score-body {
-  padding: var(--space-md);
-}
-
-.score-gauge-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-}
-
-.score-gauge {
-  position: relative;
-  width: 140px;
-  height: 140px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.score-gauge svg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform: rotate(-90deg);
-}
-
-.gauge-track {
-  fill: none;
-  stroke: var(--border-color);
-  stroke-width: 10;
-}
-
-.gauge-fill {
-  fill: none;
-  stroke-width: 10;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.8s ease, stroke 0.4s ease;
-}
-
-.gauge-center {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-}
-
-.gauge-value {
-  font-size: 36px;
-  font-weight: 900;
-  color: var(--text-primary);
-  line-height: 1;
-}
-
-.gauge-max {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: 2px;
-  font-family: var(--font-mono);
-}
-
-/* L/R bars */
-.lr-bars {
-  width: 100%;
-}
-
-.lr-bar-row {
-  margin-bottom: 10px;
-}
-
-.lr-bar-row:last-child {
-  margin-bottom: 0;
-}
-
-.lr-bar-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.lr-label {
-  font-size: 12px;
-  font-weight: 700;
-  font-family: var(--font-mono);
-}
-
-.left-label {
-  color: var(--accent);
-}
-
-.right-label {
-  color: var(--yellow);
-}
-
-.lr-bar-track {
-  height: 8px;
-  background: var(--bg-base);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
-
-.lr-bar-left {
-  height: 100%;
-  background: var(--accent);
-  border-radius: var(--radius-full);
-  transition: width 0.4s ease;
-}
-
-.lr-bar-right {
-  height: 100%;
-  background: var(--yellow);
-  border-radius: var(--radius-full);
-  transition: width 0.4s ease;
-}
-
-/* Status desc */
-.balance-desc-box {
-  background: var(--bg-base);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-top: 14px;
-  border: 1px solid var(--border-color);
-}
-
-/* ASI note */
-.lr-asymmetry-note {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-top: 8px;
-  font-family: var(--font-mono);
-}
-
-/* ── RIGHT COLUMN ── */
-.balance-right {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* ── PRONATION CARD ── */
-.pronation-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+.pronation-card,
+.arch-card {
   overflow: hidden;
   grid-column: unset;
 }
 
-.pronation-body {
+.pronation-body,
+.arch-body {
   display: grid;
   grid-template-columns: 1fr 1px 1fr;
   gap: 0;
@@ -754,24 +1032,35 @@
   margin: 0 var(--space-md);
 }
 
-.pron-foot-col {
+.pron-foot-col,
+.arch-foot-col {
   padding: 0 4px;
 }
 
-.pron-foot-title {
+.pron-foot-title,
+.arch-foot-title {
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.pron-foot-title {
   margin-bottom: 14px;
 }
 
-.pron-foot-title.left {
+.arch-foot-title {
+  margin-bottom: 12px;
+}
+
+.pron-foot-title.left,
+.arch-foot-title.left {
   color: var(--accent);
 }
 
-.pron-foot-title.right {
+.pron-foot-title.right,
+.arch-foot-title.right {
   color: var(--yellow);
 }
 
@@ -789,20 +1078,24 @@
   margin-bottom: 10px;
 }
 
-.pron-label {
+.pron-label,
+.arch-label {
   font-size: 15px;
   font-weight: 800;
 }
 
-.pronation-normal {
+.pronation-normal,
+.arch-normal {
   color: var(--green);
 }
 
-.overpronation {
+.overpronation,
+.arch-flat {
   color: var(--red);
 }
 
-.supination {
+.supination,
+.arch-high {
   color: var(--blue);
 }
 
@@ -812,25 +1105,36 @@
   color: var(--text-secondary);
 }
 
-.pron-bar-wrap {
+.pron-bar-wrap,
+.arch-bar-wrap {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.pron-bar-lbl {
+.pron-bar-lbl,
+.arch-bar-lbl {
   font-size: 9px;
   font-family: var(--font-mono);
   color: var(--text-dim);
   white-space: nowrap;
+}
+
+.pron-bar-lbl {
   min-width: 40px;
 }
 
-.pron-bar-lbl:last-child {
+.arch-bar-lbl {
+  min-width: 42px;
+}
+
+.pron-bar-lbl:last-child,
+.arch-bar-lbl:last-child {
   text-align: right;
 }
 
-.pron-bar-track {
+.pron-bar-track,
+.arch-bar-track {
   flex: 1;
   height: 6px;
   background: var(--border-color);
@@ -839,7 +1143,8 @@
   overflow: hidden;
 }
 
-.pron-bar-center-line {
+.pron-bar-center-line,
+.arch-bar-center-line {
   position: absolute;
   left: 50%;
   top: 0;
@@ -848,48 +1153,12 @@
   background: var(--text-dim);
 }
 
-.pron-bar-fill {
+.pron-bar-fill,
+.arch-bar-fill {
   position: absolute;
   height: 100%;
   border-radius: var(--radius-full);
   transition: all 0.4s ease;
-}
-
-/* ── ARCH CARD ── */
-.arch-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  grid-column: unset;
-}
-
-.arch-body {
-  display: grid;
-  grid-template-columns: 1fr 1px 1fr;
-  gap: 0;
-  padding: var(--space-md);
-}
-
-.arch-foot-col {
-  padding: 0 4px;
-}
-
-.arch-foot-title {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-}
-
-.arch-foot-title.left {
-  color: var(--accent);
-}
-
-.arch-foot-title.right {
-  color: var(--yellow);
 }
 
 .arch-result-row {
@@ -897,23 +1166,6 @@
   flex-direction: column;
   gap: 4px;
   margin-bottom: 10px;
-}
-
-.arch-label {
-  font-size: 15px;
-  font-weight: 800;
-}
-
-.arch-normal {
-  color: var(--green);
-}
-
-.arch-flat {
-  color: var(--red);
-}
-
-.arch-high {
-  color: var(--blue);
 }
 
 .arch-desc {
@@ -946,487 +1198,34 @@
   font-family: var(--font-mono);
 }
 
-.arch-bar-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.arch-bar-lbl {
-  font-size: 9px;
-  font-family: var(--font-mono);
-  color: var(--text-dim);
-  white-space: nowrap;
-  min-width: 42px;
-}
-
-.arch-bar-lbl:last-child {
-  text-align: right;
-}
-
-.arch-bar-track {
-  flex: 1;
-  height: 6px;
-  background: var(--border-color);
-  border-radius: var(--radius-full);
-  position: relative;
-  overflow: hidden;
-}
-
-.arch-bar-center-line {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: 1px;
-  height: 100%;
-  background: var(--text-dim);
-}
-
-.arch-bar-fill {
-  position: absolute;
-  height: 100%;
-  border-radius: var(--radius-full);
-  transition: all 0.4s ease;
-}
-
-/* ── Override grid for analisis page ── */
 .balance-grid .pronation-card,
 .balance-grid .arch-card {
   grid-column: 1 / -1;
 }
 
-.diagnosis-container {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.diagnosis-card {
-  padding: 0;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.diagnosis-header {
-  padding: 20px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--bg-card-alt);
-}
-
-.left-theme {
-  border-left: 4px solid var(--accent);
-}
-
-.right-theme {
-  border-left: 4px solid var(--yellow);
-}
-
-.diag-side {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--text-secondary);
-  letter-spacing: 0.1em;
-}
-
-.diag-label {
-  font-size: 22px;
-  font-weight: 900;
-  color: var(--text-primary);
-  margin-top: 2px;
-}
-
-.diagnosis-content {
-  padding: 20px 24px;
-}
-
-.diag-row {
-  display: flex;
-  gap: 32px;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.diag-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.diag-key {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-dim);
-}
-
-.diag-val {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--text-primary);
-}
-
-.diag-explanation {
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--text-secondary);
-}
-
-.diag-icon-svg {
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* cop */
-
-.cop-visualizer-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px 0;
-}
-
-.cop-radar {
-  position: relative;
-  width: 200px;
-  height: 200px;
-  background: var(--bg-base);
-  border-radius: 24px;
-  border: 1px solid var(--border-color);
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-.radar-cross-h,
-.radar-cross-v {
-  position: absolute;
-  background: var(--border-color);
-  z-index: 1;
-}
-
-.radar-cross-h {
-  width: 100%;
-  height: 1px;
-  top: 50%;
-  left: 0;
-}
-
-.radar-cross-v {
-  width: 1px;
-  height: 100%;
-  left: 50%;
-  top: 0;
-}
-
-.radar-circle {
-  position: absolute;
-  border: 1px dashed var(--border-color);
-  border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.ring-1 {
-  width: 60px;
-  height: 60px;
-}
-
-.ring-2 {
-  width: 120px;
-  height: 120px;
-}
-
-.ring-3 {
-  width: 180px;
-  height: 180px;
-  opacity: 0.4;
-}
-
-.cop-dot {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  background: var(--accent);
-  border-radius: 50%;
-  z-index: 10;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 15px var(--accent);
-  /* Transisi halus agar tidak patah-patah */
-  transition: all 0.15s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-}
-
-/* ── RESPONSIVE LAYOUT ONLY ── */
-@media (max-width: 1280px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard-monitoring .monitoring-grid {
-    grid-template-columns: 310px 1fr;
-  }
-
-  .dashboard-monitoring .heatmap-card {
-    grid-column: 1;
-  }
-}
-
-@media (max-width: 980px) {
-  .dashboard-monitoring .monitoring-grid,
-  .dashboard-analysis .balance-grid,
-  .balance-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .diag-row {
-    flex-direction: column;
-    gap: 12px;
-  }
-}
-
-
 /* ============================================================
-   DASHBOARD PRESISI — HEATMAP BESAR KIRI, TANPA RUANG KOSONG
-   Tempel di PALING BAWAH dashboard.css
+   LIVE STATUS
    ============================================================ */
 
-.app-content {
-  padding: 14px;
-  overflow-x: hidden;
-}
-
-/* Jadikan wrapper lama transparan supaya card bisa masuk grid utama */
-.dashboard-monitoring,
-.dashboard-analysis,
-.dashboard-monitoring .monitoring-grid,
-.dashboard-analysis .balance-grid {
-  display: contents;
-}
-
-/* Layout utama */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: minmax(560px, 1.15fr) 330px minmax(390px, 0.9fr);
-  grid-template-rows: auto 1fr;
-  grid-template-areas:
-    "heatmap posture diagnosis"
-    "heatmap cop     diagnosis";
-  gap: 14px;
-  align-items: stretch;
-  width: 100%;
-}
-
-/* Penempatan presisi */
-.heatmap-card {
-  grid-area: heatmap;
-}
-
-.posture-card {
-  grid-area: posture;
-}
-
-.score-card {
-  grid-area: cop;
-}
-
-.diagnosis-container {
-  grid-area: diagnosis;
-}
-
-/* Sembunyikan legacy metric agar tidak bikin ruang kosong */
-.metrics-row,
-.metric-card,
-.detail-card {
-  display: none !important;
-}
-
-/* ============================================================
-   HEATMAP BESAR KIRI
-   ============================================================ */
-
-.heatmap-card {
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  min-height: calc(100vh - 120px);
-  box-sizing: border-box;
-}
-
-.heatmap-header {
-  flex: 0 0 auto;
-  margin-bottom: 16px;
-}
-
-.heatmap-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.feet-container {
-  gap: 28px;
-  align-items: center;
-  justify-content: center;
-}
-
-.foot-wrap {
-  width: 220px;
-  height: 470px;
-  position: relative;
-}
-
-.foot-wrap canvas {
-  width: 220px;
-  height: 470px;
-  display: block;
-}
-
-.foot-labels-row {
-  margin-bottom: 4px;
-}
-
-.foot-side-lbl {
-  font-size: 12px;
-}
-
-.heatmap-legend {
-  margin-top: 8px;
-}
-
-.legend-gradient {
-  width: 220px;
+.live-dot {
+  width: 7px;
   height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse-dot 2s ease infinite;
 }
 
-/* ============================================================
-   POSTURE — CARD ATAS, TIDAK MENINGGALKAN KOSONG
-   ============================================================ */
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 
-.posture-card {
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-.posture-card-header {
-  margin-bottom: 12px;
-}
-
-.posture-result {
-  flex: 1;
-  min-height: 130px;
-  padding: 18px;
-}
-
-.posture-result-content {
-  width: 100%;
-  justify-content: center;
-}
-
-.posture-result-icon {
-  width: 54px;
-  height: 54px;
-}
-
-.posture-result-label {
-  font-size: 22px;
-}
-
-.posture-result-source {
-  font-size: 10px;
-}
-
-/* ============================================================
-   CoP — LANGSUNG DI BAWAH POSTURE
-   ============================================================ */
-
-.score-card {
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  min-height: 0;
-}
-
-.score-card .detail-card-header {
-  flex: 0 0 auto;
-}
-
-.cop-visualizer-container {
-  flex: 1;
-  padding: 14px 16px 18px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.cop-radar {
-  width: 220px;
-  height: 220px;
-  margin-bottom: 14px;
-}
-
-.cop-feedback-box {
-  width: 100%;
-  text-align: center;
-}
-
-/* ============================================================
-   DIAGNOSIS — KOLOM KANAN PENUH
-   ============================================================ */
-
-.diagnosis-container {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: 14px;
-  min-height: calc(100vh - 120px);
-}
-
-.diagnosis-card {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  box-sizing: border-box;
-}
-
-.diagnosis-header {
-  padding: 18px 20px;
-  flex: 0 0 auto;
-}
-
-.diag-label {
-  font-size: 21px;
-  line-height: 1.15;
-}
-
-.diag-icon-svg {
-  width: 58px;
-  height: 58px;
-}
-
-.diagnosis-content {
-  padding: 18px 20px;
-  flex: 1;
-}
-
-.diag-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  margin-bottom: 14px;
-  padding-bottom: 14px;
-}
-
-.diag-explanation {
-  font-size: 13px;
-  line-height: 1.55;
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
 }
 
 /* ============================================================
@@ -1435,7 +1234,15 @@
 
 @media (max-width: 1440px) {
   .dashboard-grid {
-    grid-template-columns: minmax(500px, 1.1fr) 310px minmax(360px, 0.9fr);
+    grid-template-columns:
+      minmax(500px, 1.1fr)
+      minmax(280px, 0.65fr)
+      minmax(280px, 0.65fr);
+  }
+
+  .posture-card,
+  .score-card {
+    min-height: 340px;
   }
 
   .foot-wrap,
@@ -1483,8 +1290,80 @@
     min-height: auto;
   }
 
+  .posture-card,
+  .score-card {
+    min-height: 320px;
+  }
+
   .diagnosis-container {
+    grid-template-columns: 1fr;
     grid-template-rows: auto;
+  }
+
+  .diag-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .foot-wrap,
+  .foot-wrap canvas {
+    width: 160px;
+    height: 330px;
+  }
+
+  .cop-radar {
+    width: 190px;
+    height: 190px;
   }
 }
 
+@media (max-width: 720px) {
+  .app-content {
+    padding: 10px;
+  }
+
+  .stat-row {
+    grid-template-columns: 1fr;
+  }
+
+  .feet-container {
+    gap: 12px;
+  }
+
+  .foot-wrap,
+  .foot-wrap canvas {
+    width: 135px;
+    height: 280px;
+  }
+
+  .legend-gradient {
+    width: 150px;
+  }
+
+  .posture-card,
+  .score-card {
+    min-height: 300px;
+  }
+
+  .cop-radar {
+    width: 170px;
+    height: 170px;
+  }
+
+  .diagnosis-header {
+    padding: 16px;
+  }
+
+  .diagnosis-content {
+    padding: 16px;
+  }
+
+  .diag-label {
+    font-size: 18px;
+  }
+
+  .diag-icon-svg {
+    width: 48px;
+    height: 48px;
+  }
+}

@@ -251,6 +251,8 @@ function firebaseRecordSnapshot(computedData, postureLabel = 'Berdiri', note = '
     right_fsr_newton: computedData.right_fsr_newton || [0, 0, 0, 0],
     left_fsr_percent: computedData.left_fsr_percent || [0, 0, 0, 0],
     right_fsr_percent: computedData.right_fsr_percent || [0, 0, 0, 0],
+    right_fsr_digital: computedData.right_fsr_digital || [0, 0, 0, 0],
+    left_fsr_digital: computedData.left_fsr_digital || [0, 0, 0, 0],
 
     total_weight: Number(computedData.weight) || Number(computedData.total_weight) || 0,
     total_force: Number(computedData.totalForce) || Number(computedData.total_force) || 0,
