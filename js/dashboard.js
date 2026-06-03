@@ -514,6 +514,243 @@ function attachSensorTooltips(canvasId, sensorPos, values, maxVal, isLeft) {
   });
 }
 
+// ============================================================
+// HEATMAP v2 — Pakai data percent dari Firebase (0–100)
+// Flowchart: clamp → 5 zona warna smooth
+// Untuk beralih ke versi ini: ganti redrawHeatmaps() pakai redrawHeatmapsV2()
+// Untuk kembali ke versi lama: pakai redrawHeatmaps() seperti semula
+// ============================================================
+
+/**
+ * Konversi persen (0–100) ke warna RGB smooth 5 zona.
+ * Zona sesuai flowchart:
+ *   0–20  : biru    → cyan
+ *   20–40 : cyan    → hijau
+ *   40–60 : hijau   → kuning
+ *   60–80 : kuning  → oranye
+ *   80–100: oranye  → merah
+ */
+// function heatColorPercent(pct) {
+//   // Clamp 0–100 (sesuai flowchart: P[i]<0 → 0, P[i]>100 → 100)
+//   const p = Math.max(0, Math.min(100, pct));
+
+//   let r = 0, g = 0, b = 0;
+
+//   if (p <= 20) {
+//     // Biru → Cyan
+//     const t = p / 20;
+//     r = 0;
+//     g = Math.round(255 * t);
+//     b = 255;
+
+//   } else if (p <= 40) {
+//     // Cyan → Hijau
+//     const t = (p - 20) / 20;
+//     r = 0;
+//     g = 255;
+//     b = Math.round(255 * (1 - t));
+
+//   } else if (p <= 60) {
+//     // Hijau → Kuning
+//     const t = (p - 40) / 20;
+//     r = Math.round(255 * t);
+//     g = 255;
+//     b = 0;
+
+//   } else if (p <= 80) {
+//     // Kuning → Oranye
+//     const t = (p - 60) / 20;
+//     r = 255;
+//     g = Math.round(255 - (t * 120));  // 255 → 135
+//     b = 0;
+
+//   } else {
+//     // Oranye → Merah
+//     const t = (p - 80) / 20;
+//     r = 255;
+//     g = Math.round(135 * (1 - t));   // 135 → 0
+//     b = 0;
+//   }
+
+//   return [r, g, b];
+// }
+
+/**
+ * Konversi persen (0–100) langsung dari Firebase ke dalam 6 ZONA warna.
+ * Didesain lebih sensitif agar tumpuan kaki dewasa rileks bisa mencapai warna merah.
+ */
+function heatColorPercent(pct) {
+  const p = Math.max(0, Math.min(100, pct));
+
+  let r = 0, g = 0, b = 0;
+
+  if (p <= 10) {
+    // ZONA 1 (0–10%): Biru → Cyan
+    const t = p / 10;
+    r = 0;
+    g = Math.round(255 * t);
+    b = 255;
+
+  } else if (p <= 20) {
+    // ZONA 2 (10–20%): Cyan → Hijau
+    const t = (p - 10) / (20 - 10);
+    r = 0;
+    g = 255;
+    b = Math.round(255 * (1 - t));
+
+  } else if (p <= 40) {
+    // ZONA 3 (20–40%): Hijau → Kuning
+    const t = (p - 20) / (40 - 20);
+    r = Math.round(255 * t);
+    g = 255;
+    b = 0;
+
+  } else if (p <= 60) {
+    // ZONA 4 (40–60%): Kuning → Oranye
+    const t = (p - 40) / (60 - 40);
+    r = 255;
+    g = Math.round(255 - (t * 120)); // 255 → 135
+    b = 0;
+
+  } else if (p <= 80) {
+    // ZONA 5 (60–80%): Oranye → Merah (Target utama kaki dewasa saat berdiri)
+    const t = (p - 60) / (80 - 60);
+    r = 255;
+    g = Math.round(135 * (1 - t));   // 135 → 0
+    b = 0;
+
+  } else {
+    // ZONA 6 (80–100%): Merah Cerah → Merah Maroon Sangat Pekat
+    const t = (p - 80) / (100 - 80);
+    
+    // Nilai Red (R) akan turun perlahan dari 255 menuju 110 saat mencapai 100%
+    r = Math.round(255 - (t * 145)); 
+    g = 0;
+    b = 0;
+  }
+
+  return [r, g, b];
+}
+
+/**
+ * Gambar heatmap v2 — input: array persen (0–100) per sensor,
+ * langsung dari left_fsr_percent / right_fsr_percent Firebase.
+ * Tidak perlu maxVal karena sudah dalam skala 0–100.
+ */
+function drawFootHeatmapV2(canvasId, percentArr, isLeft) {
+  const cv = document.getElementById(canvasId);
+  if (!cv) return;
+  const W = CANVAS_W, H = CANVAS_H;
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const footPath = buildFootPath(FOOT_COORDS_RAW, W, H, isLeft);
+  const pad = 4;
+
+  // Bangun titik sensor dengan nilai persen (0–100)
+  const pts = SENSOR_POS.map(s => {
+    let px = s.nx * (W - pad * 2) + pad;
+    let py = s.ny * (H - pad * 2) + pad;
+    if (isLeft) px = W - px;
+    const pct = Math.max(0, Math.min(100, percentArr[s.key] || 0));
+    return {
+      cx: px, cy: py,
+      sx: W * 0.28, sy: H * 0.18,
+      pct,
+      label: s.label,
+    };
+  });
+
+  // IDW heatmap — interpolasi antar sensor pakai bobot jarak
+  const imgData = ctx.createImageData(W, H);
+  const d = imgData.data;
+  for (let py = 0; py < H; py++) {
+    for (let px = 0; px < W; px++) {
+      let wSum = 0, pSum = 0;
+      for (let k = 0; k < pts.length; k++) {
+        const p = pts[k];
+        const ex = (px - p.cx) / p.sx;
+        const ey = (py - p.cy) / p.sy;
+        const w  = 1 / (ex * ex + ey * ey + 0.001);
+        wSum += w;
+        pSum += w * p.pct;
+      }
+      const [cr, cg, cb] = heatColorPercent(pSum / wSum);
+      const idx = (py * W + px) * 4;
+      d[idx] = cr; d[idx + 1] = cg; d[idx + 2] = cb; d[idx + 3] = 215;
+    }
+  }
+
+  const off = document.createElement('canvas');
+  off.width = W; off.height = H;
+  off.getContext('2d').putImageData(imgData, 0, 0);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+  ctx.save();
+  ctx.clip(footPath);
+  ctx.drawImage(off, 0, 0);
+  ctx.restore();
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke(footPath);
+
+  // Sensor dots + label
+  pts.forEach(p => {
+    const [cr, cg, cb] = heatColorPercent(p.pct);
+
+    // Halo
+    ctx.beginPath();
+    ctx.arc(p.cx, p.cy, 14, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},0.18)`;
+    ctx.fill();
+
+    // Dot
+    ctx.beginPath();
+    ctx.arc(p.cx, p.cy, 7, 0, Math.PI * 2);
+    ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Label sensor
+    ctx.shadowColor = 'rgba(0,0,0,0.95)';
+    ctx.shadowBlur  = 5;
+    ctx.fillStyle   = '#ffffff';
+    ctx.font        = 'bold 11px JetBrains Mono, monospace';
+    ctx.textAlign   = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(p.label, p.cx, p.cy + 16);
+    ctx.shadowBlur  = 0;
+  });
+  ctx.restore();
+}
+
+/**
+ * Versi v2 dari redrawHeatmaps — pakai data percent dari Firebase.
+ * Untuk AKTIFKAN: ganti pemanggilan redrawHeatmaps() di updateMonitoringUI()
+ *                 menjadi redrawHeatmapsV2()
+ * Untuk KEMBALI ke versi lama: ganti balik ke redrawHeatmaps()
+ */
+function redrawHeatmapsV2() {
+  if (!currentData) return;
+
+  const lP = currentData.left_fsr_percent  || [0, 0, 0, 0];
+  const rP = currentData.right_fsr_percent || [0, 0, 0, 0];
+
+  drawFootHeatmapV2('heatmap-L', lP, true);
+  drawFootHeatmapV2('heatmap-R', rP, false);
+
+  // Tooltip tetap pakai versi lama (masih bisa hover)
+  const maxVal = Math.max(...currentData.left_fsr_newton, ...currentData.right_fsr_newton, 1);
+  attachSensorTooltips('heatmap-L', SENSOR_POS, currentData.left_fsr_newton, maxVal, true);
+  attachSensorTooltips('heatmap-R', SENSOR_POS, currentData.right_fsr_newton, maxVal, false);
+}
+
 function redrawHeatmaps() {
   if (!currentData) return;
 
@@ -560,7 +797,8 @@ function updateMonitoringUI(data) {
   renderSensorRows('left-sensor-rows', data.left_fsr_newton, data.left_fsr_digital);
   renderSensorRows('right-sensor-rows', data.right_fsr_newton, data.right_fsr_digital);
 
-  redrawHeatmaps();
+  // redrawHeatmaps();
+  redrawHeatmapsV2();
 
   const postureResult = detectPosture(data);
   updatePostureUI(postureResult);
@@ -940,16 +1178,55 @@ function updateBalanceUI(data) {
     badge.className = `badge badge-${cls.cssClass === 'normal' ? 'normal' : cls.cssClass === 'warning' ? 'warning' : 'abnormal'}`;
   }
 
-  // 3. L/R Bars
-  const leftPctEl = document.getElementById('b-left-pct');
+  // 3. L/R Bars (dari leftPercent/rightPercent)
+  const leftPctEl  = document.getElementById('b-left-pct');
   const rightPctEl = document.getElementById('b-right-pct');
-  const barLEl = document.getElementById('lr-bar-l');
-  const barREl = document.getElementById('lr-bar-r');
+  const barLEl     = document.getElementById('lr-bar-l');
+  const barREl     = document.getElementById('lr-bar-r');
 
-  if (leftPctEl) leftPctEl.textContent = `${data.leftPercent}%`;
+  if (leftPctEl)  leftPctEl.textContent  = `${data.leftPercent}%`;
   if (rightPctEl) rightPctEl.textContent = `${data.rightPercent}%`;
-  if (barLEl) barLEl.style.width = `${data.leftPercent}%`;
-  if (barREl) barREl.style.width = `${data.rightPercent}%`;
+  if (barLEl)     barLEl.style.width     = `${data.leftPercent}%`;
+  if (barREl)     barREl.style.width     = `${data.rightPercent}%`;
+
+  // 4. CoP Distance
+  const copDist   = data.cop_distance != null ? data.cop_distance
+                  : (data.cop && data.cop.distance != null ? data.cop.distance : null);
+  const distValEl = document.getElementById('cop-distance-val');
+  const distStsEl = document.getElementById('cop-distance-status');
+  if (copDist != null && distValEl) {
+    const stable      = copDist < 2.5;
+    const medium      = copDist <= 4.5;
+    const statusText  = stable ? 'STABIL' : medium ? 'SEDANG' : 'TIDAK STABIL';
+    const statusColor = stable ? 'var(--green)' : medium ? 'var(--yellow)' : 'var(--red)';
+    distValEl.textContent = `${Number(copDist).toFixed(2)} cm`;
+    distValEl.style.color = statusColor;
+    if (distStsEl) {
+      distStsEl.textContent = statusText;
+      distStsEl.style.color = statusColor;
+    }
+  }
+
+  // 5. Depan/Belakang dari cop_y
+  const copY      = data.cop_y != null ? data.cop_y
+                  : (data.cop && data.cop.y != null ? data.cop.y : null);
+  const COP_Y_MAX = 8;
+  const COP_Y_MIN = -10;
+  if (copY != null) {
+    const range    = COP_Y_MAX - COP_Y_MIN;
+    const frontPct = Math.min(100, Math.max(0, Math.round(((copY - COP_Y_MIN) / range) * 100)));
+    const backPct  = 100 - frontPct;
+
+    const frontEl  = document.getElementById('b-front-pct');
+    const backEl   = document.getElementById('b-back-pct');
+    const barFront = document.getElementById('fb-bar-front');
+    const barBack  = document.getElementById('fb-bar-back');
+
+    if (frontEl)  frontEl.textContent  = `${frontPct}%`;
+    if (backEl)   backEl.textContent   = `${backPct}%`;
+    if (barFront) barFront.style.width = `${frontPct}%`;
+    if (barBack)  barBack.style.width  = `${backPct}%`;
+  }
 
   // 4. Jalankan Diagnosis Kombinasi (Sesuai Bab 2.6 & 2.7)
   if (data.archType && data.pronation) {
@@ -1047,15 +1324,32 @@ function renderHistoryBars() {
 }
 
 // Koordinat sensor (cm) - Sesuai titik nx/ny di monitoring.js kamu
+// const SENSOR_COORDS = {
+//   L0: { x: -6.5, y: 7.5  }, // Hallux
+//   L1: { x: -8.5, y: 0.5  }, // Med.FF
+//   L2: { x: -12.5, y: 0.0  }, // Lat.FF
+//   L3: { x: -10.0, y: -9.5 }, // Heel
+//   R0: { x: 6.5,  y: 7.5  }, // Hallux
+//   R1: { x: 8.5,  y: 0.5  }, // Med.FF
+//   R2: { x: 12.5, y: 0.0  }, // Lat.FF
+//   R3: { x: 10.0, y: -9.5 }  // Heel
+// };
+
 const SENSOR_COORDS = {
-  L0: { x: -6.5, y: 7.5  }, // Hallux
-  L1: { x: -8.5, y: 0.5  }, // Med.FF
-  L2: { x: -12.5, y: 0.0  }, // Lat.FF
-  L3: { x: -10.0, y: -9.5 }, // Heel
-  R0: { x: 6.5,  y: 7.5  }, // Hallux
-  R1: { x: 8.5,  y: 0.5  }, // Med.FF
-  R2: { x: 12.5, y: 0.0  }, // Lat.FF
-  R3: { x: 10.0, y: -9.5 }  // Heel
+  // Kaki KIRI — sensor ada di sisi KIRI tubuh → x negatif
+  // Tapi dari sudut pandang orang berdiri:
+  //   Hallux kiri ada di sisi dalam (lebih ke tengah) → x lebih mendekati 0
+  //   Lat.FF kiri ada di sisi luar → x lebih negatif
+  L0: { x:  -4.0, y:  8.0 },  // Hallux kiri
+  L1: { x:  -6.0, y:  2.0 },  // Med.FF kiri
+  L2: { x:  -9.0, y:  1.5 },  // Lat.FF kiri
+  L3: { x:  -7.0, y: -8.0 },  // Heel kiri
+
+  // Kaki KANAN — sensor ada di sisi KANAN tubuh → x positif
+  R0: { x:   4.0, y:  8.0 },  // Hallux kanan
+  R1: { x:   6.0, y:  2.0 },  // Med.FF kanan
+  R2: { x:   9.0, y:  1.5 },  // Lat.FF kanan
+  R3: { x:   7.0, y: -8.0 },  // Heel kanan
 };
 
 function updateCoP(data) {
@@ -1081,6 +1375,42 @@ function updateCoP(data) {
 
     // 3. Hitung Jarak Goyangan (Sway Distance)
     const swayDistance = Math.sqrt(copX * copX + copY * copY);
+
+    const MAX_SWAY   = 15;
+const stabilitas = Math.max(0, Math.round((1 - swayDistance / MAX_SWAY) * 100));
+const stabColor  = stabilitas >= 85 ? 'var(--green)' : stabilitas >= 70 ? 'var(--yellow)' : 'var(--red)';
+
+const stabValEl = document.getElementById('stability-val');
+const stabBarEl = document.getElementById('stability-bar');
+if (stabValEl) { stabValEl.textContent = `${stabilitas}%`; stabValEl.style.color = stabColor; }
+if (stabBarEl) { stabBarEl.style.width = `${stabilitas}%`; stabBarEl.style.background = stabColor; }
+
+    // ── Update CoP Distance & Distribusi Depan/Belakang ──────────
+const distValEl = document.getElementById('cop-distance-val');
+const distStsEl = document.getElementById('cop-distance-status');
+if (distValEl) {
+  const stable      = swayDistance < 2.5;
+  const medium      = swayDistance <= 4.5;
+  const statusText  = stable ? 'STABIL' : medium ? 'SEDANG' : 'TIDAK STABIL';
+  const statusColor = stable ? 'var(--green)' : medium ? 'var(--yellow)' : 'var(--red)';
+  distValEl.textContent = `${swayDistance.toFixed(2)} cm`;
+  distValEl.style.color = statusColor;
+  if (distStsEl) { distStsEl.textContent = statusText; distStsEl.style.color = statusColor; }
+}
+
+const COP_Y_MAX = 8;
+const COP_Y_MIN = -10;
+const range     = COP_Y_MAX - COP_Y_MIN;
+const frontPct  = Math.min(100, Math.max(0, Math.round(((copY - COP_Y_MIN) / range) * 100)));
+const backPct   = 100 - frontPct;
+const frontEl   = document.getElementById('b-front-pct');
+const backEl    = document.getElementById('b-back-pct');
+const barFront  = document.getElementById('fb-bar-front');
+const barBack   = document.getElementById('fb-bar-back');
+if (frontEl)  frontEl.textContent  = `${frontPct}%`;
+if (backEl)   backEl.textContent   = `${backPct}%`;
+if (barFront) barFront.style.width = `${frontPct}%`;
+if (barBack)  barBack.style.width  = `${backPct}%`;
 
     // 4. Update Status & Feedback (Logika Tunggal)
     if (swayDistance < 2.5) {
@@ -1111,10 +1441,19 @@ function updateCoP(data) {
     // 5. Update Posisi Titik Visual
     if (dot) {
         // Skala visual: 100px mewakili radius +/- 15cm
-        const posX = 100 + (copX * (100 / 15));
-        const posY = 100 - (copY * (100 / 15));
-        dot.style.left = `${posX}px`;
-        dot.style.top = `${posY}px`;
+//         const radarEl  = document.querySelector('.cop-radar');
+// const radarSize = radarEl ? radarEl.offsetWidth : 200;
+// const center   = radarSize / 2;
+// const scale    = center / 15;
+// const posX     = center + (copX * scale);
+// const posY     = center - (copY * scale);
+//         dot.style.left = `${posX}px`;
+//         dot.style.top = `${posY}px`;
+const MAX_RANGE = 15; // cm, radius maksimum visualisasi
+const pctX = 50 + (copX / MAX_RANGE * 50);
+const pctY = 50 - (copY / MAX_RANGE * 50);
+dot.style.left = `${Math.max(0, Math.min(100, pctX))}%`;
+dot.style.top  = `${Math.max(0, Math.min(100, pctY))}%`;
     }
 
     // 6. Update Label Koordinat Teknis (Kecil)

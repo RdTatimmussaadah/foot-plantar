@@ -107,16 +107,13 @@
 /* Layout utama */
 .dashboard-grid {
   display: grid;
-  grid-template-columns:
-    minmax(560px, 1.15fr)
-    minmax(300px, 0.65fr)
-    minmax(300px, 0.65fr);
-  grid-template-rows: auto auto;
+  grid-template-columns: minmax(500px, 1.8fr) 200px minmax(380px, 1fr);
+  grid-template-rows: auto 1fr;
   grid-template-areas:
-    "heatmap posture cop"
+    "heatmap posture  cop"
     "heatmap diagnosis diagnosis";
   gap: 14px;
-  align-items: stretch;
+  align-items: stretch;   /* ← kedua card row atas sama tinggi */
   width: 100%;
 }
 
@@ -147,13 +144,13 @@
    ============================================================ */
 
 .heatmap-card {
+  grid-area: heatmap;
   display: flex;
   flex-direction: column;
   padding: 20px;
   height: 100%;
-  min-height: 0;
-  overflow: hidden;
   box-sizing: border-box;
+  align-self: stretch;  /* ← heatmap saja yang stretch */
 }
 
 .heatmap-header {
@@ -226,7 +223,7 @@
   margin-top: 8px;
 }
 
-.legend-gradient {
+/* .legend-gradient {
   width: 220px;
   height: 7px;
   border-radius: 3px;
@@ -238,6 +235,22 @@
     #ffff00 60%,
     #ff8800 80%,
     #ff0000 100%
+  );
+} */
+
+.legend-gradient {
+  width: 220px;
+  height: 7px;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    #0000ff 0%,    /* 0%   - Biru Murni */
+    #00ffff 10%,   /* 10%  - Cyan */
+    #00ff00 20%,   /* 20%  - Hijau */
+    #ffff00 40%,   /* 40%  - Kuning */
+    #ff8800 60%,   /* 60%  - Oranye */
+    #ff0000 80%,   /* 80%  - Merah Cerah */
+    #6e0000 100%   /* 100% - Maroon Pekat [RGB: 110, 0, 0] */
   );
 }
 
@@ -280,43 +293,96 @@
 }
 
 .posture-card {
-  padding: 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  min-height: 360px;
-  height: 100%;
+  gap: 12px; /* Mengatur jarak antar komponen internal */
   box-sizing: border-box;
+  align-self: stretch;
+  height: 100%;
+}
+
+
+.posture-card .posture-card-header .card-section-title {
+  font-size: 9px;
+  letter-spacing: 0.05em;
+}
+
+.posture-badge {
+  font-size: 8px;
+  padding: 2px 6px;
+}
+
+.posture-card .posture-result {
+  min-height: 70px;
+  padding: 10px 8px;
+}
+
+.posture-card #ml-posture-result {
+  font-size: 13px;
+}
+
+.posture-card .posture-note {
+  font-size: 11px;
+  padding: 10px 12px;
+  line-height: 1.5;
+}
+
+.posture-card .posture-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.posture-card .posture-result {
+  flex-shrink: 0;
+  min-height: 80px;
+  padding: 12px;
+}
+
+.posture-card #ml-posture-result {
+  font-size: 16px;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.posture-card .posture-note {
+  flex: 1;
+  min-height: 0;
+  font-size: 12px;
+  padding: 12px 14px;
+  overflow: hidden;
 }
 
 .posture-result {
-  flex: 0 0 165px;
-  background: var(--bg-base);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 18px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: border-color 0.3s, background 0.3s;
-}
-
-.posture-note {
-  flex: 1;
-  width: 100%;
-  min-height: 0;
-  box-sizing: border-box;
-  margin-top: 12px;
+  flex: 1; /* Membagi rata space vertikal */
   background: var(--bg-base);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 18px 20px;
-  font-size: 13px;
-  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+
+.posture-note {
+  flex: 1; /* Membagi rata space vertikal sama besar dengan atas */
+  background: var(--bg-base);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text-secondary);
   line-height: 1.6;
-
   display: flex;
-  align-items: center;
+  align-items: center; /* Teks otomatis di tengah vertikal box */
+  justify-content: center;
+  text-align: center;
 }
 
 .posture-result.is-normal {
@@ -385,11 +451,15 @@
 
 #ml-posture-result {
   display: block;
-  font-size: 26px;
+  font-size: 18px;
   font-weight: 900;
   color: var(--text-primary);
   text-align: center;
   transition: color 0.3s;
+}
+
+.posture-note {
+  flex: 1;
 }
 
 .posture-result.is-normal #ml-posture-result {
@@ -467,9 +537,8 @@
 .score-card {
   display: flex;
   flex-direction: column;
-  min-height: 360px;
-  height: 100%;
-  overflow: hidden;
+  min-height: 0;
+  align-self: start;    /* ← tidak stretch juga */
 }
 
 .score-card .detail-card-header {
@@ -477,24 +546,35 @@
 }
 
 .cop-visualizer-container {
-  flex: 1;
-  min-height: 0;
-  padding: 14px 16px 18px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
+}
+
+.cop-radar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 .cop-radar {
   position: relative;
-  width: 220px;
-  height: 220px;
+  width: 130px;
+  height: 130px;
   background: var(--bg-base);
-  border-radius: 24px;
+  border-radius: 14px;
   border: 1px solid var(--border-color);
   overflow: hidden;
-  margin-bottom: 14px;
+}
+
+.cop-stats-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
 }
 
 .radar-cross-h,
@@ -565,11 +645,11 @@
    ============================================================ */
 
 .diagnosis-container {
+  grid-area: diagnosis;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr;
   gap: 14px;
-  min-height: 0;
+  align-self: start;
 }
 
 .diagnosis-card {
@@ -1234,10 +1314,7 @@
 
 @media (max-width: 1440px) {
   .dashboard-grid {
-    grid-template-columns:
-      minmax(500px, 1.1fr)
-      minmax(280px, 0.65fr)
-      minmax(280px, 0.65fr);
+    grid-template-columns: minmax(500px, 1.8fr) 210px minmax(340px, 1fr);
   }
 
   .posture-card,
@@ -1252,8 +1329,8 @@
   }
 
   .cop-radar {
-    width: 200px;
-    height: 200px;
+width: 160px;
+  height: 160px;
   }
 }
 
@@ -1366,4 +1443,120 @@
     width: 48px;
     height: 48px;
   }
+}
+
+/* ── Distribution Bars ── */
+.dist-bars-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+.dist-cop-distance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+
+.dist-label {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-secondary);
+  flex: 0 0 54px;
+}
+
+.dist-cop-val {
+  font-size: 12px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  flex: 0 0 34px;
+  text-align: right;
+}
+
+
+
+
+.dist-cop-status {
+  font-size: 9px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  letter-spacing: .08em;
+  background: var(--surface-3);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.dist-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dist-side-lbl {
+  font-size: 11px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  flex: 0 0 34px;
+  text-align: center;
+}
+
+
+.dist-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 4px;
+  background: var(--bg-base);
+  display: flex;
+  overflow: hidden;
+}
+
+.dist-bar { height: 100%; transition: width .4s ease; }
+.dist-bar-l     { background: var(--red);    border-radius: 4px 0 0 4px; }
+.dist-bar-r     { background: var(--blue);   border-radius: 0 4px 4px 0; }
+.dist-bar-front { background: var(--green);  border-radius: 4px 0 0 4px; }
+.dist-bar-back  { background: var(--yellow); border-radius: 0 4px 4px 0; }
+
+.dist-row-label {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 40px;
+  font-size: 8px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-dim);
+  margin-top: -4px;
+}
+
+
+.dist-stability-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dist-stability-bar-wrap {
+  flex: 1;
+  height: 6px;
+  border-radius: 4px;
+  background: var(--bg-base);
+  overflow: hidden;
+}
+
+.dist-stability-bar {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--green);
+  transition: width .4s ease, background .4s ease;
 }

@@ -103,13 +103,21 @@ function processRawDigital(rawData) {
   const lN = digitalToNewton(lD);
   const rN = digitalToNewton(rD);
 
-  return {
+  const lP = Array.isArray(rawData.left_fsr_percent)
+  ? rawData.left_fsr_percent
+  : newtonToPercent(lN);
+
+const rP = Array.isArray(rawData.right_fsr_percent)
+  ? rawData.right_fsr_percent
+  : newtonToPercent(rN);
+
+return {
     left_fsr_digital:  lD,
     right_fsr_digital: rD,
     left_fsr_newton:   lN,
     right_fsr_newton:  rN,
-    left_fsr_percent:  newtonToPercent(lN),
-    right_fsr_percent: newtonToPercent(rN),
+    left_fsr_percent:  lP,
+    right_fsr_percent: rP,
     timestamp: rawData.timestamp || Date.now(),
   };
 }

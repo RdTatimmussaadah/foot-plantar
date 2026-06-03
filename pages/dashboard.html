@@ -60,10 +60,18 @@
 
                     <div class="feet-container">
                       <div class="foot-wrap">
-                        <canvas id="heatmap-L" width="130" height="280"></canvas>
+                        <canvas
+                          id="heatmap-L"
+                          width="130"
+                          height="280"
+                        ></canvas>
                       </div>
                       <div class="foot-wrap">
-                        <canvas id="heatmap-R" width="130" height="280"></canvas>
+                        <canvas
+                          id="heatmap-R"
+                          width="130"
+                          height="280"
+                        ></canvas>
                       </div>
                     </div>
 
@@ -79,7 +87,7 @@
                       <div class="legend-gradient"></div>
                       <span
                         style="
-                          color: #ff0000;
+                          color: #6e0000;
                           font-size: 9px;
                           font-family: var(--font-mono);
                         "
@@ -97,7 +105,11 @@
                       alt="balance-icon"
                       class="icon"
                     />
-                    <div class="mc-val" id="m-balance" style="color: var(--green)">
+                    <div
+                      class="mc-val"
+                      id="m-balance"
+                      style="color: var(--green)"
+                    >
                       —
                     </div>
                     <div class="mc-unit">%</div>
@@ -165,7 +177,8 @@
                   </div>
 
                   <div class="posture-note" id="posture-note">
-                    Sistem sedang membaca pola tekanan kaki untuk mendeteksi kecenderungan postur.
+                    Sistem sedang membaca pola tekanan kaki untuk mendeteksi
+                    kecenderungan postur.
                   </div>
                 </div>
               </div>
@@ -175,32 +188,91 @@
             <section class="dashboard-analysis">
               <div class="balance-grid">
                 <div class="score-card">
-                  <div class="detail-card-header" style="padding: var(--space-md)">
+                  <div
+                    class="detail-card-header"
+                    style="padding: var(--space-md)"
+                  >
                     <span class="card-title">STABILITAS POSTUR (CoP)</span>
-                    <span class="badge" id="b-status-badge">Menganalisis...</span>
+                    <span class="badge" id="b-status-badge"
+                      >Menganalisis...</span
+                    >
                   </div>
 
                   <div class="cop-visualizer-container">
-                    <div class="cop-radar">
-                      <div class="radar-cross-h"></div>
-                      <div class="radar-cross-v"></div>
-                      <div class="radar-circle ring-1"></div>
-                      <div class="radar-circle ring-2"></div>
-                      <div class="radar-circle ring-3"></div>
-
-                      <div id="cop-dot" class="cop-dot"></div>
-                    </div>
-
-                    <div class="cop-feedback-box">
-                      <div
-                        id="cop-feedback-text"
-                        style="
-                          font-size: 14px;
-                          font-weight: 800;
-                          color: var(--text-primary);
-                        "
-                      >
-                        Menunggu data...
+                    <!-- Kiri: grafik radar + koordinat -->
+                    <div class="cop-radar-wrap">
+                      <div class="cop-radar">
+                        <!-- Tambahkan di dalam div.cop-radar di dashboard.html -->
+                        <span
+                          style="
+                            position: absolute;
+                            top: 5px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            font-size: 8px;
+                            font-weight: 700;
+                            color: var(--text-dim);
+                            font-family: var(--font-mono);
+                            letter-spacing: 0.05em;
+                            pointer-events: none;
+                          "
+                        >
+                          DEPAN
+                        </span>
+                        <span
+                          style="
+                            position: absolute;
+                            bottom: 5px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            font-size: 8px;
+                            font-weight: 700;
+                            color: var(--text-dim);
+                            font-family: var(--font-mono);
+                            letter-spacing: 0.05em;
+                            pointer-events: none;
+                          "
+                        >
+                          BELAKANG
+                        </span>
+                        <span
+                          style="
+                            position: absolute;
+                            left: 5px;
+                            top: 50%;
+                            transform: translateY(-50%);
+                            font-size: 8px;
+                            font-weight: 700;
+                            color: var(--text-dim);
+                            font-family: var(--font-mono);
+                            letter-spacing: 0.05em;
+                            pointer-events: none;
+                          "
+                        >
+                          KIRI
+                        </span>
+                        <span
+                          style="
+                            position: absolute;
+                            right: 5px;
+                            top: 50%;
+                            transform: translateY(-50%);
+                            font-size: 8px;
+                            font-weight: 700;
+                            color: var(--text-dim);
+                            font-family: var(--font-mono);
+                            letter-spacing: 0.05em;
+                            pointer-events: none;
+                          "
+                        >
+                          KANAN
+                        </span>
+                        <div class="radar-cross-h"></div>
+                        <div class="radar-cross-v"></div>
+                        <div class="radar-circle ring-1"></div>
+                        <div class="radar-circle ring-2"></div>
+                        <div class="radar-circle ring-3"></div>
+                        <div id="cop-dot" class="cop-dot"></div>
                       </div>
                       <div
                         id="cop-coordinate"
@@ -208,10 +280,103 @@
                           font-family: var(--font-mono);
                           font-size: 10px;
                           color: var(--text-dim);
-                          margin-top: 4px;
+                          margin-top: 6px;
+                          text-align: center;
                         "
                       >
                         X: 0.0, Y: 0.0
+                      </div>
+                      <div
+                        id="cop-feedback-text"
+                        style="
+                          font-size: 12px;
+                          font-weight: 800;
+                          color: var(--text-primary);
+                          margin-top: 4px;
+                          text-align: center;
+                        "
+                      >
+                        Menunggu data...
+                      </div>
+                    </div>
+
+                    <!-- Kanan: bar stabilitas, kiri/kanan, depan/belakang -->
+                    <div
+                      class="cop-stats-wrap dist-bars-wrap"
+                      style="margin: 0; background: transparent; padding: 0"
+                    >
+                      <div class="dist-stability-row">
+                        <span class="dist-label">Stabilitas</span>
+                        <div class="dist-stability-bar-wrap">
+                          <div
+                            class="dist-stability-bar"
+                            id="stability-bar"
+                            style="width: 100%"
+                          ></div>
+                        </div>
+                        <span class="dist-cop-val" id="stability-val">—%</span>
+                      </div>
+
+                      <div class="dist-row">
+                        <span
+                          class="dist-side-lbl"
+                          id="b-left-pct"
+                          style="color: var(--red)"
+                          >—%</span
+                        >
+                        <div class="dist-track">
+                          <div
+                            class="dist-bar dist-bar-l"
+                            id="lr-bar-l"
+                            style="width: 50%"
+                          ></div>
+                          <div
+                            class="dist-bar dist-bar-r"
+                            id="lr-bar-r"
+                            style="width: 50%"
+                          ></div>
+                        </div>
+                        <span
+                          class="dist-side-lbl"
+                          id="b-right-pct"
+                          style="color: var(--blue)"
+                          >—%</span
+                        >
+                      </div>
+                      <div class="dist-row-label">
+                        <span style="color: var(--red)">Kiri</span>
+                        <span style="color: var(--blue)">Kanan</span>
+                      </div>
+
+                      <div class="dist-row" style="margin-top: 6px">
+                        <span
+                          class="dist-side-lbl"
+                          id="b-front-pct"
+                          style="color: var(--green)"
+                          >—%</span
+                        >
+                        <div class="dist-track">
+                          <div
+                            class="dist-bar dist-bar-front"
+                            id="fb-bar-front"
+                            style="width: 50%"
+                          ></div>
+                          <div
+                            class="dist-bar dist-bar-back"
+                            id="fb-bar-back"
+                            style="width: 50%"
+                          ></div>
+                        </div>
+                        <span
+                          class="dist-side-lbl"
+                          id="b-back-pct"
+                          style="color: var(--yellow)"
+                          >—%</span
+                        >
+                      </div>
+                      <div class="dist-row-label">
+                        <span style="color: var(--green)">Depan</span>
+                        <span style="color: var(--yellow)">Belakang</span>
                       </div>
                     </div>
                   </div>
@@ -242,7 +407,8 @@
                       </div>
 
                       <div class="diag-explanation" id="exp-l">
-                        Harap berdiri tegak di atas sensor untuk memulai analisis...
+                        Harap berdiri tegak di atas sensor untuk memulai
+                        analisis...
                       </div>
                     </div>
                   </div>
@@ -271,7 +437,8 @@
                       </div>
 
                       <div class="diag-explanation" id="exp-r">
-                        Harap berdiri tegak di atas sensor untuk memulai analisis...
+                        Harap berdiri tegak di atas sensor untuk memulai
+                        analisis...
                       </div>
                     </div>
                   </div>
@@ -289,7 +456,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
-    
     <script src="../js/calculations.js"></script>
     <script src="../js/firebase.js"></script>
     <script src="../js/components.js"></script>

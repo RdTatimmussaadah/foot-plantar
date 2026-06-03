@@ -109,16 +109,27 @@ function setText(id, value) {
    CoP COMPUTATION
    ============================================================ */
 
-const SENSOR_COORDS = {
-  L0: { x: -6.5, y: 7.5 },
-  L1: { x: -8.5, y: 0.5 },
-  L2: { x: -12.5, y: 0.0 },
-  L3: { x: -10.0, y: -9.5 },
+// const SENSOR_COORDS = {
+//   L0: { x: -6.5, y: 7.5 },
+//   L1: { x: -8.5, y: 0.5 },
+//   L2: { x: -12.5, y: 0.0 },
+//   L3: { x: -10.0, y: -9.5 },
 
-  R0: { x: 6.5, y: 7.5 },
-  R1: { x: 8.5, y: 0.5 },
-  R2: { x: 12.5, y: 0.0 },
-  R3: { x: 10.0, y: -9.5 },
+//   R0: { x: 6.5, y: 7.5 },
+//   R1: { x: 8.5, y: 0.5 },
+//   R2: { x: 12.5, y: 0.0 },
+//   R3: { x: 10.0, y: -9.5 },
+// };
+
+const SENSOR_COORDS = {
+  L0: { x:  -4.0, y:  8.0 },  // Hallux kiri
+  L1: { x:  -6.0, y:  2.0 },  // Med.FF kiri
+  L2: { x:  -9.0, y:  1.5 },  // Lat.FF kiri
+  L3: { x:  -7.0, y: -8.0 },  // Heel kiri
+  R0: { x:   4.0, y:  8.0 },  // Hallux kanan
+  R1: { x:   6.0, y:  2.0 },  // Med.FF kanan
+  R2: { x:   9.0, y:  1.5 },  // Lat.FF kanan
+  R3: { x:   7.0, y: -8.0 },  // Heel kanan
 };
 
 function toForceArray(arr) {
@@ -185,16 +196,23 @@ function computeCopFromSnapshot(snap) {
   };
 }
 
+// function classifyCop(x, y) {
+//   if (Math.abs(x) <= 1.5 && Math.abs(y) <= 2) {
+//     return { status: 'NORMAL', cssClass: 'normal' };
+//   }
+
+//   if (Math.abs(x) <= 2 && Math.abs(y) <= 3) {
+//     return { status: 'SEDANG', cssClass: 'warning' };
+//   }
+
+//   return { status: 'ABNORMAL', cssClass: 'abnormal' };
+// }
+// laporan.js classifyCop — sesuaikan dengan dashboard
 function classifyCop(x, y) {
-  if (Math.abs(x) <= 1.5 && Math.abs(y) <= 2) {
-    return { status: 'NORMAL', cssClass: 'normal' };
-  }
-
-  if (Math.abs(x) <= 2 && Math.abs(y) <= 3) {
-    return { status: 'SEDANG', cssClass: 'warning' };
-  }
-
-  return { status: 'ABNORMAL', cssClass: 'abnormal' };
+  const distance = Math.sqrt(x * x + y * y);
+  if (distance < 2.5)  return { status: 'STABIL',   cssClass: 'normal'   };
+  if (distance <= 4.5) return { status: 'SEDANG',   cssClass: 'warning'  };
+  return                      { status: 'ABNORMAL', cssClass: 'abnormal' };
 }
 
 function copPdfColor(cop) {

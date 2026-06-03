@@ -485,3 +485,143 @@ input, textarea { font-family: var(--font-display); outline: none; border: none;
 /* Icon helper */
 .icon { width: 22px; height: 22px; margin-bottom: 4px; vertical-align: middle; }
 .input-icon { width: 14px; height: 14px; opacity: 0.5; }
+
+/* ============================================================
+   RESPONSIVE TOPBAR ADAPTATION
+   ============================================================ */
+
+/* Layar Tablet & Laptop Kecil */
+@media (max-width: 1180px) {
+  .app-topbar {
+    height: auto;            /* Biarkan tinggi topbar menyesuaikan konten jika nge-wrap */
+    padding: 12px 20px;
+    flex-wrap: wrap;         /* Izinkan elemen turun ke bawah jika tidak muat */
+    gap: 12px;
+  }
+
+  /* Biarkan logo & title tetap di kiri atas */
+  .topbar-left {
+    flex: 1 1 auto;
+  }
+
+  /* Posisikan menu tab di paling kanan atas atau buat baris baru jika sangat sempit */
+  .topbar-nav {
+    order: 2;                /* Mengatur urutan visual */
+    flex: 1 0 100%;          /* Memaksa menu navigasi tab membuat baris baru di tengah */
+    justify-content: center;
+    margin: 4px 0;
+  }
+
+  .topbar-right {
+    flex: 0 0 auto;
+    order: 1;                /* Aksi rekam & user tetap di baris atas kanan */
+  }
+}
+
+/* Layar HP / Mobile */
+/* ============================================================
+   PERBAIKAN MUTLAK TOPBAR (HP / MOBILE MODE) — GRID 2 BARIS
+   ============================================================ */
+@media (max-width: 720px) {
+  .app-topbar {
+    display: grid !important; /* Paksa beralih dari Flex ke Grid agar layout patuh */
+    grid-template-columns: 1fr auto; /* Kolom kiri (Judul), Kolom kanan (Tombol Aksi) */
+    grid-template-rows: auto auto;    /* Baris 1 (Atas), Baris 2 (Bawah) */
+    grid-template-areas: 
+      "header actions"
+      "navigation navigation"; /* Baris bawah menyatu penuh dari kiri ke kanan */
+    gap: 12px 8px;
+    height: auto;
+    padding: 12px 14px;
+  }
+
+  /* 1. Baris Atas Kiri: Logo & Judul */
+  .topbar-left {
+    grid-area: header;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0; /* Mencegah overflow teks */
+  }
+
+  .logo-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .topbar-title {
+    font-size: 13px; /* Perkecil sedikit ukuran teks di HP agar hemat ruang */
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Jika layar HP sangat kecil, teks memotong dengan elegan (...) */
+  }
+  
+  /* Bersihkan sisa trik ::before sebelumnya jika masih ada */
+  .topbar-title::before {
+    display: none !important;
+  }
+
+  /* 2. Baris Atas Kanan: Rekam Snapshot + Avatar + Logout */
+  .topbar-right {
+    grid-area: actions;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  .btn-snapshot {
+    padding: 6px 10px;
+    font-size: 11px;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .user-chip {
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+
+  .patient-name {
+    display: none !important; /* Pastikan nama teks tersembunyi, sisa inisial bulat */
+  }
+
+  .patient-avatar {
+    width: 28px;
+    height: 28px;
+    margin: 0;
+  }
+
+  .logout-btn {
+    padding: 6px;
+    font-size: 0 !important; /* Hilangkan tulisan "Keluar", sisa icon saja */
+    gap: 0;
+  }
+
+  .logout-btn svg {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+  }
+
+  /* 3. Baris Bawah: Navigasi Tab (Dashboard & Laporan) */
+  .topbar-nav {
+    grid-area: navigation;
+    display: flex;
+    width: 100%;
+    background: var(--bg-base);
+    padding: 3px;
+    border-radius: 8px;
+    margin: 0;
+  }
+
+  .nav-tab {
+    flex: 1; /* Dashboard & Laporan membagi ruang 50-50 secara adil */
+    text-align: center;
+    padding: 8px 0;
+    font-size: 12px;
+  }
+}
