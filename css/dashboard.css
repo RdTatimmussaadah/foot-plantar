@@ -1445,6 +1445,121 @@ width: 160px;
   }
 }
 
+/* ── Mobile kecil ≤ 480px ── */
+@media (max-width: 480px) {
+  .app-content {
+    padding: 8px;
+  }
+
+  /* Grid 1 kolom penuh */
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: none !important;
+  }
+
+  .heatmap-card,
+  .posture-card,
+  .score-card,
+  .diagnosis-container {
+    grid-area: auto !important;
+    min-height: auto !important;
+    width: 100%;
+  }
+
+  /* Heatmap — kaki lebih kecil */
+  .feet-container {
+    gap: 8px;
+    padding: 10px 0;
+  }
+
+  .foot-wrap,
+  .foot-wrap canvas {
+    width: 110px;
+    height: 230px;
+  }
+
+  .legend-gradient { width: 120px; }
+
+  /* Posture card */
+  .posture-card {
+    min-height: auto;
+    padding: 14px;
+  }
+
+  .posture-result {
+    min-height: 60px;
+    padding: 10px;
+  }
+
+  #ml-posture-result {
+    font-size: 14px;
+  }
+
+  .posture-note {
+    font-size: 11px;
+    padding: 10px 12px;
+  }
+
+  /* CoP card — radar dan bar stacked vertikal */
+  .cop-visualizer-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+  }
+
+  .cop-radar-wrap {
+    width: 100%;
+    align-items: center;
+  }
+
+  .cop-radar {
+    width: 140px;
+    height: 140px;
+  }
+
+  .cop-stats-wrap {
+    width: 100%;
+  }
+
+  /* Diagnosis — 1 kolom */
+  .diagnosis-container {
+    grid-template-columns: 1fr !important;
+  }
+
+  .diag-label { font-size: 16px; }
+  .diag-icon-svg { width: 40px; height: 40px; }
+  .diagnosis-header { padding: 14px 16px; }
+  .diagnosis-content { padding: 14px 16px; }
+
+  .diag-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}
+
+/* ── Very small ≤ 360px ── */
+@media (max-width: 360px) {
+  .foot-wrap,
+  .foot-wrap canvas {
+    width: 95px;
+    height: 200px;
+  }
+
+  .feet-container { gap: 6px; }
+
+  .cop-radar {
+    width: 120px;
+    height: 120px;
+  }
+
+  .diag-row {
+    grid-template-columns: 1fr;
+  }
+
+  .posture-card { padding: 12px; }
+}
+
 /* ── Distribution Bars ── */
 .dist-bars-wrap {
   width: 100%;

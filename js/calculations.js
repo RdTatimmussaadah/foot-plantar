@@ -100,16 +100,21 @@ function processRawDigital(rawData) {
   const lD = rawData.left_fsr_digital  || [0, 0, 0, 0];
   const rD = rawData.right_fsr_digital || [0, 0, 0, 0];
 
-  const lN = digitalToNewton(lD);
-  const rN = digitalToNewton(rD);
+  const lN = (Array.isArray(rawData.left_fsr_newton) && rawData.left_fsr_newton.length === 4)
+    ? rawData.left_fsr_newton
+    : digitalToNewton(lD);
+
+  const rN = (Array.isArray(rawData.right_fsr_newton) && rawData.right_fsr_newton.length === 4)
+    ? rawData.right_fsr_newton
+    : digitalToNewton(rD);
 
   const lP = Array.isArray(rawData.left_fsr_percent)
   ? rawData.left_fsr_percent
   : newtonToPercent(lN);
 
-const rP = Array.isArray(rawData.right_fsr_percent)
-  ? rawData.right_fsr_percent
-  : newtonToPercent(rN);
+  const rP = Array.isArray(rawData.right_fsr_percent)
+    ? rawData.right_fsr_percent
+    : newtonToPercent(rN);
 
 return {
     left_fsr_digital:  lD,

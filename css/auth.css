@@ -569,3 +569,212 @@
   text-align: right;
   max-width: 60%;
 }
+
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+/* Tablet — left panel jadi lebih kecil */
+@media (max-width: 900px) {
+  .auth-left {
+    width: 260px;
+    padding: var(--space-xl) var(--space-lg);
+  }
+
+  .brand-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .brand-icon img {
+    width: 34px;
+    height: 34px;
+  }
+
+  .brand-name {
+    font-size: 18px;
+  }
+
+  .auth-tagline {
+    font-size: 13px;
+  }
+
+  .auth-card {
+    padding: 28px 24px;
+  }
+}
+
+/* Mobile — left panel hilang, full single column */
+@media (max-width: 640px) {
+  .auth-layout {
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .auth-left {
+    width: 100%;
+    min-height: 130px;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Aksen bulat — kiri bawah */
+  .auth-left::before {
+    display: block;
+    width: 180px;
+    height: 180px;
+    bottom: -70px;
+    left: -50px;
+    top: unset;
+    right: unset;
+  }
+
+  /* Aksen bulat — kanan atas */
+  .auth-left::after {
+    display: block;
+    width: 130px;
+    height: 130px;
+    top: -50px;
+    right: -30px;
+    bottom: unset;
+    left: unset;
+  }
+
+  /* Aksen tambahan — tengah kanan (ekstra dekorasi) */
+  .auth-left-center::after {
+    content: '';
+    position: absolute;
+    right: 60px;
+    bottom: -40px;
+    width: 90px;
+    height: 90px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .auth-left-center {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    z-index: 2;
+    position: relative;
+  }
+
+  .auth-brand {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 0;
+  }
+
+  .brand-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
+
+  .brand-icon img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .brand-name {
+    font-size: 17px;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+
+  /* Tagline tampil kecil di bawah brand name */
+  .auth-tagline {
+    display: block;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 2px;
+    max-width: unset;
+    line-height: 1.4;
+  }
+
+  .auth-left-footer {
+    display: none;
+  }
+
+  .auth-right {
+    flex: 1;
+    align-items: flex-start;
+    padding: var(--space-lg) var(--space-md);
+  }
+
+  .auth-card {
+    padding: 24px 20px;
+    border-radius: var(--radius-lg);
+  }
+
+  .auth-card-title {
+    font-size: 20px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .gender-options {
+    flex-direction: column;
+  }
+
+  .blood-options {
+    flex-wrap: wrap;
+  }
+
+  .blood-btn {
+    min-width: calc(25% - 4px);
+  }
+
+  .steps-indicator {
+    margin-bottom: var(--space-lg);
+  }
+
+  .step-label {
+    font-size: 9px;
+  }
+
+  .btn-primary {
+    font-size: 15px;
+    height: 50px;
+    padding: 14px;
+  }
+
+  .btn-back {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+/* Small mobile — extra padding reduction */
+@media (max-width: 380px) {
+  .auth-right {
+    padding: var(--space-md) var(--space-sm);
+  }
+
+  .auth-card {
+    padding: 20px 16px;
+  }
+
+  .form-input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+}

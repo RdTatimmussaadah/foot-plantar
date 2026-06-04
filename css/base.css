@@ -524,104 +524,126 @@ input, textarea { font-family: var(--font-display); outline: none; border: none;
    ============================================================ */
 @media (max-width: 720px) {
   .app-topbar {
-    display: grid !important; /* Paksa beralih dari Flex ke Grid agar layout patuh */
-    grid-template-columns: 1fr auto; /* Kolom kiri (Judul), Kolom kanan (Tombol Aksi) */
-    grid-template-rows: auto auto;    /* Baris 1 (Atas), Baris 2 (Bawah) */
-    grid-template-areas: 
+    display: grid !important;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    grid-template-areas:
       "header actions"
-      "navigation navigation"; /* Baris bawah menyatu penuh dari kiri ke kanan */
-    gap: 12px 8px;
+      "navigation navigation";
+    gap: 8px 6px;
     height: auto;
-    padding: 12px 14px;
+    padding: 10px 12px;
   }
 
-  /* 1. Baris Atas Kiri: Logo & Judul */
   .topbar-left {
     grid-area: header;
     display: flex;
     align-items: center;
     gap: 6px;
-    min-width: 0; /* Mencegah overflow teks */
+    min-width: 0;
+    overflow: hidden;
   }
 
   .logo-icon {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
     flex-shrink: 0;
   }
 
-  .topbar-title {
-    font-size: 13px; /* Perkecil sedikit ukuran teks di HP agar hemat ruang */
-    font-weight: 900;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Jika layar HP sangat kecil, teks memotong dengan elegan (...) */
-  }
-  
-  /* Bersihkan sisa trik ::before sebelumnya jika masih ada */
-  .topbar-title::before {
-    display: none !important;
+  .logo-icon img {
+    width: 13px;
+    height: 13px;
   }
 
-  /* 2. Baris Atas Kanan: Rekam Snapshot + Avatar + Logout */
+  .topbar-title {
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: unset;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
   .topbar-right {
     grid-area: actions;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     justify-content: flex-end;
+    flex-shrink: 0;
   }
 
   .btn-snapshot {
-    padding: 6px 10px;
-    font-size: 11px;
-    gap: 4px;
+    padding: 5px 8px;
+    font-size: 10px;
+    gap: 3px;
     white-space: nowrap;
+    border-radius: 6px;
+  }
+
+  .btn-snapshot svg {
+    width: 7px;
+    height: 7px;
   }
 
   .user-chip {
-    padding: 0;
-    border: none;
+    padding: 3px 3px;
+    gap: 0;
+    border-radius: 50%;
     background: transparent;
+    border: none;
   }
 
-  .patient-name {
-    display: none !important; /* Pastikan nama teks tersembunyi, sisa inisial bulat */
-  }
+  .patient-name { display: none !important; }
 
   .patient-avatar {
-    width: 28px;
-    height: 28px;
-    margin: 0;
+    width: 24px;
+    height: 24px;
+    font-size: 9px;
   }
 
   .logout-btn {
-    padding: 6px;
-    font-size: 0 !important; /* Hilangkan tulisan "Keluar", sisa icon saja */
+    padding: 5px 6px;
+    font-size: 0 !important;
     gap: 0;
+    border-radius: 6px;
   }
 
   .logout-btn svg {
-    margin: 0;
-    width: 16px;
-    height: 16px;
+    width: 13px;
+    height: 13px;
   }
 
-  /* 3. Baris Bawah: Navigasi Tab (Dashboard & Laporan) */
   .topbar-nav {
     grid-area: navigation;
     display: flex;
     width: 100%;
-    background: var(--bg-base);
-    padding: 3px;
-    border-radius: 8px;
+    padding: 2px;
+    border-radius: 7px;
     margin: 0;
   }
 
   .nav-tab {
-    flex: 1; /* Dashboard & Laporan membagi ruang 50-50 secara adil */
+    flex: 1;
     text-align: center;
-    padding: 8px 0;
-    font-size: 12px;
+    padding: 6px 0;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 380px) {
+  .app-topbar {
+    padding: 7px 9px;
+  }
+
+  .topbar-title {
+    font-size: 10px;
+  }
+
+  .btn-snapshot {
+    padding: 3px 6px;
+    font-size: 8px;
   }
 }
