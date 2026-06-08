@@ -3,7 +3,7 @@
  */
 'use strict';
 
-const SENSOR_NAMES = ['Hallux', 'Med. FF', 'Lat. FF', 'Heel'];
+const SENSOR_NAMES = ['Hallux', 'Metarsal 1', 'Metarsal 3', 'Heel'];
 const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 50;  // r=50
 const MAX_FORCE = 100;
 
@@ -112,8 +112,8 @@ function buildFootPath(coords, canvasW, canvasH, flipX) {
 // kaki kiri:  di-flip, ibu jari di kanan
 const SENSOR_POS = [
   { key: 0, nx: 0.15, ny: 0.22, label: 'Hallux'  }, // ibu jari
-  { key: 1, nx: 0.35, ny: 0.40, label: 'Med.FF'  }, // medial forefoot (sisi ibu jari)
-  { key: 2, nx: 0.75, ny: 0.43, label: 'Lat.FF'  }, // lateral forefoot (sisi kelingking)
+  { key: 1, nx: 0.35, ny: 0.40, label: 'Metarsal 1'  }, // medial forefoot (sisi ibu jari)
+  { key: 2, nx: 0.75, ny: 0.43, label: 'Metarsal 3'  }, // lateral forefoot (sisi kelingking)
   { key: 3, nx: 0.50, ny: 0.87, label: 'Heel'    }, // tumit
 ];
 
@@ -166,8 +166,8 @@ function heatColor(ratio) {
 
 const SENSOR_DESC = [
   "Hallux: Bagian ibu jari kaki, membantu menyeimbangkan tubuh dan mendorong langkah saat berjalan.",
-  "Med.FF: Bagian tengah depan kaki sisi ibu jari, menahan tekanan saat berdiri dan berjalan.",
-  "Lat.FF: Bagian depan kaki sisi kelingking, menyeimbangkan tekanan luar kaki saat berjalan.",
+  "Metarsal 1: Bagian tengah depan kaki sisi ibu jari, menahan tekanan saat berdiri dan berjalan.",
+  "Metarsal 3: Bagian depan kaki sisi kelingking, menyeimbangkan tekanan luar kaki saat berjalan.",
   "Heel: Tumit kaki, menopang berat badan dan memberikan stabilitas saat berdiri."
 ];
 
