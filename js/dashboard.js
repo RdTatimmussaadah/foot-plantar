@@ -3,7 +3,7 @@
  */
 'use strict';
 
-const SENSOR_NAMES = ['Hallux', 'Metatarsal 1', 'Metatarsal 3', 'Heel'];
+const SENSOR_NAMES = ['Hallux', 'Metatarsal 1', 'Metatarsal 4', 'Heel'];
 const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 50;  // r=50
 const MAX_FORCE = 100;
 
@@ -113,7 +113,7 @@ function buildFootPath(coords, canvasW, canvasH, flipX) {
 const SENSOR_POS = [
   { key: 0, nx: 0.15, ny: 0.22, label: 'Hallux'  }, // ibu jari
   { key: 1, nx: 0.35, ny: 0.40, label: 'Metatarsal 1'  }, // medial forefoot (sisi ibu jari)
-  { key: 2, nx: 0.75, ny: 0.43, label: 'Metatarsal 3'  }, // lateral forefoot (sisi kelingking)
+  { key: 2, nx: 0.75, ny: 0.43, label: 'Metatarsal 4'  }, // lateral forefoot (sisi kelingking)
   { key: 3, nx: 0.50, ny: 0.87, label: 'Heel'    }, // tumit
 ];
 
@@ -174,7 +174,7 @@ function heatColor(ratio) {
 const SENSOR_DESC = [
   "Hallux: Bagian ibu jari kaki, membantu menyeimbangkan tubuh dan mendorong langkah saat berjalan.",
   "Metatarsal 1: Bagian depan-dalam kaki (sisi medial), menahan tekanan besar saat tubuh bertumpu ke depan.",
-  "Metatarsal 3: Bagian tengah-depan kaki (sisi sentral forefoot), berfungsi mendistribusikan beban dan menyeimbangkan tekanan di area tengah kaki saat berjalan.",
+  "Metatarsal 4: Bagian tengah-depan kaki (sisi lateral), berfungsi mendistribusikan beban dan menyeimbangkan tekanan di area tengah kaki saat berjalan.",
   "Heel: Tumit kaki, menopang berat badan utama dan memberikan stabilitas saat berdiri."
 ];
 
@@ -1384,87 +1384,96 @@ function updateCoP(data) {
     const swayDistance = Math.sqrt(copX * copX + copY * copY);
 
     const MAX_SWAY   = 15;
-const stabilitas = Math.max(0, Math.round((1 - swayDistance / MAX_SWAY) * 100));
-const stabColor  = stabilitas >= 85 ? 'var(--green)' : stabilitas >= 70 ? 'var(--yellow)' : 'var(--red)';
+    const stabilitas = Math.max(0, Math.round((1 - swayDistance / MAX_SWAY) * 100));
+    const stabColor = swayDistance < 2.5 
+      ? 'var(--green)' 
+      : swayDistance <= 4.5 
+        ? 'var(--yellow)' 
+        : 'var(--red)';
 
-const stabValEl = document.getElementById('stability-val');
-const stabBarEl = document.getElementById('stability-bar');
-if (stabValEl) { stabValEl.textContent = `${stabilitas}%`; stabValEl.style.color = stabColor; }
-if (stabBarEl) { stabBarEl.style.width = `${stabilitas}%`; stabBarEl.style.background = stabColor; }
+    const stabValEl = document.getElementById('stability-val');
+    const stabBarEl = document.getElementById('stability-bar');
+    if (stabValEl) { stabValEl.textContent = `${stabilitas}%`; stabValEl.style.color = stabColor; }
+    if (stabBarEl) { stabBarEl.style.width = `${stabilitas}%`; stabBarEl.style.background = stabColor; }
 
-    // ── Update CoP Distance & Distribusi Depan/Belakang ──────────
-const distValEl = document.getElementById('cop-distance-val');
-const distStsEl = document.getElementById('cop-distance-status');
-if (distValEl) {
-  const stable      = swayDistance < 2.5;
-  const medium      = swayDistance <= 4.5;
-  const statusText  = stable ? 'STABIL' : medium ? 'SEDANG' : 'TIDAK STABIL';
-  const statusColor = stable ? 'var(--green)' : medium ? 'var(--yellow)' : 'var(--red)';
-  distValEl.textContent = `${swayDistance.toFixed(2)} cm`;
-  distValEl.style.color = statusColor;
-  if (distStsEl) { distStsEl.textContent = statusText; distStsEl.style.color = statusColor; }
+        // ── Update CoP Distance & Distribusi Depan/Belakang ──────────
+    const distValEl = document.getElementById('cop-distance-val');
+    const distStsEl = document.getElementById('cop-distance-status');
+    if (distValEl) {
+      const stable      = swayDistance < 2.5;
+      const medium      = swayDistance <= 4.5;
+      const statusText  = stable ? 'STABIL' : medium ? 'SEDANG' : 'TIDAK STABIL';
+      const statusColor = stable ? 'var(--green)' : medium ? 'var(--yellow)' : 'var(--red)';
+      distValEl.textContent = `${swayDistance.toFixed(2)} cm`;
+      distValEl.style.color = statusColor;
+      if (distStsEl) { distStsEl.textContent = statusText; distStsEl.style.color = statusColor; }
+    }
+
+    const COP_Y_MAX = 8;
+    const COP_Y_MIN = -10;
+    const range     = COP_Y_MAX - COP_Y_MIN;
+    const frontPct  = Math.min(100, Math.max(0, Math.round(((copY - COP_Y_MIN) / range) * 100)));
+    const backPct   = 100 - frontPct;
+    const frontEl   = document.getElementById('b-front-pct');
+    const backEl    = document.getElementById('b-back-pct');
+    const barFront  = document.getElementById('fb-bar-front');
+    const barBack   = document.getElementById('fb-bar-back');
+    if (frontEl)  frontEl.textContent  = `${frontPct}%`;
+    if (backEl)   backEl.textContent   = `${backPct}%`;
+    if (barFront) barFront.style.width = `${frontPct}%`;
+    if (barBack)  barBack.style.width  = `${backPct}%`;
+
+        // 4. Update Status & Feedback (Logika Tunggal)
+        if (swayDistance <= 1.2) {
+    // Sesuai batas normatif quiet standing paper Prieto et al. (1996)
+    badge.textContent = "STABIL";
+    badge.className = "badge badge-normal";
+    feedback.textContent = "Keseimbangan: Sangat Baik (Normal)";
+    feedback.style.color = "var(--green)";
+} 
+else if (swayDistance <= 2.5) {
+    // Zona transisi / Warning Zone (Grey Area Sistem Pakar)
+    badge.textContent = "SEDANG";
+    badge.className = "badge badge-warning";
+    
+    // Angka toleransi arah diperkecil agar sensitif di rentang jarak 1.2 - 2.5 cm
+    let dirX = copX > 0.8 ? "Kanan" : (copX < -0.8 ? "Kiri" : "");
+    let dirY = copY > 1.0 ? "Depan" : (copY < -1.0 ? "Belakang" : "");
+    feedback.textContent = `Cukup Stabil (Condong ke ${dirY} ${dirX})`.trim();
+    feedback.style.color = "var(--yellow)";
+} 
+else {
+    // Di atas 2.5 cm sudah masuk ambang batas abnormal / risiko gangguan vestibular
+    badge.textContent = "ABNORMAL";
+    badge.className = "badge badge-abnormal";
+    
+    // Angka toleransi arah untuk kondisi goyangan ekstrem
+    let dirX = copX > 1.2 ? "Kanan" : (copX < -1.2 ? "Kiri" : "");
+    let dirY = copY > 1.5 ? "Depan" : (copY < -1.5 ? "Belakang" : "");
+    feedback.textContent = `Tidak Stabil (Miring ke ${dirY} ${dirX})`.trim();
+    feedback.style.color = "var(--red)";
 }
 
-const COP_Y_MAX = 8;
-const COP_Y_MIN = -10;
-const range     = COP_Y_MAX - COP_Y_MIN;
-const frontPct  = Math.min(100, Math.max(0, Math.round(((copY - COP_Y_MIN) / range) * 100)));
-const backPct   = 100 - frontPct;
-const frontEl   = document.getElementById('b-front-pct');
-const backEl    = document.getElementById('b-back-pct');
-const barFront  = document.getElementById('fb-bar-front');
-const barBack   = document.getElementById('fb-bar-back');
-if (frontEl)  frontEl.textContent  = `${frontPct}%`;
-if (backEl)   backEl.textContent   = `${backPct}%`;
-if (barFront) barFront.style.width = `${frontPct}%`;
-if (barBack)  barBack.style.width  = `${backPct}%`;
+        // 5. Update Posisi Titik Visual
+        if (dot) {
+            // Skala visual: 100px mewakili radius +/- 15cm
+    //         const radarEl  = document.querySelector('.cop-radar');
+    // const radarSize = radarEl ? radarEl.offsetWidth : 200;
+    // const center   = radarSize / 2;
+    // const scale    = center / 15;
+    // const posX     = center + (copX * scale);
+    // const posY     = center - (copY * scale);
+    //         dot.style.left = `${posX}px`;
+    //         dot.style.top = `${posY}px`;
+    const MAX_RANGE = 15; // cm, radius maksimum visualisasi
+    const pctX = 50 + (copX / MAX_RANGE * 50);
+    const pctY = 50 - (copY / MAX_RANGE * 50);
+    dot.style.left = `${Math.max(0, Math.min(100, pctX))}%`;
+    dot.style.top  = `${Math.max(0, Math.min(100, pctY))}%`;
+        }
 
-    // 4. Update Status & Feedback (Logika Tunggal)
-    if (swayDistance < 2.5) {
-        badge.textContent = "STABIL";
-        badge.className = "badge badge-normal";
-        feedback.textContent = "Keseimbangan: Sangat Baik";
-        feedback.style.color = "var(--green)";
-    } 
-    else if (swayDistance <= 4.5) {
-        badge.textContent = "SEDANG";
-        badge.className = "badge badge-warning";
-        
-        let dirX = copX > 1.5 ? "Kanan" : (copX < -1.5 ? "Kiri" : "");
-        let dirY = copY > 2 ? "Depan" : (copY < -2 ? "Belakang" : "");
-        feedback.textContent = `Cukup Stabil (Condong ke ${dirY} ${dirX})`;
-        feedback.style.color = "var(--yellow)";
-    } 
-    else {
-        badge.textContent = "ABNORMAL";
-        badge.className = "badge badge-abnormal";
-        
-        let dirX = copX > 2 ? "Kanan" : (copX < -2 ? "Kiri" : "");
-        let dirY = copY > 3 ? "Depan" : (copY < -3 ? "Belakang" : "");
-        feedback.textContent = `Tidak Stabil (Miring ke ${dirY} ${dirX})`;
-        feedback.style.color = "var(--red)";
+        // 6. Update Label Koordinat Teknis (Kecil)
+        if (coordLabel) {
+            coordLabel.textContent = `X: ${copX.toFixed(1)}, Y: ${copY.toFixed(1)}`;
+        }
     }
-
-    // 5. Update Posisi Titik Visual
-    if (dot) {
-        // Skala visual: 100px mewakili radius +/- 15cm
-//         const radarEl  = document.querySelector('.cop-radar');
-// const radarSize = radarEl ? radarEl.offsetWidth : 200;
-// const center   = radarSize / 2;
-// const scale    = center / 15;
-// const posX     = center + (copX * scale);
-// const posY     = center - (copY * scale);
-//         dot.style.left = `${posX}px`;
-//         dot.style.top = `${posY}px`;
-const MAX_RANGE = 15; // cm, radius maksimum visualisasi
-const pctX = 50 + (copX / MAX_RANGE * 50);
-const pctY = 50 - (copY / MAX_RANGE * 50);
-dot.style.left = `${Math.max(0, Math.min(100, pctX))}%`;
-dot.style.top  = `${Math.max(0, Math.min(100, pctY))}%`;
-    }
-
-    // 6. Update Label Koordinat Teknis (Kecil)
-    if (coordLabel) {
-        coordLabel.textContent = `X: ${copX.toFixed(1)}, Y: ${copY.toFixed(1)}`;
-    }
-}

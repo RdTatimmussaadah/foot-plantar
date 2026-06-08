@@ -99,6 +99,8 @@ function digitalToVolt(digital) {
 function processRawDigital(rawData) {
   const lD = rawData.left_fsr_digital  || [0, 0, 0, 0];
   const rD = rawData.right_fsr_digital || [0, 0, 0, 0];
+  const lB = rawData.left_balance_percent || [0, 0, 0, 0];
+  const rB = rawData.right_balance_percent || [0, 0, 0, 0];
 
   const lN = (Array.isArray(rawData.left_fsr_newton) && rawData.left_fsr_newton.length === 4)
     ? rawData.left_fsr_newton
@@ -123,6 +125,8 @@ return {
     right_fsr_newton:  rN,
     left_fsr_percent:  lP,
     right_fsr_percent: rP,
+    left_balance_percent: lB,
+    right_balance_percent: rB,
     timestamp: rawData.timestamp || Date.now(),
   };
 }
@@ -482,9 +486,12 @@ function computeAll(sensorData) {
   const archType = calcArchType(lN, rN);   
 
   // Left/Right distribution percentages
-  const leftPercent  = totalForce > 0 ? Math.round((fLeft  / totalForce) * 100) : 50;
-  const rightPercent = totalForce > 0 ? Math.round((fRight / totalForce) * 100) : 50;
-
+  // const leftPercent  = totalForce > 0 ? Math.round((fLeft  / totalForce) * 100) : 50;
+  // const rightPercent = totalForce > 0 ? Math.round((fRight / totalForce) * 100) : 50;
+// Mengambil langsung dari Firebase, jika kosong/undefined baru dihitung manual sebagai backup
+  const leftPercent  = sensorData.left_balance_percent  != null ? Number(Math.round(sensorData.left_balance_percent))  : (totalForce > 0 ? Math.round((fLeft  / totalForce) * 100) : 50);
+  const rightPercent = sensorData.right_balance_percent != null ? Number(Math.round(sensorData.right_balance_percent)) : (totalForce > 0 ? Math.round((fRight / totalForce) * 100) : 50);
+  
   return {
     // Raw
     left_fsr_newton:   lN,
