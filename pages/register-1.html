@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Daftar — Foot Plantar Monitoring</title>
+    <title>Register — Foot Plantar Monitoring</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
       rel="stylesheet"
@@ -26,7 +26,7 @@
           <div class="brand-name">Foot Plantar Monitoring</div>
         </div>
         <p class="auth-tagline">
-          Monitoring tekanan plantar kaki
+          Foot plantar pressure monitoring
         </p>
         <div class="auth-left-footer">v1.0.0 · Foot Plantar 2026</div>
       </div>
@@ -34,26 +34,26 @@
       <!-- RIGHT -->
       <div class="auth-right">
         <div class="auth-card">
-          <div class="auth-card-title"><span>Daftar Akun</span></div>
+          <div class="auth-card-title"><span>Register Account</span></div>
           <p class="auth-card-subtitle" style="margin-bottom: var(--space-lg)">
-            Langkah 1 dari 3
+            Step 1 of 3
           </p>
 
           <!-- Step indicator -->
           <div class="steps-indicator">
             <div class="step-item">
               <div class="step-dot active">1</div>
-              <span class="step-label active">Akun</span>
+              <span class="step-label active">Account</span>
             </div>
             <div class="step-line"></div>
             <div class="step-item">
               <div class="step-dot">2</div>
-              <span class="step-label">Data Diri</span>
+              <span class="step-label">Personal Data</span>
             </div>
             <div class="step-line"></div>
             <div class="step-item">
               <div class="step-dot">3</div>
-              <span class="step-label">Konfirmasi</span>
+              <span class="step-label">Confirmation</span>
             </div>
             <div
               class="progress-line"
@@ -76,7 +76,7 @@
               class="form-input"
               type="email"
               id="email"
-              placeholder="nama@email.com"
+              placeholder="name@email.com"
             />
           </div>
 
@@ -95,7 +95,7 @@
                 class="form-input"
                 type="password"
                 id="password"
-                placeholder="Min. 8 karakter"
+                placeholder="Min. 8 characters"
                 oninput="checkPasswordStrength(this.value)"
               />
               <button
@@ -134,13 +134,13 @@
                 alt="Password Icon"
                 style="width:16px;height:16px;object-fit:contain"
               />
-              Konfirmasi Password
+              Confirm Password
             </label>
             <input
               class="form-input"
               type="password"
               id="confirm_password"
-              placeholder="Ulangi password"
+              placeholder="Confirm password"
             />
           </div>
 
@@ -152,7 +152,7 @@
                 alt="Phone Icon"
                 style="width:16px;height:16px;object-fit:contain"
               />
-              Nomor Telepon
+              Phone Number
             </label>
             <input
               class="form-input"
@@ -162,9 +162,9 @@
             />
           </div>
 
-          <button class="btn-primary" onclick="nextStep()">Lanjutkan →</button>
+          <button class="btn-primary" onclick="nextStep()">Continue →</button>
           <p class="auth-switch">
-            Sudah punya akun? <a href="login.html">Masuk</a>
+            Already have an account? <a href="login.html">Sign In</a>
           </p>
         </div>
       </div>
@@ -209,15 +209,15 @@
         const phone = document.getElementById("phone").value.trim();
 
         if (!email || !password || !confirm || !phone) {
-          alert("Harap isi semua field.");
+          alert("Please fill in all fields.");
           return;
         }
         if (password !== confirm) {
-          alert("Password tidak cocok.");
+          alert("Passwords do not match.");
           return;
         }
         if (password.length < 8) {
-          alert("Password minimal 8 karakter.");
+          alert("Password must be at least 8 characters long.");
           return;
         }
 

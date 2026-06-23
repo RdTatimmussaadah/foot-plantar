@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Masuk — Foot Plantar Monitoring</title>
+    <title>Sign In — Foot Plantar Monitoring</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
       rel="stylesheet"
@@ -34,7 +34,7 @@
           </div>
         </div>
         <p class="auth-tagline">
-          Monitoring tekanan plantar kaki
+          Foot plantar pressure monitoring
         </p>
         <div class="auth-left-footer">v1.0.0 · Foot Plantar 2026</div>
       </div>
@@ -42,8 +42,8 @@
       <!-- ── RIGHT PANEL ── -->
       <div class="auth-right">
         <div class="auth-card">
-          <div class="auth-card-title"><span>Masuk ke Akun</span></div>
-          <p class="auth-card-subtitle">Gunakan email &amp; password Anda</p>
+          <div class="auth-card-title"><span>Sign In to Account</span></div>
+          <p class="auth-card-subtitle">Use your email and password</p>
 
           <div class="form-group">
             <label class="form-label">
@@ -59,7 +59,7 @@
               class="form-input"
               type="email"
               id="email"
-              placeholder="nama@email.com"
+              placeholder="name@email.com"
               autocomplete="email"
             />
           </div>
@@ -79,7 +79,7 @@
                 class="form-input"
                 type="password"
                 id="password"
-                placeholder="Masukkan password"
+                placeholder="Enter password"
                 autocomplete="current-password"
               />
               <button
@@ -105,10 +105,10 @@
             </div>
           </div>
 
-          <button class="btn-primary" onclick="handleLogin()">Masuk</button>
+          <button class="btn-primary" onclick="handleLogin()">Sign In</button>
 
           <p class="auth-switch">
-            Belum punya akun? <a href="register-1.html">Daftar sekarang</a>
+            Don't have an account? <a href="register-1.html">Register now</a>
           </p>
         </div>
       </div>
@@ -129,12 +129,12 @@
         const password = document.getElementById("password").value;
 
         if (!email || !password) {
-          tampilError("Isi email dan password terlebih dahulu.");
+          tampilError("Please fill in both email and password.");
           return;
         }
 
         const btn = document.querySelector(".btn-primary");
-        btn.textContent = "Memuat...";
+        btn.textContent = "Signing in...";
         btn.disabled = true;
 
         firebaseLogin(email, password)
@@ -142,19 +142,19 @@
             window.location.href = "dashboard.html";
           })
           .catch(function (err) {
-            btn.textContent = "Masuk";
+            btn.textContent = "Sign In";
             btn.disabled = false;
             const pesan =
               err.code === "auth/user-not-found"
-                ? "Email tidak terdaftar."
+                ? "Email is not registered."
                 : err.code === "auth/wrong-password"
-                  ? "Password salah."
+                  ? "Incorrect password."
                   : err.code === "auth/invalid-email"
-                    ? "Format email tidak valid."
+                    ? "Invalid email format."
                     : err.code === "auth/invalid-credential"
-                      ? "Email atau password salah."
+                      ? "Email or password is incorrect."
                       : err.code === "auth/too-many-requests"
-                        ? "Terlalu banyak percobaan. Coba lagi nanti."
+                        ? "Too many attempts. Please try again later."
                         : err.message;
             tampilError(pesan);
           });

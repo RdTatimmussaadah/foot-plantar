@@ -172,10 +172,10 @@ function heatColor(ratio) {
 // ];
 
 const SENSOR_DESC = [
-  "Hallux: Bagian ibu jari kaki, membantu menyeimbangkan tubuh dan mendorong langkah saat berjalan.",
-  "Metatarsal 1: Bagian depan-dalam kaki (sisi medial), menahan tekanan besar saat tubuh bertumpu ke depan.",
-  "Metatarsal 4: Bagian tengah-depan kaki (sisi lateral), berfungsi mendistribusikan beban dan menyeimbangkan tekanan di area tengah kaki saat berjalan.",
-  "Heel: Tumit kaki, menopang berat badan utama dan memberikan stabilitas saat berdiri."
+  "Hallux: The Big Toe: The largest toe on the foot, assisting in balance and propulsion during walking.",
+  "Metatarsal 1: The First Metatarsal: The bone connecting the big toe to the midfoot, bearing significant load during standing and walking.",
+  "Metatarsal 4: The Fourth Metatarsal: The bone on the outer side of the foot, helping distribute weight and maintain balance.",
+  "Heel: The Heel: The back part of the foot that supports body weight and provides stability when standing."
 ];
 
 // ============================================================
@@ -1037,31 +1037,31 @@ async function updatePostureMLSimple(data) {
   if (!box || !resultEl) return;
 
   if (typeof predictPostureML !== 'function') {
-    _setPostureBoxState(box, resultEl, 'Model belum siap', 'loading');
+    _setPostureBoxState(box, resultEl, 'Model not available', 'loading');
     return;
   }
 
-  _setPostureBoxState(box, resultEl, 'Mendeteksi...', 'loading');
+  _setPostureBoxState(box, resultEl, 'Detecting...', 'loading');
 
   try {
     const result = await predictPostureML(data);
     if (seq !== _postureMLSeq) return;
 
-    const label = result && result.label ? result.label : 'Belum terdeteksi';
+    const label = result && result.label ? result.label : 'Not Detected Yet';
 
     localStorage.setItem('fps_currentPostureML', result.rawLabel || '');
     localStorage.setItem('fps_currentPostureMLConfidence', (result.confidence || 0).toFixed(4));
 
     let state = 'default';
     if (label.toLowerCase() === 'normal') state = 'normal';
-    else if (label.toLowerCase().includes('condong')) state = 'warning';
+    else if (label.toLowerCase().includes('lean')) state = 'warning';
 
     _setPostureBoxState(box, resultEl, label, state);
 
   } catch (err) {
     console.warn('ML postur gagal:', err);
     if (seq !== _postureMLSeq) return;
-    _setPostureBoxState(box, resultEl, 'Belum terbaca', 'loading');
+    _setPostureBoxState(box, resultEl, 'Not Read Yet', 'loading');
   }
 }
 
@@ -1077,30 +1077,30 @@ function getPostureNote(label, state) {
   const text = String(label || '').toLowerCase();
 
   if (state === 'loading') {
-    return 'Sistem sedang membaca pola tekanan kaki untuk mendeteksi kecenderungan postur.';
+    return 'The system is reading the foot pressure pattern to detect posture tendencies.';
   }
 
   if (text.includes('normal')) {
-    return 'Pola tekanan menunjukkan distribusi tumpuan yang relatif seimbang.';
+    return 'The pressure pattern indicates a relatively balanced weight distribution.';
   }
 
-  if (text.includes('depan')) {
-    return 'Pola tekanan menunjukkan kecenderungan tumpuan tubuh ke arah depan.';
+  if (text.includes('forward')) {
+    return 'The pressure pattern indicates a tendency for the body weight to shift forward.';
   }
 
-  if (text.includes('belakang')) {
-    return 'Pola tekanan menunjukkan kecenderungan tumpuan tubuh ke arah belakang.';
+  if (text.includes('backward')) {
+    return 'The pressure pattern indicates a tendency for the body weight to shift backward.';
   }
 
-  if (text.includes('kiri')) {
-    return 'Pola tekanan menunjukkan kecenderungan tumpuan tubuh ke sisi kiri.';
+  if (text.includes('left')) {
+    return 'The pressure pattern indicates a tendency for the body weight to shift to the left side.';
   }
 
-  if (text.includes('kanan')) {
-    return 'Pola tekanan menunjukkan kecenderungan tumpuan tubuh ke sisi kanan.';
+  if (text.includes('right')) {
+    return 'The pressure pattern indicates a tendency for the body weight to shift to the right side.';
   }
 
-  return 'Data postur belum cukup jelas. Pembacaan dapat diulang untuk melihat pola tekanan dengan lebih baik.';
+  return 'The posture data is not clear enough. The reading can be repeated to better observe the pressure pattern.';
 }
 
 function _setPostureBoxState(box, resultEl, label, state) {
@@ -1116,11 +1116,11 @@ function _setPostureBoxState(box, resultEl, label, state) {
 
   const POSTURE_EMOJI = {
     'Normal': '🟢',
-    'Condong Depan': '⬆️',
-    'Condong Belakang': '⬇️',
-    'Condong Kiri': '⬅️',
-    'Condong Kanan': '➡️',
-    'Mendeteksi...': '⏳',
+    'Forward Lean': '⬆️',
+    'Backward Lean': '⬇️',
+    'Left Lean': '⬅️',
+    'Right Lean': '➡️',
+    'Detecting...': '⏳',
     'Model belum siap': '⚠️',
     'Belum terdeteksi': '❓',
     'Belum terbaca': '❓'
@@ -1137,19 +1137,19 @@ function _setPostureBoxState(box, resultEl, label, state) {
 
 const interpretations = {
   "Flat Foot": {
-    "Normal": "Lengkungan kaki rata, namun tumpuan stabil di tengah.",
-    "Overpronation": "Lengkungan kaki rata dan tumpuan miring ke dalam.",
-    "Supinasi": "Kaki rata, namun tumpuan beban cenderung ke sisi luar."
+    "Normal": "Foot flat, but the weight distribution is stable in the center.",
+    "Overpronation": "Flat foot and the weight distribution is tilted inward.",
+    "Supinasi": "Flat foot, but the weight distribution tends to shift to the outer side."
   },
   "High Arch": {
-    "Normal": "Lengkungan tinggi, namun tumpuan stabil di tengah.",
-    "Overpronation": "Lengkungan tinggi, namun tumpuan miring ke dalam.",
-    "Supinasi": "Lengkungan tinggi dan tumpuan jatuh ke sisi luar."
+    "Normal": "High arch, but the weight distribution is stable in the center.",
+    "Overpronation": "High arch and the weight distribution is tilted inward.",
+    "Supinasi": "High arch and the weight distribution tends to shift to the outer side."
   },
   "Normal": {
-    "Normal": "Kaki ideal, struktur dan tumpuan sangat seimbang.",
-    "Overpronation": "Bentuk normal, namun tumpuan cenderung miring ke dalam.",
-    "Supinasi": "Bentuk normal, namun tumpuan cenderung miring ke luar."
+    "Normal": "Ideal foot, structure and weight distribution are very balanced.",
+    "Overpronation": "Normal shape, but the weight distribution tends to tilt inward.",
+    "Supinasi": "Normal shape, but the weight distribution tends to tilt outward."
   }
 };
 
@@ -1204,7 +1204,7 @@ function updateBalanceUI(data) {
   if (copDist != null && distValEl) {
     const stable      = copDist < 2.5;
     const medium      = copDist <= 4.5;
-    const statusText  = stable ? 'STABIL' : medium ? 'SEDANG' : 'TIDAK STABIL';
+    const statusText  = stable ? 'STABLE' : medium ? 'MODERATE' : 'UNSTABLE';
     const statusColor = stable ? 'var(--green)' : medium ? 'var(--yellow)' : 'var(--red)';
     distValEl.textContent = `${Number(copDist).toFixed(2)} cm`;
     distValEl.style.color = statusColor;
@@ -1261,7 +1261,7 @@ function processDiagnosis(side, arch, pron) {
   archVal.textContent = arch;
   pronVal.textContent = pron;
   labelEl.textContent = (archKey === "Normal" && pronKey === "Normal")
-    ? "Kaki Normal"
+    ? "Normal Foot"
     : (archKey !== "Normal" ? arch : pron);
 
   // Set Penjelasan Bahasa Awam
@@ -1359,12 +1359,131 @@ const SENSOR_COORDS = {
   R3: { x:   7.0, y: -8.0 },  // Heel kanan
 };
 
+// function updateCoP(data) {
+//     const fL = data.left_fsr_newton || [0,0,0,0];
+//     const fR = data.right_fsr_newton || [0,0,0,0];
+//     const totalForce = data.totalForce || 1;
+
+//     // 1. Hitung Koordinat CoP (Rata-rata tertimbang)
+//     let sumX = 0, sumY = 0;
+//     for(let i=0; i<4; i++) {
+//         sumX += (fL[i] * SENSOR_COORDS[`L${i}`].x) + (fR[i] * SENSOR_COORDS[`R${i}`].x);
+//         sumY += (fL[i] * SENSOR_COORDS[`L${i}`].y) + (fR[i] * SENSOR_COORDS[`R${i}`].y);
+//     }
+
+//     const copX = sumX / totalForce;
+//     const copY = sumY / totalForce;
+
+//     // 2. Referensi Elemen UI
+//     const dot = document.getElementById('cop-dot');
+//     const coordLabel = document.getElementById('cop-coordinate');
+//     const feedback = document.getElementById('cop-feedback-text');
+//     const badge = document.getElementById('b-status-badge');
+
+//     // 3. Hitung Jarak Goyangan (Sway Distance)
+//     const swayDistance = Math.sqrt(copX * copX + copY * copY);
+
+//     const MAX_SWAY   = 15;
+//     const stabilitas = Math.max(0, Math.round((1 - swayDistance / MAX_SWAY) * 100));
+//     const stabColor = swayDistance < 2.5 
+//       ? 'var(--green)' 
+//       : swayDistance <= 4.5 
+//         ? 'var(--yellow)' 
+//         : 'var(--red)';
+
+//     const stabValEl = document.getElementById('stability-val');
+//     const stabBarEl = document.getElementById('stability-bar');
+//     if (stabValEl) { stabValEl.textContent = `${stabilitas}%`; stabValEl.style.color = stabColor; }
+//     if (stabBarEl) { stabBarEl.style.width = `${stabilitas}%`; stabBarEl.style.background = stabColor; }
+
+//         // ── Update CoP Distance & Distribusi Depan/Belakang ──────────
+//     const distValEl = document.getElementById('cop-distance-val');
+//     const distStsEl = document.getElementById('cop-distance-status');
+//     if (distValEl) {
+//       const stable      = swayDistance < 2.5;
+//       const medium      = swayDistance <= 4.5;
+//       const statusText  = stable ? 'STABLE' : medium ? 'MODERATE' : 'UNSTABLE';
+//       const statusColor = stable ? 'var(--green)' : medium ? 'var(--yellow)' : 'var(--red)';
+//       distValEl.textContent = `${swayDistance.toFixed(2)} cm`;
+//       distValEl.style.color = statusColor;
+//       if (distStsEl) { distStsEl.textContent = statusText; distStsEl.style.color = statusColor; }
+//     }
+
+//     const COP_Y_MAX = 8;
+//     const COP_Y_MIN = -10;
+//     const range     = COP_Y_MAX - COP_Y_MIN;
+//     const frontPct  = Math.min(100, Math.max(0, Math.round(((copY - COP_Y_MIN) / range) * 100)));
+//     const backPct   = 100 - frontPct;
+//     const frontEl   = document.getElementById('b-front-pct');
+//     const backEl    = document.getElementById('b-back-pct');
+//     const barFront  = document.getElementById('fb-bar-front');
+//     const barBack   = document.getElementById('fb-bar-back');
+//     if (frontEl)  frontEl.textContent  = `${frontPct}%`;
+//     if (backEl)   backEl.textContent   = `${backPct}%`;
+//     if (barFront) barFront.style.width = `${frontPct}%`;
+//     if (barBack)  barBack.style.width  = `${backPct}%`;
+
+//         // 4. Update Status & Feedback (Logika Tunggal)
+//         if (swayDistance <= 1.2) {
+//     // Sesuai batas normatif quiet standing paper Prieto et al. (1996)
+//     badge.textContent = "STABLE";
+//     badge.className = "badge badge-normal";
+//     feedback.textContent = "Balance: Very Good (Normal)";
+//     feedback.style.color = "var(--green)";
+// } 
+// else if (swayDistance <= 2.5) {
+//     // Zona transisi / Warning Zone (Grey Area Sistem Pakar)
+//     badge.textContent = "MODERATE";
+//     badge.className = "badge badge-warning";
+    
+//     // Angka toleransi arah diperkecil agar sensitif di rentang jarak 1.2 - 2.5 cm
+//     let dirX = copX > 0.8 ? "Right" : (copX < -0.8 ? "Left" : "");
+//     let dirY = copY > 1.0 ? "Front" : (copY < -1.0 ? "Back" : "");
+//     feedback.textContent = `Moderately Stable (Tending to ${dirY} ${dirX})`.trim();
+//     feedback.style.color = "var(--yellow)";
+// } 
+// else {
+//     // Di atas 2.5 cm sudah masuk ambang batas abnormal / risiko gangguan vestibular
+//     badge.textContent = "ABNORMAL";
+//     badge.className = "badge badge-abnormal";
+    
+//     // Angka toleransi arah untuk kondisi goyangan ekstrem
+//     let dirX = copX > 1.2 ? "Right" : (copX < -1.2 ? "Left" : "");
+//     let dirY = copY > 1.5 ? "Front" : (copY < -1.5 ? "Back" : "");
+//     feedback.textContent = `Unstable (Tending to  ${dirY} ${dirX})`.trim();
+//     feedback.style.color = "var(--red)";
+// }
+
+//         // 5. Update Posisi Titik Visual
+//         if (dot) {
+//             // Skala visual: 100px mewakili radius +/- 15cm
+//     //         const radarEl  = document.querySelector('.cop-radar');
+//     // const radarSize = radarEl ? radarEl.offsetWidth : 200;
+//     // const center   = radarSize / 2;
+//     // const scale    = center / 15;
+//     // const posX     = center + (copX * scale);
+//     // const posY     = center - (copY * scale);
+//     //         dot.style.left = `${posX}px`;
+//     //         dot.style.top = `${posY}px`;
+//     const MAX_RANGE = 15; // cm, radius maksimum visualisasi
+//     const pctX = 50 + (copX / MAX_RANGE * 50);
+//     const pctY = 50 - (copY / MAX_RANGE * 50);
+//     dot.style.left = `${Math.max(0, Math.min(100, pctX))}%`;
+//     dot.style.top  = `${Math.max(0, Math.min(100, pctY))}%`;
+//         }
+
+//         // 6. Update Label Koordinat Teknis (Kecil)
+//         if (coordLabel) {
+//             coordLabel.textContent = `X: ${copX.toFixed(1)}, Y: ${copY.toFixed(1)}`;
+//         }
+//     }
+
 function updateCoP(data) {
     const fL = data.left_fsr_newton || [0,0,0,0];
     const fR = data.right_fsr_newton || [0,0,0,0];
     const totalForce = data.totalForce || 1;
 
-    // 1. Hitung Koordinat CoP (Rata-rata tertimbang)
+    // 1. Hitung Koordinat CoP (Rata-rata tertimbang dari data sensor)
     let sumX = 0, sumY = 0;
     for(let i=0; i<4; i++) {
         sumX += (fL[i] * SENSOR_COORDS[`L${i}`].x) + (fR[i] * SENSOR_COORDS[`R${i}`].x);
@@ -1380,100 +1499,95 @@ function updateCoP(data) {
     const feedback = document.getElementById('cop-feedback-text');
     const badge = document.getElementById('b-status-badge');
 
-    // 3. Hitung Jarak Goyangan (Sway Distance)
+    // 3. Hitung Jarak Goyangan (Sway Distance) menggunakan Euclidean Distance
     const swayDistance = Math.sqrt(copX * copX + copY * copY);
 
-    const MAX_SWAY   = 15;
-    const stabilitas = Math.max(0, Math.round((1 - swayDistance / MAX_SWAY) * 100));
-    const stabColor = swayDistance < 2.5 
-      ? 'var(--green)' 
-      : swayDistance <= 4.5 
-        ? 'var(--yellow)' 
-        : 'var(--red)';
+    // ── [FIXED] Sinkronisasi Ambang Batas Berdasarkan Data Normatif Terbaru ──
+    let statusText = '';
+    let statusColor = '';
+    let feedbackText = '';
+    let badgeClass = '';
 
-    const stabValEl = document.getElementById('stability-val');
-    const stabBarEl = document.getElementById('stability-bar');
-    if (stabValEl) { stabValEl.textContent = `${stabilitas}%`; stabValEl.style.color = stabColor; }
-    if (stabBarEl) { stabBarEl.style.width = `${stabilitas}%`; stabBarEl.style.background = stabColor; }
-
-        // ── Update CoP Distance & Distribusi Depan/Belakang ──────────
-    const distValEl = document.getElementById('cop-distance-val');
-    const distStsEl = document.getElementById('cop-distance-status');
-    if (distValEl) {
-      const stable      = swayDistance < 2.5;
-      const medium      = swayDistance <= 4.5;
-      const statusText  = stable ? 'STABIL' : medium ? 'SEDANG' : 'TIDAK STABIL';
-      const statusColor = stable ? 'var(--green)' : medium ? 'var(--yellow)' : 'var(--red)';
-      distValEl.textContent = `${swayDistance.toFixed(2)} cm`;
-      distValEl.style.color = statusColor;
-      if (distStsEl) { distStsEl.textContent = statusText; distStsEl.style.color = statusColor; }
+    if (swayDistance <= 1.0) {
+        // Mengacu pada batas homeostasis ideal (di bawah mean populasi sehat Wanke et al., 2019)
+        statusText = "STABLE";
+        statusColor = "var(--green)";
+        badgeClass = "badge badge-normal";
+        feedbackText = "Balance: Very Good (Normal)";
+    } 
+    else if (swayDistance <= 2.5) {
+        // Zona Peringatan Dini / Early Warning (Batas transisi sistem pakar komputasi)
+        statusText = "MODERATE";
+        statusColor = "var(--yellow)";
+        badgeClass = "badge badge-warning";
+        
+        // Toleransi deteksi koordinat diperkecil agar peka di rentang gerak sempit
+        let dirX = copX > 0.6 ? "Right" : (copX < -0.6 ? "Left" : "");
+        let dirY = copY > 0.8 ? "Front" : (copY < -0.8 ? "Back" : "");
+        feedbackText = `Moderately Stable (Tending to ${dirY} ${dirX})`.trim();
+    } 
+    else {
+        // Melebihi batas deviasi ekstrem Mean + 2SD (Quijoux et al., 2021)
+        statusText = "UNSTABLE"; 
+        statusColor = "var(--red)";
+        badgeClass = "badge badge-abnormal";
+        
+        let dirX = copX > 1.0 ? "Right" : (copX < -1.0 ? "Left" : "");
+        let dirY = copY > 1.2 ? "Front" : (copY < -1.2 ? "Back" : "");
+        feedbackText = `Unstable (Tending to ${dirY} ${dirX})`.trim();
     }
 
+    // 4. Update Nilai Stabilitas (%) & Warna Progress Bar
+    const MAX_SWAY = 15;
+    const stabilitas = Math.max(0, Math.round((1 - swayDistance / MAX_SWAY) * 100));
+    const stabValEl = document.getElementById('stability-val');
+    const stabBarEl = document.getElementById('stability-bar');
+    if (stabValEl) { stabValEl.textContent = `${stabilitas}%`; stabValEl.style.color = statusColor; }
+    if (stabBarEl) { stabBarEl.style.width = `${stabilitas}%`; stabBarEl.style.background = statusColor; }
+
+    // 5. Update CoP Distance & Status Jarak Komparatif Teknis
+    const distValEl = document.getElementById('cop-distance-val');
+    const distStsEl = document.getElementById('cop-distance-status'); 
+    if (distValEl) {
+        distValEl.textContent = `${swayDistance.toFixed(2)} cm`;
+        distValEl.style.color = statusColor;
+    }
+    if (distStsEl) {
+        distStsEl.textContent = statusText;
+        distStsEl.style.color = statusColor;
+    }
+
+    // 6. Update Badge Card Utama & Kalimat Feedback Diagnosis
+    if (badge) { badge.textContent = statusText; badge.className = badgeClass; }
+    if (feedback) { feedback.textContent = feedbackText; feedback.style.color = statusColor; }
+
+    // 7. Distribusi Persentase Sumbu Vertikal (Depan/Belakang)
     const COP_Y_MAX = 8;
     const COP_Y_MIN = -10;
-    const range     = COP_Y_MAX - COP_Y_MIN;
-    const frontPct  = Math.min(100, Math.max(0, Math.round(((copY - COP_Y_MIN) / range) * 100)));
-    const backPct   = 100 - frontPct;
-    const frontEl   = document.getElementById('b-front-pct');
-    const backEl    = document.getElementById('b-back-pct');
-    const barFront  = document.getElementById('fb-bar-front');
-    const barBack   = document.getElementById('fb-bar-back');
+    const range = COP_Y_MAX - COP_Y_MIN;
+    const frontPct = Math.min(100, Math.max(0, Math.round(((copY - COP_Y_MIN) / range) * 100)));
+    const backPct = 100 - frontPct;
+    
+    const frontEl = document.getElementById('b-front-pct');
+    const backEl = document.getElementById('b-back-pct');
+    const barFront = document.getElementById('fb-bar-front');
+    const barBack = document.getElementById('fb-bar-back');
     if (frontEl)  frontEl.textContent  = `${frontPct}%`;
     if (backEl)   backEl.textContent   = `${backPct}%`;
     if (barFront) barFront.style.width = `${frontPct}%`;
     if (barBack)  barBack.style.width  = `${backPct}%`;
 
-        // 4. Update Status & Feedback (Logika Tunggal)
-        if (swayDistance <= 1.2) {
-    // Sesuai batas normatif quiet standing paper Prieto et al. (1996)
-    badge.textContent = "STABIL";
-    badge.className = "badge badge-normal";
-    feedback.textContent = "Keseimbangan: Sangat Baik (Normal)";
-    feedback.style.color = "var(--green)";
-} 
-else if (swayDistance <= 2.5) {
-    // Zona transisi / Warning Zone (Grey Area Sistem Pakar)
-    badge.textContent = "SEDANG";
-    badge.className = "badge badge-warning";
-    
-    // Angka toleransi arah diperkecil agar sensitif di rentang jarak 1.2 - 2.5 cm
-    let dirX = copX > 0.8 ? "Kanan" : (copX < -0.8 ? "Kiri" : "");
-    let dirY = copY > 1.0 ? "Depan" : (copY < -1.0 ? "Belakang" : "");
-    feedback.textContent = `Cukup Stabil (Condong ke ${dirY} ${dirX})`.trim();
-    feedback.style.color = "var(--yellow)";
-} 
-else {
-    // Di atas 2.5 cm sudah masuk ambang batas abnormal / risiko gangguan vestibular
-    badge.textContent = "ABNORMAL";
-    badge.className = "badge badge-abnormal";
-    
-    // Angka toleransi arah untuk kondisi goyangan ekstrem
-    let dirX = copX > 1.2 ? "Kanan" : (copX < -1.2 ? "Kiri" : "");
-    let dirY = copY > 1.5 ? "Depan" : (copY < -1.5 ? "Belakang" : "");
-    feedback.textContent = `Tidak Stabil (Miring ke ${dirY} ${dirX})`.trim();
-    feedback.style.color = "var(--red)";
-}
-
-        // 5. Update Posisi Titik Visual
-        if (dot) {
-            // Skala visual: 100px mewakili radius +/- 15cm
-    //         const radarEl  = document.querySelector('.cop-radar');
-    // const radarSize = radarEl ? radarEl.offsetWidth : 200;
-    // const center   = radarSize / 2;
-    // const scale    = center / 15;
-    // const posX     = center + (copX * scale);
-    // const posY     = center - (copY * scale);
-    //         dot.style.left = `${posX}px`;
-    //         dot.style.top = `${posY}px`;
-    const MAX_RANGE = 15; // cm, radius maksimum visualisasi
-    const pctX = 50 + (copX / MAX_RANGE * 50);
-    const pctY = 50 - (copY / MAX_RANGE * 50);
-    dot.style.left = `${Math.max(0, Math.min(100, pctX))}%`;
-    dot.style.top  = `${Math.max(0, Math.min(100, pctY))}%`;
-        }
-
-        // 6. Update Label Koordinat Teknis (Kecil)
-        if (coordLabel) {
-            coordLabel.textContent = `X: ${copX.toFixed(1)}, Y: ${copY.toFixed(1)}`;
-        }
+    // 8. Pemetaan Posisi Titik Visual pada Radar Grafik Dashboard UI
+    if (dot) {
+        const MAX_RANGE = 15; 
+        const pctX = 50 + (copX / MAX_RANGE * 50);
+        const pctY = 50 - (copY / MAX_RANGE * 50); // Dikurang (-) karena koordinat top CSS mengarah ke bawah halaman
+        dot.style.left = `${Math.max(0, Math.min(100, pctX))}%`;
+        dot.style.top  = `${Math.max(0, Math.min(100, pctY))}%`;
     }
+
+    // 9. Cetak Label Koordinat Numerik Kecil
+    if (coordLabel) {
+        coordLabel.textContent = `X: ${copX.toFixed(1)}, Y: ${copY.toFixed(1)}`;
+    }
+}

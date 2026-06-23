@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Laporan — Foot Plantar Monitoring</title>
+    <title>Report — Foot Plantar Monitoring</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
       rel="stylesheet"
@@ -28,11 +28,11 @@
                 <div class="profile-identity-header">
                   <div class="profile-avatar-lg" id="p-initials">...</div>
                   <div class="profile-name" id="p-name">....</div>
-                  <div class="profile-meta" id="p-meta">.. th · ...</div>
+                  <div class="profile-meta" id="p-meta">.. years · ...</div>
                 </div>
 
                 <div class="profile-contact-section">
-                  <div class="card-title">Kontak</div>
+                  <div class="card-title">Contact</div>
 
                   <div class="profile-field-row">
                     <span class="profile-field-key">Email</span>
@@ -40,7 +40,7 @@
                   </div>
 
                   <div class="profile-field-row">
-                    <span class="profile-field-key">No. Telepon</span>
+                    <span class="profile-field-key">Phone Number</span>
                     <span class="profile-field-val" id="p-phone">—</span>
                   </div>
                 </div>
@@ -48,37 +48,37 @@
 
               <div class="biodata-card">
                 <div class="detail-card-header">
-                  <span class="card-title">BIODATA PRIBADI</span>
+                  <span class="card-title">PERSONAL DATA</span>
                 </div>
 
                 <div class="biodata-body">
                   <div class="biodata-grid">
                     <div class="biodata-field">
-                      <span class="biodata-field-label">Nama Lengkap</span>
+                      <span class="biodata-field-label">Full Name</span>
                       <span class="biodata-field-value" id="b-nama">—</span>
                     </div>
 
                     <div class="biodata-field">
                       <span class="biodata-field-label"
-                        >Tanggal Lahir / Umur</span
+                        >Date of Birth / Age</span
                       >
 
                       <div class="biodata-inline-value">
                         <span class="biodata-field-value" id="b-dob">—</span>
                         <span class="biodata-age-highlight" id="b-age"
-                          >— tahun</span
+                          >— years</span
                         >
                       </div>
                     </div>
 
                     <div class="biodata-field">
-                      <span class="biodata-field-label">Jenis Kelamin</span>
+                      <span class="biodata-field-label">Gender</span>
                       <span class="biodata-field-value" id="b-gender">—</span>
                     </div>
 
                     <div class="biodata-field">
                       <span class="biodata-field-label"
-                        >Tinggi / Berat Badan</span
+                        >Height / Weight</span
                       >
                       <span class="biodata-field-value" id="b-tbbb">—</span>
                     </div>
@@ -101,56 +101,56 @@
             <section class="laporan-summary-col">
               <div class="patient-conclusion-card">
                 <div class="report-card-header">
-                  <span class="card-title">KESIMPULAN PASIEN</span>
+                  <span class="card-title">PATIENT CONCLUSION</span>
                   <span class="report-mini-badge" id="latest-snapshot-meta">
-                    Snapshot terakhir: —
+                    Latest Snapshot: —
                   </span>
                 </div>
 
                 <div class="conclusion-main">
                   <div class="conclusion-status" id="latest-overall-status">
-                    Menunggu data...
+                    Waiting for data...
                   </div>
                   <div class="conclusion-text" id="latest-overall-desc">
-                    Belum ada snapshot yang dapat dianalisis.
+                    There is no snapshot available for analysis.
                   </div>
                 </div>
 
                 <div class="condition-grid">
                   <div class="condition-box">
-                    <div class="condition-label">Struktur Kaki Kiri</div>
+                    <div class="condition-label">Left Foot Structure</div>
                     <div class="condition-value" id="latest-left-structure">
                       —
                     </div>
                   </div>
 
                   <div class="condition-box">
-                    <div class="condition-label">Gerakan Kaki Kiri</div>
+                    <div class="condition-label">Left Foot Movement</div>
                     <div class="condition-value" id="latest-left-motion">—</div>
                   </div>
                   <div class="condition-box condition-box-accent">
-                    <div class="condition-label">Stabilitas CoP</div>
+                    <div class="condition-label">CoP Stability</div>
                     <div class="condition-value" id="latest-cop-condition">
                       —
                     </div>
                   </div>
 
                   <div class="condition-box">
-                    <div class="condition-label">Struktur Kaki Kanan</div>
+                    <div class="condition-label">Right Foot Structure</div>
                     <div class="condition-value" id="latest-right-structure">
                       —
                     </div>
                   </div>
 
                   <div class="condition-box">
-                    <div class="condition-label">Gerakan Kaki Kanan</div>
+                    <div class="condition-label">Right Foot Movement</div>
                     <div class="condition-value" id="latest-right-motion">
                       —
                     </div>
                   </div>
 
                   <div class="condition-box">
-                    <div class="condition-label">Jumlah Snapshot</div>
+                    <div class="condition-label">Total Snapshots</div>
                     <div class="condition-value" id="total-snaps">—</div>
                   </div>
                 </div>
@@ -158,7 +158,7 @@
 
               <div class="cop-history-card">
                 <div class="trend-header">
-                  <span>RIWAYAT CoP</span>
+                  <span>CoP HISTORY</span>
                   <span class="trend-delta" id="cop-status-summary"></span>
                 </div>
 
@@ -171,7 +171,7 @@
                 </div>
 
                 <div class="cop-history-note" id="cop-history-note">
-                  Menunggu data CoP terakhir...
+                  Waiting for latest CoP data...
                 </div>
               </div>
             </section>
@@ -180,27 +180,27 @@
             <section class="laporan-overview-col">
               <div class="summary-card simple-summary-card">
                 <div class="report-card-header">
-                  <span class="card-title">RINGKASAN RIWAYAT</span>
+                  <span class="card-title">SUMMARY OF HISTORY</span>
                 </div>
 
                 <div class="simple-summary-list">
                   <div class="simple-summary-row">
-                    <span>Snapshot stabil</span>
+                    <span>Stable Snapshots</span>
                     <strong id="stable-snaps">—</strong>
                   </div>
 
                   <div class="simple-summary-row">
-                    <span>Snapshot perlu perhatian</span>
+                    <span>Snapshots Requiring Attention</span>
                     <strong id="attention-snaps">—</strong>
                   </div>
 
                   <div class="simple-summary-row">
-                    <span>Struktur dominan</span>
+                    <span>Dominant Structure</span>
                     <strong id="dominant-structure">—</strong>
                   </div>
 
                   <div class="simple-summary-row">
-                    <span>Gerakan dominan</span>
+                    <span>Dominant Movement</span>
                     <strong id="dominant-motion">—</strong>
                   </div>
                 </div>
@@ -212,7 +212,7 @@
               <div class="history-list-col">
                 <div class="history-list-header">
                   <div>
-                    <span class="card-title">RIWAYAT SNAPSHOT</span>
+                    <span class="card-title">SNAPSHOT HISTORY</span>
                   </div>
 
                   <div class="history-header-actions">
@@ -221,14 +221,14 @@
                       onclick="exportPDF()"
                       id="btn-pdf"
                     >
-                      📄 Laporan PDF
+                      📄 PDF Report
                     </button>
 
                     <button
                       onclick="handleDeleteAll()"
                       class="btn-delete-all btn-history-action"
                     >
-                      🗑️ Hapus Semua Riwayat
+                      🗑️ Delete All History
                     </button>
                   </div>
                 </div>
@@ -244,15 +244,15 @@
     <div id="confirm-modal" class="custom-modal">
   <div class="modal-content">
     <div class="modal-header">
-      <span id="modal-title">Konfirmasi</span>
+      <span id="modal-title">Confirm</span>
       <button id="modal-close">&times;</button>
     </div>
     <div class="modal-body" id="modal-message">
       <!-- Pesan dinamis muncul di sini -->
     </div>
     <div class="modal-footer">
-      <button id="modal-cancel" class="btn-cancel">Batal</button>
-      <button id="modal-ok" class="btn-ok">Hapus</button>
+      <button id="modal-cancel" class="btn-cancel">Cancel</button>
+      <button id="modal-ok" class="btn-ok">Delete</button>
     </div>
   </div>
 </div>

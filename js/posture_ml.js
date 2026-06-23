@@ -368,10 +368,10 @@ const POSTURE_MODEL_URL = '../models/tfjs_model/model.json';
 const POSTURE_MODEL_CLASSES = ["condong_belakang", "condong_depan", "condong_kanan", "condong_kiri", "normal"];
 
 const POSTURE_LABEL_MAP = {
-  condong_belakang: 'Condong Belakang',
-  condong_depan:    'Condong Depan',
-  condong_kanan:    'Condong Kanan',
-  condong_kiri:     'Condong Kiri',
+  condong_belakang: 'Backward Lean',
+  condong_depan:    'Forward Lean',
+  condong_kanan:    'Right Lean',
+  condong_kiri:     'Left Lean',
   normal:           'Normal',
 };
 

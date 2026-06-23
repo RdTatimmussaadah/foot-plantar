@@ -28,7 +28,7 @@
                 <!-- HEATMAP -->
                 <div class="heatmap-card">
                   <div class="heatmap-header">
-                    <div class="card-title">PETA TEKANAN PLANTAR</div>
+                    <div class="card-title">PLANTAR PRESSURE MAP</div>
                     <div style="text-align: right">
                       <div
                         style="
@@ -37,7 +37,7 @@
                           color: var(--text-secondary);
                         "
                       >
-                        Distribusi 4 Sensor
+                        4 Sensor Distribution
                       </div>
                       <!-- <div
                         style="
@@ -54,8 +54,8 @@
 
                   <div class="heatmap-body">
                     <div class="foot-labels-row">
-                      <span class="foot-side-lbl">KIRI</span>
-                      <span class="foot-side-lbl">KANAN</span>
+                      <span class="foot-side-lbl">LEFT</span>
+                      <span class="foot-side-lbl">RIGHT</span>
                     </div>
 
                     <div class="feet-container">
@@ -113,8 +113,8 @@
                       —
                     </div>
                     <div class="mc-unit">%</div>
-                    <div class="mc-lbl">Simetri L/R</div>
-                    <div class="mc-sub" id="m-balance-sub">batas min 85%</div>
+                    <div class="mc-lbl">L/R Symmetry</div>
+                    <div class="mc-sub" id="m-balance-sub">minimum threshold 85%</div>
                     <div class="mc-glow" style="background: var(--green)"></div>
                   </div>
                 </div>
@@ -159,26 +159,26 @@
                 <div class="posture-card">
                   <div class="posture-card-header">
                     <div class="card-section-title" style="margin: 0 0 2px">
-                      DETEKSI POSTUR
+                      POSTURE DETECTION
                     </div>
                     <span class="posture-badge" id="posture-badge"
-                      >ML Aktif</span
+                      >ML Active</span
                     >
                   </div>
 
-                  <!-- Kotak postur — sekarang menampilkan hasil ML langsung -->
+                  <!-- Posture box — currently displaying ML results directly -->
                   <div class="posture-result" id="posture-result-box">
                     <div class="posture-result-content">
                       <div class="posture-ml-label-wrap">
                         <!-- <span class="posture-ml-tag">ML</span> -->
-                        <strong id="ml-posture-result">Mendeteksi...</strong>
+                        <strong id="ml-posture-result">Detecting...</strong>
                       </div>
                     </div>
                   </div>
 
                   <div class="posture-note" id="posture-note">
-                    Sistem sedang membaca pola tekanan kaki untuk mendeteksi
-                    kecenderungan postur.
+                    The system is currently reading foot pressure patterns to detect
+                    posture tendencies.
                   </div>
                 </div>
               </div>
@@ -192,9 +192,9 @@
                     class="detail-card-header"
                     style="padding: var(--space-md)"
                   >
-                    <span class="card-title">STABILITAS POSTUR (CoP)</span>
+                    <span class="card-title">POSTURE STABILITY (CoP)</span>
                     <span class="badge" id="b-status-badge"
-                      >Menganalisis...</span
+                      >Analyzing...</span
                     >
                   </div>
 
@@ -217,7 +217,7 @@
                             pointer-events: none;
                           "
                         >
-                          DEPAN
+                          FRONT
                         </span>
                         <span
                           style="
@@ -233,7 +233,7 @@
                             pointer-events: none;
                           "
                         >
-                          BELAKANG
+                          BACK
                         </span>
                         <span
                           style="
@@ -249,7 +249,7 @@
                             pointer-events: none;
                           "
                         >
-                          KIRI
+                          LEFT
                         </span>
                         <span
                           style="
@@ -265,7 +265,7 @@
                             pointer-events: none;
                           "
                         >
-                          KANAN
+                          RIGHT
                         </span>
                         <div class="radar-cross-h"></div>
                         <div class="radar-cross-v"></div>
@@ -296,7 +296,7 @@
                           text-align: center;
                         "
                       >
-                        Menunggu data...
+                        Waiting for data...
                       </div>
                     </div>
 
@@ -306,7 +306,7 @@
                       style="margin: 0; background: transparent; padding: 0"
                     >
                       <div class="dist-stability-row">
-                        <span class="dist-label">Stabilitas</span>
+                        <span class="dist-label">Stability</span>
                         <div class="dist-stability-bar-wrap">
                           <div
                             class="dist-stability-bar"
@@ -344,8 +344,8 @@
                         >
                       </div>
                       <div class="dist-row-label">
-                        <span style="color: var(--red)">Kiri</span>
-                        <span style="color: var(--blue)">Kanan</span>
+                        <span style="color: var(--red)">Left</span>
+                        <span style="color: var(--blue)">Right</span>
                       </div>
 
                       <div class="dist-row" style="margin-top: 6px">
@@ -375,8 +375,8 @@
                         >
                       </div>
                       <div class="dist-row-label">
-                        <span style="color: var(--green)">Depan</span>
-                        <span style="color: var(--yellow)">Belakang</span>
+                        <span style="color: var(--green)">Front</span>
+                        <span style="color: var(--yellow)">Back</span>
                       </div>
                     </div>
                   </div>
@@ -386,9 +386,9 @@
                   <div class="+card diagnosis-card">
                     <div class="diagnosis-header left-theme">
                       <div class="diag-title-wrap">
-                        <span class="diag-side">KAKI KIRI</span>
+                        <span class="diag-side">LEFT FOOT</span>
                         <h2 class="diag-label" id="final-label-l">
-                          Menganalisis...
+                          Analyzing...
                         </h2>
                       </div>
                       <div class="diag-icon-svg" id="svg-l"></div>
@@ -397,18 +397,17 @@
                     <div class="diagnosis-content">
                       <div class="diag-row">
                         <div class="diag-item">
-                          <span class="diag-key">STRUKTUR (ARCH)</span>
+                          <span class="diag-key">STRUCTURE (ARCH)</span>
                           <span class="diag-val" id="arch-val-l">—</span>
                         </div>
                         <div class="diag-item">
-                          <span class="diag-key">GERAKAN (POSISI)</span>
+                          <span class="diag-key">MOVEMENT (POSITION)</span>
                           <span class="diag-val" id="pron-val-l">—</span>
                         </div>
                       </div>
 
                       <div class="diag-explanation" id="exp-l">
-                        Harap berdiri tegak di atas sensor untuk memulai
-                        analisis...
+                        Please stand upright on the sensor to begin the analysis...
                       </div>
                     </div>
                   </div>
@@ -416,9 +415,9 @@
                   <div class="card diagnosis-card">
                     <div class="diagnosis-header right-theme">
                       <div class="diag-title-wrap">
-                        <span class="diag-side">KAKI KANAN</span>
+                        <span class="diag-side">RIGHT FOOT</span>
                         <h2 class="diag-label" id="final-label-r">
-                          Menganalisis...
+                          Analyzing...
                         </h2>
                       </div>
                       <div class="diag-icon-svg" id="svg-r"></div>
@@ -427,18 +426,17 @@
                     <div class="diagnosis-content">
                       <div class="diag-row">
                         <div class="diag-item">
-                          <span class="diag-key">STRUKTUR (ARCH)</span>
+                          <span class="diag-key">STRUCTURE (ARCH)</span>
                           <span class="diag-val" id="arch-val-r">—</span>
                         </div>
                         <div class="diag-item">
-                          <span class="diag-key">GERAKAN (POSISI)</span>
+                          <span class="diag-key">MOVEMENT (POSITION)</span>
                           <span class="diag-val" id="pron-val-r">—</span>
                         </div>
                       </div>
 
                       <div class="diag-explanation" id="exp-r">
-                        Harap berdiri tegak di atas sensor untuk memulai
-                        analisis...
+                        Please stand upright on the sensor to begin the analysis...
                       </div>
                     </div>
                   </div>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Daftar — Data Diri</title>
+    <title>Register — Personal Data</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
       rel="stylesheet"
@@ -25,31 +25,31 @@
           <div class="brand-name">Foot Plantar <span>Monitoring</span></div>
         </div>
         <p class="auth-tagline">
-          Monitoring tekanan plantar kaki
+          Foot plantar pressure monitoring
         </p>
         <div class="auth-left-footer">v1.0.0 · Foot Plantar 2026</div>
       </div>
 
       <div class="auth-right">
         <div class="auth-card">
-          <div class="auth-card-title"><span>Data Diri</span></div>
+          <div class="auth-card-title"><span>Personal Data</span></div>
           <p class="auth-card-subtitle" style="margin-bottom: var(--space-lg)">
-            Langkah 2 dari 3
+            Step 2 of 3
           </p>
           <div class="steps-indicator">
             <div class="step-item">
               <div class="step-dot done">✓</div>
-              <span class="step-label">Akun</span>
+              <span class="step-label">Account</span>
             </div>
             <div class="step-line done"></div>
             <div class="step-item">
               <div class="step-dot active">2</div>
-              <span class="step-label active">Data Diri</span>
+              <span class="step-label active">Personal Data</span>
             </div>
             <div class="step-line"></div>
             <div class="step-item">
               <div class="step-dot">3</div>
-              <span class="step-label">Konfirmasi</span>
+              <span class="step-label">Confirmation</span>
             </div>
             <div
               class="progress-line"
@@ -59,18 +59,18 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Nama Lengkap</label>
+            <label class="form-label">Full Name</label>
             <input
               class="form-input"
               type="text"
               id="nama"
-              placeholder="Nama sesuai KTP"
+              placeholder="Full Name as on ID Card"
             />
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Tanggal Lahir</label>
+              <label class="form-label">Date of Birth</label>
               <input
                 class="form-input"
                 type="date"
@@ -79,7 +79,7 @@
               />
             </div>
             <div class="form-group">
-              <label class="form-label">Usia</label>
+              <label class="form-label">Age</label>
               <input
                 class="form-input"
                 type="text"
@@ -92,28 +92,28 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Jenis Kelamin</label>
+            <label class="form-label">Gender</label>
             <div class="gender-options">
               <button
                 class="gender-btn selected"
                 id="gender_m"
-                onclick="selectGender('Laki-laki')"
+                onclick="selectGender('Male')"
               >
-                Laki-laki
+                Male
               </button>
               <button
                 class="gender-btn"
                 id="gender_f"
-                onclick="selectGender('Perempuan')"
+                onclick="selectGender('Female')"
               >
-                Perempuan
+                Female
               </button>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Tinggi (cm)</label>
+              <label class="form-label">Height (cm)</label>
               <input
                 class="form-input"
                 type="number"
@@ -122,7 +122,7 @@
               />
             </div>
             <div class="form-group">
-              <label class="form-label">Berat (kg)</label>
+              <label class="form-label">Weight (kg)</label>
               <input
                 class="form-input"
                 type="number"
@@ -145,12 +145,12 @@
             </button>
 
             <button class="btn-primary" onclick="nextStep()">
-              Lanjutkan →
+              Continue →
             </button>
           </div>
 
           <p class="auth-switch">
-            Sudah punya akun? <a href="login.html">Masuk</a>
+            Already have an account? <a href="login.html">Sign In</a>
           </p>
         </div>
       </div>
@@ -161,16 +161,16 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <script>
-      let selectedGender = "Laki-laki";
+      let selectedGender = "Male";
 
       function selectGender(val) {
         selectedGender = val;
         document
           .getElementById("gender_m")
-          .classList.toggle("selected", val === "Laki-laki");
+          .classList.toggle("selected", val === "Male");
         document
           .getElementById("gender_f")
-          .classList.toggle("selected", val === "Perempuan");
+          .classList.toggle("selected", val === "Female");
       }
 
       function calcAge() {
@@ -189,7 +189,7 @@
         const weight = document.getElementById("weight").value;
 
         if (!nama || !dob || !height || !weight) {
-          alert("Harap isi semua field.");
+          alert("Please fill in all fields.");
           return;
         }
 

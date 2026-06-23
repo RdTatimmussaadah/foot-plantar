@@ -36,8 +36,8 @@ function renderSidebar(container, activePage) {
 function renderTopbar(container, pageTitle) {
   // Deteksi halaman aktif dari URL
   const path = window.location.pathname;
-  const isMonitor  = path.includes('dashboard');
-  const isLaporan  = path.includes('laporan');
+  const isDashboard  = path.includes('dashboard');
+  const isReport  = path.includes('report');
  
   const patient = getActivePatient();
   const initials = (patient.name || 'P')
@@ -59,31 +59,31 @@ function renderTopbar(container, pageTitle) {
     <!-- Tengah: Navigasi 2 tab -->
     <div class="topbar-nav">
       <button
-        class="nav-tab ${isMonitor ? 'active' : ''}"
+        class="nav-tab ${isDashboard ? 'active' : ''}"
         onclick="window.location.href='dashboard.html'"
       >Dashboard</button>
       <button
-        class="nav-tab ${isLaporan ? 'active' : ''}"
-        onclick="window.location.href='laporan.html'"
-      >Laporan</button>
+        class="nav-tab ${isReport ? 'active' : ''}"
+        onclick="window.location.href='report.html'"
+      >Report</button>
     </div>
  
     <!-- Kanan: Rekam + User -->
     <div class="topbar-right">
       <button class="btn-snapshot" onclick="openSnapModal()">
         <svg width="10" height="10" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
-        Rekam Snapshot
+        Take Snapshot
       </button>
       <div class="user-chip">
         <div class="patient-avatar">${initials}</div>
-        <span class="patient-name">${patient.name || 'Pasien'}</span>
+        <span class="patient-name">${patient.name || 'Patient'}</span>
       </div>
       <button class="logout-btn" onclick="openLogoutModal()">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path d="M10 2h3a1 1 0 011 1v10a1 1 0 01-1 1h-3M7 11l3-3-3-3M10 8H2"
                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Keluar
+        Logout
       </button>
     </div>
   `;
@@ -103,11 +103,11 @@ function openLogoutModal() {
         <div class="modal-icon-wrap">
           <span style="font-size:36px">👋</span>
         </div>
-        <div class="modal-title">Keluar dari Akun?</div>
-        <div class="modal-sub">Sesi monitoring akan tetap tersimpan.<br>Anda bisa masuk kembali kapan saja.</div>
+        <div class="modal-title">Logout from Account?</div>
+        <div class="modal-sub">Monitoring sessions will remain saved.<br>You can log back in at any time.</div>
         <div class="modal-btns">
-          <button class="mbtn-cancel" onclick="closeLogoutModal()">Batal</button>
-          <button class="mbtn-ok" onclick="doLogout()">Ya, Keluar</button>
+          <button class="mbtn-cancel" onclick="closeLogoutModal()">Cancel</button>
+          <button class="mbtn-ok" onclick="doLogout()">Yes, Logout</button>
         </div>
       </div>
     `;
@@ -151,9 +151,9 @@ function openSnapModal() {
     ov.className = 'modal-overlay';
     ov.innerHTML = `
       <div class="modal-box snap-modal-box" id="modal-snap-box">
-        <div class="modal-title" style="margin-bottom:3px">⏺ Rekam Snapshot</div>
+        <div class="modal-title" style="margin-bottom:3px">⏺ Take Snapshot</div>
         <div class="modal-sub" style="margin-bottom:14px">
-          Menyimpan data CoP, struktur kaki, gerakan, dan sensor saat ini ke riwayat
+          Saving CoP, foot structure, movement, and sensor data to history
         </div>
 
         <div class="snap-postur-row" id="snap-postur-row">
@@ -162,20 +162,20 @@ function openSnapModal() {
             <div style="font-size:9px;color:var(--text-secondary);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em">
               Postur
             </div>
-            <div style="font-size:13px;font-weight:800;color:var(--red)" id="snap-postur-lbl">Berdiri</div>
+            <div style="font-size:13px;font-weight:800;color:var(--red)" id="snap-postur-lbl">Standing</div>
           </div>
         </div>
 
 
 
         <div class="snap-arch-row">
-          <div>Struktur Kiri: <span id="sp-arch-l" style="font-weight:700">—</span></div>
-          <div>Struktur Kanan: <span id="sp-arch-r" style="font-weight:700">—</span></div>
+          <div>Left Foot Structure: <span id="sp-arch-l" style="font-weight:700">—</span></div>
+          <div>Right Foot Structure: <span id="sp-arch-r" style="font-weight:700">—</span></div>
         </div>
 
         <div class="snap-arch-row">
-          <div>Gerakan Kiri: <span id="sp-pron-l" style="font-weight:700">—</span></div>
-          <div>Gerakan Kanan: <span id="sp-pron-r" style="font-weight:700">—</span></div>
+          <div>Left Movement: <span id="sp-pron-l" style="font-weight:700">—</span></div>
+          <div>Right Movement: <span id="sp-pron-r" style="font-weight:700">—</span></div>
         </div>
 
         <div class="snap-totals-row">
@@ -184,13 +184,13 @@ function openSnapModal() {
         </div>
 
         <div class="snap-note-wrap">
-          <label class="snap-note-lbl">💬 &nbsp;Catatan (opsional)</label>
-          <textarea class="snap-note-input" id="snap-note-inp" placeholder="Contoh: sebelum terapi, kondisi nyeri, dll..." rows="2"></textarea>
+          <label class="snap-note-lbl">💬 &nbsp;Note (optional)</label>
+          <textarea class="snap-note-input" id="snap-note-inp" placeholder="Example: before therapy, pain condition, etc..." rows="2"></textarea>
         </div>
 
         <div class="modal-btns">
-          <button class="mbtn-cancel" onclick="closeSnapModal()">Batal</button>
-          <button class="mbtn-ok" onclick="saveSnapshot()">💾 Simpan</button>
+          <button class="mbtn-cancel" onclick="closeSnapModal()">Cancel</button>
+          <button class="mbtn-ok" onclick="saveSnapshot()">💾 Save</button>
         </div>
       </div>
     `;
@@ -225,22 +225,22 @@ function _populateSnapPreview() {
   const postureML = localStorage.getItem('fps_currentPostureML') || '';
 const posture = {
   'normal':            'Normal',
-  'condong_depan':     'Condong Depan',
-  'condong_belakang':  'Condong Belakang',
-  'condong_kanan':     'Condong Kanan',
-  'condong_kiri':      'Condong Kiri',
-}[postureML] || 'Belum Terdeteksi';
+  'condong_depan':     'Forward Lean',
+  'condong_belakang':  'Backward Lean',
+  'condong_kanan':     'Right Lean',
+  'condong_kiri':      'Left Lean',
+}[postureML] || 'Not Detected';
 
 const confidenceRaw = parseFloat(localStorage.getItem('fps_currentPostureMLConfidence') || '0');
 const confidencePct = (confidenceRaw * 100).toFixed(1);
 
 const postureIcons = {
   'Normal':            '🧍',
-  'Condong Depan':     '⬆️',
-  'Condong Belakang':  '⬇️',
-  'Condong Kanan':     '➡️',
-  'Condong Kiri':      '⬅️',
-  'Belum Terdeteksi':  '❓',
+  'Forward Lean':      '⬆️',
+  'Backward Lean':     '⬇️',
+  'Right Lean':        '➡️',
+  'Left Lean':         '⬅️',
+  'Not Detected':      '❓',
 };
 
   const ic = document.getElementById('snap-postur-ic');
@@ -310,7 +310,7 @@ function saveSnapshot() {
   closeSnapModal();
 
   if (typeof currentData === 'undefined' || !currentData) {
-    showToast('Data sensor belum tersedia.', 'error');
+    showToast('Sensor data not available.', 'error');
     return;
   }
 
@@ -323,25 +323,25 @@ function saveSnapshot() {
   const postureML = localStorage.getItem('fps_currentPostureML') || '';
   const posture = {
     'normal':            'Normal',
-    'condong_depan':     'Condong Depan',
-    'condong_belakang':  'Condong Belakang',
-    'condong_kanan':     'Condong Kanan',
-    'condong_kiri':      'Condong Kiri',
-  }[postureML] || 'Belum Terdeteksi';
+    'condong_depan':     'Forward Lean',
+    'condong_belakang':  'Backward Lean',
+    'condong_kanan':     'Right Lean',
+    'condong_kiri':      'Left Lean',
+  }[postureML] || 'Not Detected';
 
   const cop = computeSnapshotCop(currentData);
 
   if (typeof firebaseRecordSnapshot === 'function') {
     firebaseRecordSnapshot(currentData, posture, note)
       .then(function () {
-        showToast(`✅ Snapshot tersimpan — CoP ${cop.label}`, 'success');
+        showToast(`✅ Snapshot saved — CoP ${cop.label}`, 'success');
       })
       .catch(function (err) {
-        console.warn('Firebase snapshot gagal:', err);
-        showToast(`Snapshot gagal disimpan: ${err}`, 'error');
+        console.warn('Firebase snapshot failed:', err);
+        showToast(`Snapshot failed to save: ${err}`, 'error');
       });
   } else {
-    showToast(`✅ Snapshot tersimpan — CoP ${cop.label}`, 'success');
+    showToast(`✅ Snapshot saved — CoP ${cop.label}`, 'success');
   }
 
   const noteInput = document.getElementById('snap-note-inp');
@@ -395,8 +395,8 @@ function computeSnapshotCop(data) {
       x: 0,
       y: 0,
       distance: 0,
-      status: 'TIDAK ADA DATA',
-      label: 'TIDAK ADA DATA',
+      status: 'NO DATA AVAILABLE',
+      label: 'NO DATA AVAILABLE',
       valid: false,
     };
   }
@@ -421,22 +421,22 @@ function computeSnapshotCop(data) {
     x,
     y,
     distance,
-    status: label === 'STABIL' ? 'NORMAL' : label,
+    status: label === 'STABLE' ? 'NORMAL' : label,
     label,
     valid: true,
   };
 }
 
 function getSnapshotCopLabel(distance) {
-  if (distance < 2.5) return 'STABIL';
-  if (distance <= 4.5) return 'SEDANG';
-  return 'ABNORMAL';
+  if (distance < 2.5) return 'STABLE';
+  if (distance <= 4.5) return 'MODERATE';
+  return 'UNSTABLE';
 }
 
 function getSnapshotCopColor(label) {
-  if (label === 'STABIL') return 'var(--green)';
-  if (label === 'SEDANG') return 'var(--yellow)';
-  if (label === 'ABNORMAL') return 'var(--red)';
+  if (label === 'STABLE') return 'var(--green)';
+  if (label === 'MODERATE') return 'var(--yellow)';
+  if (label === 'UNSTABLE') return 'var(--red)';
   return 'var(--text-secondary)';
 }
 

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Daftar — Konfirmasi</title>
+    <title>Register — Confirmation</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
       rel="stylesheet"
@@ -25,32 +25,32 @@
           <div class="brand-name">Foot Plantar <span>Monitoring</span></div>
         </div>
         <p class="auth-tagline">
-          Monitoring tekanan plantar kaki
+          Foot plantar pressure monitoring
         </p>
         <div class="auth-left-footer">v1.0.0 · Foot Plantar 2026</div>
       </div>
 
       <div class="auth-right">
         <div class="auth-card">
-          <div class="auth-card-title"><span>Konfirmasi</span></div>
+          <div class="auth-card-title"><span>Confirmation</span></div>
           <p class="auth-card-subtitle" style="margin-bottom: var(--space-lg)">
-            Langkah 3 dari 3
+            Step 3 of 3
           </p>
 
           <div class="steps-indicator">
             <div class="step-item">
               <div class="step-dot done">✓</div>
-              <span class="step-label">Akun</span>
+              <span class="step-label">Account</span>
             </div>
             <div class="step-line done"></div>
             <div class="step-item">
               <div class="step-dot done">✓</div>
-              <span class="step-label">Data Diri</span>
+              <span class="step-label">Personal Data</span>
             </div>
             <div class="step-line done"></div>
             <div class="step-item">
               <div class="step-dot active">3</div>
-              <span class="step-label active">Konfirmasi</span>
+              <span class="step-label active">Confirmation</span>
             </div>
             <div
               class="progress-line"
@@ -59,36 +59,36 @@
             ></div>
           </div>
 
-          <div class="steps-title">Periksa kembali data sebelum menyimpan.</div>
+          <div class="steps-title">Please review your data before saving.</div>
 
           <div class="confirm-section">
-            <div class="confirm-section-title">Data Akun</div>
+            <div class="confirm-section-title">Account Data</div>
             <div class="confirm-row">
               <span class="key">Email</span
               ><span class="val" id="c_email">—</span>
             </div>
             <div class="confirm-row">
-              <span class="key">No. Telepon</span
+              <span class="key">Phone Number</span
               ><span class="val" id="c_phone">—</span>
             </div>
           </div>
 
           <div class="confirm-section">
-            <div class="confirm-section-title">Data Diri</div>
+            <div class="confirm-section-title">Personal Data</div>
             <div class="confirm-row">
-              <span class="key">Nama</span
+              <span class="key">Name</span
               ><span class="val" id="c_nama">—</span>
             </div>
             <div class="confirm-row">
-              <span class="key">Tgl Lahir / Usia</span
+              <span class="key">Date of Birth / Age</span
               ><span class="val" id="c_dob">—</span>
             </div>
             <div class="confirm-row">
-              <span class="key">Jenis Kelamin</span
+              <span class="key">Gender</span
               ><span class="val" id="c_gender">—</span>
             </div>
             <div class="confirm-row">
-              <span class="key">TB / BB</span
+              <span class="key">Height / Weight</span
               ><span class="val" id="c_tb">—</span>
             </div>
           </div>
@@ -106,12 +106,12 @@
             </button>
 
             <button class="btn-primary" onclick="handleRegister()">
-              Daftar Sekarang
+              Register Now
             </button>
           </div>
 
           <p class="auth-switch">
-            Sudah punya akun? <a href="login.html">Masuk</a>
+            Already have an account? <a href="login.html">Sign In</a>
           </p>
         </div>
       </div>
@@ -165,7 +165,7 @@
         }
 
         const btn = document.querySelector(".btn-primary");
-        btn.textContent = "Mendaftar...";
+        btn.textContent = "Registering...";
         btn.disabled = true;
 
         // Step 1: buat akun Auth
@@ -188,15 +188,15 @@
             window.location.href = "dashboard.html";
           })
           .catch(function (err) {
-            btn.textContent = "Daftar Sekarang";
+            btn.textContent = "Register Now";
             btn.disabled = false;
             const pesan =
               err.code === "auth/email-already-in-use"
-                ? "Email sudah terdaftar. Silakan login."
+                ? "Email already registered. Please sign in."
                 : err.code === "auth/weak-password"
-                  ? "Password terlalu lemah (min. 6 karakter)."
+                  ? "Password too weak (min. 6 characters)."
                   : err.code === "auth/invalid-email"
-                    ? "Format email tidak valid."
+                    ? "Invalid email format."
                     : err.message;
             alert(pesan);
           });

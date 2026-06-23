@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
       historyContainer.innerHTML = `
         <div style="padding:32px;text-align:center;color:var(--text-dim);
           font-family:var(--font-mono);font-size:11px">
-          Memuat riwayat...
+          Loading history...
         </div>`;
     }
 
@@ -86,16 +86,16 @@ function fillProfile(p) {
 
   setText('p-initials', initials);
   setText('p-name', p.name || '—');
-  setText('p-meta', age ? `${age} th · Pasien` : '— th · Pasien');
+  setText('p-meta', age ? `${age} years · Patient` : '— years · Patient');
   setText('p-email', p.email || '—');
   setText('p-phone', p.phone || '—');
 
   setText('b-nama', p.name || '—');
   setText('b-dob', dobFormatted);
-  setText('b-age', age ? `(${age} tahun)` : '(— tahun)');
+  setText('b-age', age ? `(${age} years)` : '(— years)');
   setText('b-gender', p.gender || '—');
   setText(
-    'b-tbbb',
+    'weight-height',
     p.height && p.weight ? `${p.height} cm / ${p.weight} kg` : '—'
   );
 }
@@ -210,8 +210,8 @@ function computeCopFromSnapshot(snap) {
 // laporan.js classifyCop — sesuaikan dengan dashboard
 function classifyCop(x, y) {
   const distance = Math.sqrt(x * x + y * y);
-  if (distance < 2.5)  return { status: 'STABIL',   cssClass: 'normal'   };
-  if (distance <= 4.5) return { status: 'SEDANG',   cssClass: 'warning'  };
+  if (distance < 2.5)  return { status: 'STABLE',   cssClass: 'normal'   };
+  if (distance <= 4.5) return { status: 'MODERATE',   cssClass: 'warning'  };
   return                      { status: 'ABNORMAL', cssClass: 'abnormal' };
 }
 
@@ -243,7 +243,7 @@ function renderHistoryList() {
     container.innerHTML = `
       <div style="padding:24px;text-align:center;color:var(--text-dim);
         font-family:var(--font-mono);font-size:11px">
-        Belum ada snapshot.
+        No snapshot available.
       </div>`;
     return;
   }
@@ -254,7 +254,7 @@ function renderHistoryList() {
   snaps.forEach((snap) => {
     const dt = getSnapshotDateTime(snap);
     const dateKey =
-      dt.dateText && dt.dateText !== '—' ? dt.dateText : 'Tanpa tanggal';
+      dt.dateText && dt.dateText !== '—' ? dt.dateText : 'No Date';
 
     if (!groups[dateKey]) groups[dateKey] = [];
     groups[dateKey].push(snap);
@@ -292,12 +292,12 @@ function renderHistoryList() {
 
 <thead>
   <tr>
-    <th>Jam</th>
-    <th>Postur</th>
-    <th>Struktur Kiri</th>
-    <th>Gerakan Kiri</th>
-    <th>Struktur Kanan</th>
-    <th>Gerakan Kanan</th>
+    <th>Time</th>
+    <th>Posture</th>
+    <th>Left Structure</th>
+    <th>Left Movement</th>
+    <th>Right Structure</th>
+    <th>Right Movement</th>
     <th>CoP</th>
     <th></th>
   </tr>
@@ -412,8 +412,8 @@ function renderSummaryStats() {
   };
 
   if (!snaps || snaps.length === 0) {
-    set('latest-overall-status', 'Belum Ada Data');
-    set('latest-overall-desc', 'Belum ada snapshot yang dapat dianalisis.');
+    set('latest-overall-status', 'Data Not Available');
+    set('latest-overall-desc', 'No snapshot available for analysis.');
 
     set('latest-left-condition', '—');
     set('latest-right-condition', '—');
@@ -454,7 +454,7 @@ function renderSummaryStats() {
 
   set('latest-cop-condition', latestSummary.copDashboardLabel);
   set('total-snaps', `${snaps.length} snapshot`);
-  set('latest-snapshot-meta', `Snapshot terakhir: ${latestSummary.copDashboardLabel}`);
+  set('latest-snapshot-meta', `Last Snapshot: ${latestSummary.copDashboardLabel}`);
 
   setColor('latest-left-structure', latestSummary.leftStructureColor);
   setColor('latest-left-motion', latestSummary.leftMotionColor);
@@ -485,8 +485,8 @@ function renderSummaryStats() {
   const note = document.getElementById('cop-history-note');
   if (note) {
     note.textContent =
-      `Grafik menampilkan seluruh riwayat CoP (${snaps.length} snapshot). ` +
-      `Label status hanya menunjukkan snapshot terakhir: ${latestSummary.copDashboardLabel}.`;
+      `Chart displays the entire CoP history (${snaps.length} snapshot). ` +
+      `Status label only shows the last snapshot: ${latestSummary.copDashboardLabel}.`;
   }
 }
 
@@ -526,7 +526,7 @@ function drawCopHistoryCanvas() {
     ctx.font = 'bold 10px JetBrains Mono, monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Belum ada data CoP', cx, cy);
+    ctx.fillText('No CoP data available', cx, cy);
     return;
   }
 
@@ -598,14 +598,14 @@ function drawReportCopDashboardGrid(ctx, W, H, cx, cy, radius) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  ctx.fillText('DEPAN', cx, 12);
-  ctx.fillText('BELAKANG', cx, H - 12);
+  ctx.fillText('FRONT', cx, 12);
+  ctx.fillText('BACK', cx, H - 12);
 
   ctx.textAlign = 'left';
-  ctx.fillText('KIRI', 10, cy + 4);
+  ctx.fillText('LEFT', 10, cy + 4);
 
   ctx.textAlign = 'right';
-  ctx.fillText('KANAN', W - 10, cy + 4);
+  ctx.fillText('RIGHT', W - 10, cy + 4);
 
   ctx.restore();
 }
@@ -664,7 +664,7 @@ function drawTrendCharts() {
     H - pad.b - ((v - minV) / (maxV - minV || 1)) * (H - pad.t - pad.b);
 
   drawTrendThreshold(ctx, W, H, pad, minV, maxV, 2.5, 'NORMAL');
-  drawTrendThreshold(ctx, W, H, pad, minV, maxV, 4.0, 'SEDANG');
+  drawTrendThreshold(ctx, W, H, pad, minV, maxV, 4.0, 'MODERATE');
 
   const grad = ctx.createLinearGradient(0, pad.t, 0, H - pad.b);
   grad.addColorStop(0, 'rgba(231,48,42,0.20)');
@@ -1027,56 +1027,56 @@ function getFootConditionColor(label) {
 function getDashboardCopStatusLabel(status) {
   const raw = String(status || '').toUpperCase();
 
-  if (raw.includes('TIDAK ADA DATA')) return 'TIDAK ADA DATA';
+  if (raw.includes('TIDAK ADA DATA')) return 'DATA NOT AVAILABLE';
   if (raw.includes('ABNORMAL') || raw.includes('TIDAK STABIL')) return 'ABNORMAL';
-  if (raw.includes('SEDANG') || raw.includes('CUKUP')) return 'SEDANG';
-  if (raw.includes('NORMAL') || raw.includes('STABIL')) return 'STABIL';
+  if (raw.includes('SEDANG') || raw.includes('CUKUP')) return 'MODERATE';
+  if (raw.includes('NORMAL') || raw.includes('STABIL')) return 'STABLE';
 
-  return 'BELUM DIKETAHUI';
+  return 'UNKNOWN';
 }
 
 function getCopReadableStatus(status) {
   const label = getDashboardCopStatusLabel(status);
 
-  if (label === 'TIDAK ADA DATA') {
+  if (label === 'DATA NOT AVAILABLE') {
     return {
-      label: 'Tidak ada data',
+      label: 'No data available',
       badge: '—',
-      description: 'Data CoP belum cukup untuk menyimpulkan stabilitas.',
+      description: 'CoP data is not sufficient to conclude stability.',
     };
   }
 
   if (label === 'ABNORMAL') {
     return {
-      label: 'Tidak stabil',
-      badge: 'Tidak stabil',
+      label: 'Unstable',
+      badge: 'Unstable',
       description:
-        'Titik tekanan tubuh jauh dari pusat tumpuan. Ada indikasi gangguan stabilitas.',
+        'Body weight pressure points are far from the center of pressure. There are signs of stability issues.',
     };
   }
 
-  if (label === 'SEDANG') {
+  if (label === 'MODERATE') {
     return {
-      label: 'Cukup stabil',
-      badge: 'Cukup',
+      label: 'Moderate',
+      badge: 'Moderate',
       description:
-        'Titik tekanan tubuh sedikit bergeser dari pusat. Stabilitas masih cukup, tetapi perlu dipantau.',
+        'Body weight pressure points are slightly offset from the center. Stability is acceptable but requires monitoring.',
     };
   }
 
-  if (label === 'STABIL') {
+  if (label === 'STABLE') {
     return {
-      label: 'Stabil',
-      badge: 'Stabil',
+      label: 'Stable',
+      badge: 'Stable',
       description:
-        'Titik tekanan tubuh berada dekat pusat tumpuan. Stabilitas tubuh tergolong baik.',
+        'Body weight pressure points are near the center of pressure. Body stability is generally good.',
     };
   }
 
   return {
-    label: 'Belum diketahui',
+    label: 'Unknown',
     badge: '—',
-    description: 'Data CoP belum cukup untuk menyimpulkan stabilitas.',
+    description: 'CoP data is not sufficient to conclude stability.',
   };
 }
 
@@ -1103,49 +1103,49 @@ function getOverallPatientConclusionDetailed(data) {
   const copModerate = data.copDashboardLabel === 'SEDANG';
 
   const structureLine =
-    `Struktur: kiri ${data.leftStructure}, kanan ${data.rightStructure}.`;
+    `Struktur: left ${data.leftStructure}, right ${data.rightStructure}.`;
 
   const motionLine =
-    `Gerakan: kiri ${data.leftMotion}, kanan ${data.rightMotion}.`;
+    `Gerakan: left ${data.leftMotion}, right ${data.rightMotion}.`;
 
   const copLine =
-    `Stabilitas CoP snapshot terakhir: ${data.copDashboardLabel}.`;
+    `CoP Stability Status - Last Snapshot: ${data.copDashboardLabel}.`;
 
   if (structureNormal && motionNormal && copStable) {
     return {
-      title: 'Kondisi Baik',
+      title: 'Good Patient Condition',
       description: `${structureLine} ${motionLine} ${copLine}`,
-      shortConclusion: 'Struktur, gerakan, dan stabilitas CoP tergolong baik.',
+      shortConclusion: 'Structure, movement, and CoP stability are generally good.',
     };
   }
 
   if ((!structureNormal || !motionNormal) && copStable) {
     return {
-      title: 'Ada Indikasi Kelainan Kaki',
+      title: 'Indication of Foot Abnormality',
       description:
         `${structureLine} ${motionLine} ${copLine} ` +
-        'Stabilitas masih baik, tetapi kelainan struktur/gerakan tetap perlu dicatat.',
-      shortConclusion: 'Ada indikasi kelainan kaki, namun CoP terakhir masih stabil.',
+        'Stability is still good, but structural/movement abnormalities still need to be noted.',
+      shortConclusion: 'There are indications of foot abnormalities, but the latest CoP is still stable.',
     };
   }
 
   if (copModerate) {
     return {
-      title: 'Perlu Pemantauan',
+      title: 'Monitoring Required',
       description:
         `${structureLine} ${motionLine} ${copLine} ` +
-        'Kondisi perlu dipantau melalui snapshot berikutnya.',
-      shortConclusion: 'Kondisi perlu dipantau, terutama stabilitas CoP.',
+        'Condition requires monitoring through subsequent snapshots.',
+      shortConclusion: 'Condition requires monitoring, especially CoP stability.',
     };
   }
 
   return {
-    title: 'Perlu Perhatian',
+    title: 'Attention Needed',
     description:
       `${structureLine} ${motionLine} ${copLine} ` +
-      'Pemeriksaan lanjutan disarankan bila pola ini muncul berulang.',
+      'Further examination is recommended if this pattern occurs repeatedly.',
     shortConclusion:
-      'Ada indikasi gangguan stabilitas atau kelainan kaki yang perlu perhatian.',
+      'There are indications of stability issues or foot abnormalities that need attention.',
   };
 }
 
@@ -1160,13 +1160,13 @@ function getDominantPatientCondition(summaries) {
   ).length;
 
   if (unstable >= Math.ceil(summaries.length / 2)) {
-    return 'Stabilitas perlu perhatian';
+    return 'Stability requires attention';
   }
 
-  if (structure !== 'Struktur cenderung normal') return structure;
-  if (motion !== 'Gerakan cenderung normal') return motion;
+  if (structure !== 'Structure generally normal') return structure;
+  if (motion !== 'Movement generally normal') return motion;
 
-  return 'Kondisi cenderung baik';
+  return 'Condition generally good';
 }
 
 function getDominantStructureCondition(summaries) {
@@ -1174,7 +1174,7 @@ function getDominantStructureCondition(summaries) {
     summaries,
     'leftStructure',
     'rightStructure',
-    'Struktur'
+    'Structure'
   );
 }
 
@@ -1183,7 +1183,7 @@ function getDominantMotionCondition(summaries) {
     summaries,
     'leftMotion',
     'rightMotion',
-    'Gerakan'
+    'Movement'
   );
 }
 
@@ -1194,8 +1194,8 @@ function getDominantPerFoot(summaries, leftField, rightField, typeLabel) {
   const right = getDominantSingleFoot(summaries, rightField);
 
   return (
-    `Kiri: ${formatDominantFootText(left, typeLabel)} · ` +
-    `Kanan: ${formatDominantFootText(right, typeLabel)}`
+    `Left ${typeLabel}: ${formatDominantFootText(left, typeLabel)} · ` +
+    `Right ${typeLabel}: ${formatDominantFootText(right, typeLabel)}`
   );
 }
 
@@ -1227,10 +1227,10 @@ function getDominantSingleFoot(summaries, field) {
 
 function formatDominantFootText(result, typeLabel) {
   if (!result || result.label === 'Normal') {
-    return `${typeLabel.toLowerCase()} cenderung normal`;
+    return `${typeLabel.toLowerCase()} generally normal`;
   }
 
-  return `dominan ${result.label} (${result.count}x)`;
+  return `dominant ${result.label} (${result.count}x)`;
 }
 
 /* Fungsi ini tetap dipertahankan kalau masih dipakai bagian lain */
@@ -1250,7 +1250,7 @@ function getDominantByFields(summaries, fields, fallback) {
 
   if (!entries.length) return fallback;
 
-  return `${entries[0][0]} (${entries[0][1]} temuan)`;
+  return `${entries[0][0]} (${entries[0][1]} findings)`;
 }
 
 /* ============================================================
@@ -1261,29 +1261,29 @@ function exportCSV() {
   const snaps = _firebaseHistory;
 
   if (!snaps || snaps.length === 0) {
-    showToast('Belum ada snapshot untuk diekspor.', 'error');
+    showToast('No snapshots available for export.', 'error');
     return;
   }
 
   const headers = [
     'No',
-    'Waktu',
-    'Postur',
+    'Time',
+    'Posture',
     'CoP X (cm)',
     'CoP Y (cm)',
-    'Deviasi CoP (cm)',
-    'Status CoP',
+    'CoP Deviation (cm)',
+    'CoP Status',
     'ASI (%)',
     'Simetri (%)',
     'Heel Load (%)',
-    'Total Berat (kg)',
-    'Total Gaya (N)',
-    'Gaya Kiri (N)',
-    'Gaya Kanan (N)',
-    'Struktur Kiri',
-    'Gerakan Kiri',
-    'Struktur Kanan',
-    'Gerakan Kanan',
+    'Weight Total (kg)',
+    'Total Force (N)',
+    'Left Force (N)',
+    'Right Force (N)',
+    'Left Structure',
+    'Left Movement',
+    'Right Structure',
+    'Right Movement',
     'L-Hallux (N)',
     'L-MedFF (N)',
     'L-LatFF (N)',
@@ -1292,7 +1292,7 @@ function exportCSV() {
     'R-MedFF (N)',
     'R-LatFF (N)',
     'R-Heel (N)',
-    'Catatan',
+    'Notes',
   ];
 
   const rows = snaps.map((s, i) => {
@@ -1353,7 +1353,7 @@ function exportCSV() {
   a.click();
 
   URL.revokeObjectURL(url);
-  showToast(`✓ CSV berhasil diekspor — ${snaps.length} snapshot`, 'success');
+  showToast(`✓ CSV successfully exported — ${snaps.length} snapshot`, 'success');
 }
 
 /* ============================================================
@@ -1411,35 +1411,35 @@ function handleDeleteSnap(event, snapId) {
   event.stopPropagation();
 
   if (!snapId) {
-    showToast('ID snapshot tidak ditemukan.', 'error');
+    showToast('Snapshot ID not found.', 'error');
     return;
   }
 
-  showConfirm('Hapus snapshot ini?', (ok) => {
+  showConfirm('Delete this snapshot?', (ok) => {
     if (!ok) return;
 
     firebaseDeleteSnapshot(snapId)
-      .then(() => showToast('Snapshot dihapus', 'success'))
-      .catch(() => showToast('Gagal menghapus', 'error'));
+      .then(() => showToast('Snapshot deleted', 'success'))
+      .catch(() => showToast('Failed to delete snapshot', 'error'));
   });
 }
 
 function handleDeleteAll() {
   if (!_firebaseHistory || _firebaseHistory.length === 0) {
-    showToast('Belum ada snapshot untuk dihapus.', 'error');
+    showToast('No snapshots available for deletion.', 'error');
     return;
   }
 
   showConfirm(
-    'Hapus semua snapshot? Tindakan ini tidak bisa dibatalkan.',
+    'Delete all snapshots? This action cannot be undone.',
     (ok) => {
       if (!ok) return;
 
       firebaseDeleteAllHistory()
         .then((res) => {
-          if (res !== false) showToast('Semua riwayat telah dibersihkan', 'success');
+          if (res !== false) showToast('All history has been cleared', 'success');
         })
-        .catch(() => showToast('Gagal menghapus riwayat', 'error'));
+        .catch(() => showToast('Failed to delete history', 'error'));
     }
   );
 }
@@ -1452,18 +1452,18 @@ function exportPDF() {
   const snaps = _firebaseHistory;
 
   if (!snaps || snaps.length === 0) {
-    showToast('Belum ada snapshot untuk diekspor.', 'error');
+    showToast('No snapshots available for export.', 'error');
     return;
   }
 
   const win = window.open('', '_blank', 'width=1000,height=750');
 
   if (!win) {
-    showToast('Pop-up diblokir browser. Izinkan pop-up untuk halaman ini.', 'error');
+    showToast('Pop-up blocked by browser. Please allow pop-ups for this page.', 'error');
     return;
   }
 
-  showToast('Membuka laporan PDF...', 'success');
+  showToast('Opening PDF report...', 'success');
 
   const p = _activeProfile || window._activePatient || {};
   const latest = snaps[0];
@@ -1479,7 +1479,7 @@ function exportPDF() {
     );
   }
 
-  const patientAgeText = patientAge ? `${patientAge} tahun` : '—';
+  const patientAgeText = patientAge ? `${patientAge} years` : '—';
   const patientGender = p.gender || '—';
   const patientWeight = p.weight || '—';
   const patientHeight = p.height || '—';
@@ -1521,7 +1521,7 @@ function exportPDF() {
   // const maxCop = copDistances.length ? Math.max(...copDistances).toFixed(1) : '0.0';
 
   const countStable = summaries.filter(
-    (summary) => summary.copDashboardLabel === 'STABIL'
+    (summary) => summary.copDashboardLabel === 'STABLE'
   ).length;
 
   const countAttention = summaries.length - countStable;
@@ -1553,21 +1553,21 @@ const tableRows = snaps.map((snap, index) => {
     <tr>
       <td class="tc muted">${index + 1}</td>
       <td class="nowrap">${escapeHtml(_fmtTime(snap.snapshot_time))}</td>
-      <td class="tc">${escapeHtml(snap.posture_ml || 'Berdiri')}</td>
+      <td class="tc">${escapeHtml(snap.posture_ml || 'Standing')}</td>
 
       <td>
         <div class="foot-cell">
-          <strong>Kaki Kiri</strong>
-          <span>Struktur: ${escapeHtml(summary.leftStructure)}</span>
-          <span>Gerakan: ${escapeHtml(summary.leftMotion)}</span>
+          <strong>Left Foot</strong>
+          <span>Structure: ${escapeHtml(summary.leftStructure)}</span>
+          <span>Movement: ${escapeHtml(summary.leftMotion)}</span>
         </div>
       </td>
 
       <td>
         <div class="foot-cell">
-          <strong>Kaki Kanan</strong>
-          <span>Struktur: ${escapeHtml(summary.rightStructure)}</span>
-          <span>Gerakan: ${escapeHtml(summary.rightMotion)}</span>
+          <strong>Right Foot</strong>
+          <span>Structure: ${escapeHtml(summary.rightStructure)}</span>
+          <span>Movement: ${escapeHtml(summary.rightMotion)}</span>
         </div>
       </td>
 
@@ -2066,28 +2066,28 @@ const tableRows = snaps.map((snap, index) => {
       </div>
 
       <div class="latest-card">
-        <div class="latest-label">Gerakan Kiri</div>
+        <div class="latest-label">Left Movement</div>
         <div class="latest-value" style="color:${latestSummary.leftMotionColor}">
           ${escapeHtml(latestSummary.leftMotion)}
         </div>
       </div>
 
       <div class="latest-card">
-        <div class="latest-label">Struktur Kanan</div>
+        <div class="latest-label">Right Structure</div>
         <div class="latest-value" style="color:${latestSummary.rightStructureColor}">
           ${escapeHtml(latestSummary.rightStructure)}
         </div>
       </div>
 
       <div class="latest-card">
-        <div class="latest-label">Gerakan Kanan</div>
+        <div class="latest-label">Right Movement</div>
         <div class="latest-value" style="color:${latestSummary.rightMotionColor}">
           ${escapeHtml(latestSummary.rightMotion)}
         </div>
       </div>
 
       <div class="latest-card accent">
-        <div class="latest-label">CoP Terakhir</div>
+        <div class="latest-label">Latest CoP</div>
         <div class="latest-value" style="color:${latestSummary.copColor}">
           ${escapeHtml(latestSummary.copDashboardLabel)}
         </div>
@@ -2115,12 +2115,12 @@ const tableRows = snaps.map((snap, index) => {
 
   <div class="summary-card">
     <div class="summary-val" style="color:#9b1c1c">${countAttention}</div>
-    <div class="summary-label">Perlu Perhatian</div>
+    <div class="summary-label">Need Attention</div>
   </div>
 
   <div class="summary-card">
     <div class="summary-val wide-value">${escapeHtml(latestSummary.copDashboardLabel)}</div>
-    <div class="summary-label">Status Terakhir</div>
+    <div class="summary-label">Last Status</div>
   </div>
 </div>
 
@@ -2131,23 +2131,23 @@ const tableRows = snaps.map((snap, index) => {
     </div>
 
     <div class="summary-card" style="text-align:left;">
-      <div class="summary-label" style="margin-top:0;">Gerakan Dominan</div>
+      <div class="summary-label" style="margin-top:0;">Dominant Movement</div>
       <div class="summary-val wide-value">${escapeHtml(dominantMotion)}</div>
     </div>
   </div>
 
-  <div class="section-title">Detail Snapshot</div>
+  <div class="section-title">Snapshot Detail</div>
 
   <table>
     <thead>
 <tr>
   <th class="tc" style="width:28px">No</th>
-  <th>Waktu</th>
-  <th class="tc">Postur</th>
-  <th>Kaki Kiri</th>
-  <th>Kaki Kanan</th>
-  <th class="tc">Stabilitas</th>
-  <th>Catatan</th>
+  <th>Time</th>
+  <th class="tc">Posture</th>
+  <th>Left Foot</th>
+  <th>Right Foot</th>
+  <th class="tc">Stability</th>
+  <th>Notes</th>
 </tr>
     </thead>
 
@@ -2157,10 +2157,9 @@ const tableRows = snaps.map((snap, index) => {
   </table>
 
 <div class="disclaimer">
-  Catatan: Laporan ini merangkum hasil pembacaan tekanan plantar, pola struktur kaki,
-  gerakan kaki, dan stabilitas tubuh berdasarkan data snapshot. Hasil ini bersifat
-  pendukung awal dan perlu dikonfirmasi melalui pemeriksaan klinis apabila ditemukan
-  pola abnormal secara berulang.
+  Notes: This Report summarizes the results of plantar pressure readings, foot structure patterns,
+  foot movements, and body stability based on snapshot data. The results are for initial reference
+  only and should be confirmed through clinical examination if abnormal patterns are found.
 </div>
 
   <div class="footer">
@@ -2192,10 +2191,10 @@ function getSnapshotPostureLabel(snap) {
 
   const labelMap = {
     normal: 'Normal',
-    condong_depan: 'Condong Depan',
-    condong_belakang: 'Condong Belakang',
-    condong_kiri: 'Condong Kiri',
-    condong_kanan: 'Condong Kanan',
+    condong_depan: 'Forward Lean',
+    condong_belakang: 'Backward Lean',
+    condong_kiri: 'Left Lean',
+    condong_kanan: 'Right Lean',
   };
 
   if (!raw) return '—';
