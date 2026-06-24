@@ -5,17 +5,6 @@
    Replace with your project config from Firebase Console
    ============================================================ */
 
-/*
-const firebaseConfig = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT.firebaseapp.com",
-  databaseURL:       "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:         "YOUR_PROJECT",
-  storageBucket:     "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID",
-};
-*/
 const firebaseConfig = {
     apiKey: "AIzaSyAX4B6r8LEy3G1E2qE121EA30xZ4kvwj6U",
     authDomain: "foot-plantar-37353.firebaseapp.com",
@@ -88,20 +77,7 @@ function startFirebaseListen(callback) {
 
     // Compute all metrics from raw ESP32 data
     const withCalc = processRawDigital(raw);
-    // const filtered = applyEMAFilter(withCalc);
     const computed = computeAll(withCalc);
-    // const computed = computeAll(raw);
-
-    // Write computed values back to Firebase current node
-    // ref.update({
-    //   total_weight:    String(computed.weight),
-    //   balance_score:   String(computed.balanceScore),
-    //   asi:             String(computed.asi),
-    //   heel_load:       String(computed.heelLoad),
-    //   classification:  computed.classification.status,
-    //   left_percent:    String(computed.leftPercent),
-    //   right_percent:   String(computed.rightPercent),
-    // });
 
     callback(computed);
   });
@@ -114,51 +90,6 @@ function startFirebaseListen(callback) {
 /* ============================================================
    STEP 5: SNAPSHOT — save to Firebase history
    ============================================================ */
-
-
-// function firebaseRecordSnapshot(computedData, postureLabel = 'Berdiri', note = '') {
-//   const uid = getCurrentUID();
-//   if (!uid) return Promise.reject('Belum login');
-  
-//   const now  = new Date();
-//   const snap = {
-//     posture:          postureLabel,
-//     note,
-//     snapshot_time:    now.toLocaleString('id-ID'),
-
-//     left_fsr_newton:  computedData.left_fsr_newton,
-//     right_fsr_newton: computedData.right_fsr_newton,
-//     left_fsr_percent: computedData.left_fsr_percent,
-//     right_fsr_percent:computedData.right_fsr_percent,
-
-//     total_weight:     computedData.weight,
-//     total_force:      computedData.totalForce,
-//     balance_score:    computedData.balanceScore,
-//     asi:              computedData.asi,
-//     heel_load:        computedData.heelLoad,
-//     left_percent:     computedData.leftPercent,
-//     right_percent:    computedData.rightPercent,
-//     classification:   computedData.classification.status,
-//     zones:            computedData.zones,
-//     pronation: {
-//       ratioL: computedData.pronation.ratioL,
-//       ratioR: computedData.pronation.ratioR,
-//       labelL: computedData.pronation.labelL,
-//       labelR: computedData.pronation.labelR,
-//     },
-
-//     archType:{
-//       arch_label_l:    computedData.archType.labelL    || null,
-//       arch_label_r:    computedData.archType.labelR    || null,
-//       arch_heel_l:     computedData.archType.heelRatioL ?? null,
-//       arch_heel_r:     computedData.archType.heelRatioR ?? null,
-//       arch_ff_l:       computedData.archType.ffRatioL  ?? null,
-//       arch_ff_r:       computedData.archType.ffRatioR  ?? null,
-//     }
-//   };
-
-//   return db.ref(`users/${uid}/history`).push(snap);
-// }
 
 function firebaseRecordSnapshot(computedData, postureLabel = 'Berdiri', note = '') {
   const uid = getCurrentUID();
@@ -195,10 +126,8 @@ function firebaseRecordSnapshot(computedData, postureLabel = 'Berdiri', note = '
     right_fsr_digital: computedData.right_fsr_digital || [0, 0, 0, 0],
     left_fsr_digital: computedData.left_fsr_digital || [0, 0, 0, 0],
 
-    total_weight: Number(computedData.weight) || Number(computedData.total_weight) || 0,
     total_force: Number(computedData.totalForce) || Number(computedData.total_force) || 0,
     asi: Number(computedData.asi) || 0,
-    heel_load: Number(computedData.heelLoad) || Number(computedData.heel_load) || 0,
     left_percent: Number(computedData.leftPercent) || Number(computedData.left_percent) || 0,
     right_percent: Number(computedData.rightPercent) || Number(computedData.right_percent) || 0,
 
@@ -208,14 +137,6 @@ function firebaseRecordSnapshot(computedData, postureLabel = 'Berdiri', note = '
     cop_status: cop.label,
     cop_label: cop.label,
     cop_valid: cop.valid,
-    // cop: {
-    //   x: cop.x,
-    //   y: cop.y,
-    //   distance: cop.distance,
-    //   status: cop.status,
-    //   label: cop.label,
-    //   valid: cop.valid,
-    // },
 
     arch_label_l: structure.left,
     arch_label_r: structure.right,
@@ -229,8 +150,6 @@ function firebaseRecordSnapshot(computedData, postureLabel = 'Berdiri', note = '
 
     kelainan_kiri: combineFirebaseSnapshotCondition(structure.left, motion.left),
     kelainan_kanan: combineFirebaseSnapshotCondition(structure.right, motion.right),
-
-    zones: computedData.zones || null,
     pronation: {
       ratioL: computedData.pronation?.ratioL ?? null,
       ratioR: computedData.pronation?.ratioR ?? null,
@@ -490,17 +409,3 @@ function firebaseDeleteAllHistory() {
   return db.ref(`users/${uid}/history`).remove();
   return Promise.resolve(false);
 }
-
-
-/* ============================================================
-   FIREBASE SDK SCRIPT TAGS (add to HTML <head> when ready)
-   ============================================================
-
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-
-   ============================================================ */
-
-console.log('[Firebase] firebase.js loaded — currently using simulation mode.');
-console.log('[Firebase] To activate: uncomment firebase.js and fill firebaseConfig.');

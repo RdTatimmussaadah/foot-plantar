@@ -35,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof firebaseLoadHistory === 'function') {
       firebaseLoadHistory((list) => {
         _firebaseHistory = list;
-        renderHistoryBars();
       });
     }
 
@@ -178,287 +177,6 @@ const SENSOR_DESC = [
   "Heel: The Heel: The back part of the foot that supports body weight and provides stability when standing."
 ];
 
-// ============================================================
-// DRAW FOOT HEATMAP
-// ============================================================
-// function drawFootHeatmap(canvasId, values, maxVal, isLeft) {
-//   const cv = document.getElementById(canvasId);
-//   if (!cv) return;
-//   const W = CANVAS_W, H = CANVAS_H;
-//   cv.width = W; cv.height = H;
-//   const ctx = cv.getContext('2d');
-//   ctx.clearRect(0, 0, W, H);
-
-//   const footPath = buildFootPath(FOOT_COORDS_RAW, W, H, isLeft);
-
-//   // Sensor titik dalam canvas (disesuaikan flip)
-//   const bb = getBoundingBox(FOOT_COORDS_RAW);
-//   const bbW = bb.maxX - bb.minX;
-//   const bbH = bb.maxY - bb.minY;
-//   const pad = 4;
-//   const scaleX = (W - pad * 2) / bbW;
-//   const scaleY = (H - pad * 2) / bbH;
-
-//   const pts = SENSOR_POS.map(s => {
-//     let px = s.nx * (W - pad * 2) + pad;
-//     let py = s.ny * (H - pad * 2) + pad;
-//     if (isLeft) px = W - px;
-//     return {
-//       cx: px, cy: py,
-//       sx: W * 0.28, sy: H * 0.18,
-//       ratio: Math.min(1, (values[s.key] || 0) / maxVal)
-//     };
-//   });
-
-//   // IDW heatmap
-//   const imgData = ctx.createImageData(W, H);
-//   const d = imgData.data;
-//   for (let py = 0; py < H; py++) {
-//     for (let px = 0; px < W; px++) {
-//       let wSum = 0, rSum = 0;
-//       for (let k = 0; k < pts.length; k++) {
-//         const p = pts[k];
-//         const ex = (px - p.cx) / p.sx;
-//         const ey = (py - p.cy) / p.sy;
-//         const w  = 1 / (ex*ex + ey*ey + 0.001);
-//         wSum += w; rSum += w * p.ratio;
-//       }
-//       const [cr, cg, cb] = heatColor(rSum / wSum);
-//       const i = (py * W + px) * 4;
-//       d[i]=cr; d[i+1]=cg; d[i+2]=cb; d[i+3]=215;
-//     }
-//   }
-
-//   const off = document.createElement('canvas');
-//   off.width = W; off.height = H;
-//   off.getContext('2d').putImageData(imgData, 0, 0);
-
-//   // Background + clip ke shape kaki
-//   ctx.fillStyle = '#ffffff';    // Ganti jadi putih (atau 'transparent' jika ingin tembus pandang)
-// ctx.fillRect(0, 0, W, H);
-//   ctx.save();
-//   ctx.clip(footPath);
-//   ctx.drawImage(off, 0, 0);
-//   ctx.restore();
-
-//   // Outline kaki
-//   ctx.save();
-//   ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)'; // Ganti menjadi hitam transparan atau abu-abu
-//   ctx.lineWidth = 1.5;
-//   ctx.stroke(footPath);
-
-//   // Sensor dots + label + nilai
-//   // Sensor dots — tanpa label teks, pakai hover balloon di HTML
-//   SENSOR_POS.forEach((s, idx) => {
-//     const p = pts[idx];
-//     const val = values[s.key] || 0;
-//     const ratio = Math.min(1, val / maxVal);
-//     const [cr, cg, cb] = heatColor(ratio);
-
-//     // Halo
-//     ctx.beginPath();
-//     ctx.arc(p.cx, p.cy, 14, 0, Math.PI * 2);
-//     ctx.fillStyle = `rgba(${cr},${cg},${cb},0.18)`;
-//     ctx.fill();
-
-//     // Dot
-//     ctx.beginPath();
-//     ctx.arc(p.cx, p.cy, 7, 0, Math.PI * 2);
-//     ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
-//     ctx.fill();
-//     ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-//     ctx.lineWidth = 1.5;
-//     ctx.stroke();
-
-//     // Nilai ADC di atas dot
-//     ctx.shadowColor = 'rgba(0,0,0,0.95)';
-//     ctx.shadowBlur  = 5;
-//     ctx.fillStyle   = '#ffffff';
-//     ctx.font        = 'bold 11px JetBrains Mono, monospace';
-//     ctx.textAlign   = 'center';
-//     ctx.textBaseline = 'middle';
-//     ctx.fillText(Math.round(val), p.cx, p.cy - 18);
-//     ctx.shadowBlur  = 0;
-//   });
-
-//   ctx.restore();
-// }
-
-// function attachSensorTooltips(canvasId, sensorPos, values, maxVal, isLeft) {
-//   const cv = document.getElementById(canvasId);
-//   if (!cv) return;
-
-//   // Hapus overlay lama
-//   const oldOverlay = document.getElementById(canvasId + '-overlay');
-//   if (oldOverlay) oldOverlay.remove();
-
-//   const W = cv.offsetWidth || CANVAS_W;
-//   const H = cv.offsetHeight || CANVAS_H;
-//   const pad = 4;
-
-//   const overlay = document.createElement('div');
-//   overlay.id = canvasId + '-overlay';
-//   overlay.style.cssText = `
-//     position:absolute;inset:0;pointer-events:none;
-//   `;
-
-//   cv.parentElement.style.position = 'relative';
-//   cv.parentElement.appendChild(overlay);
-
-//   SENSOR_POS.forEach((s, idx) => {
-//     let px = s.nx * (W - pad * 2) + pad;
-//     let py = s.ny * (H - pad * 2) + pad;
-
-//     if (isLeft) px = W - px;
-
-//     const val = values[s.key] || 0;
-//     const ratio = Math.min(1, val / maxVal);
-//     const [cr, cg, cb] = heatColor(ratio);
-//     const color = `rgb(${cr},${cg},${cb})`;
-
-//     const dot = document.createElement('div');
-//     dot.style.cssText = `
-//       position:absolute;
-//       width:26px;height:26px;
-//       left:${px - 13}px;top:${py - 13}px;
-//       border-radius:50%;
-//       cursor:pointer;
-//       pointer-events:all;
-//       z-index:10;
-//     `;
-
-//     const tip = document.createElement('div');
-//     tip.style.cssText = `
-//       position:absolute;
-//       bottom:calc(100% + 8px);
-//       left:50%;transform:translateX(-50%);
-//       background:#1a1a2e;
-//       color:#fff;
-//       font-family:'Nunito',sans-serif;
-//       font-size:13px;
-//       font-weight:700;
-//       padding:7px 13px;
-//       border-radius:9px;
-//       white-space:nowrap;
-//       border:1.5px solid ${color};
-//       display:none;
-//       pointer-events:none;
-//       z-index:50;
-//       box-shadow:0 4px 16px rgba(0,0,0,0.4);
-//     `;
-
-//     tip.innerHTML = `
-//       <span style="color:${color};margin-right:6px;">●</span>
-//       ${s.label} &nbsp;·&nbsp;
-//       <span style="font-family:'JetBrains Mono',monospace;">${Math.round(val)} N</span>
-//     `;
-
-//     dot.appendChild(tip);
-//     dot.addEventListener('mouseenter', () => tip.style.display = 'block');
-//     dot.addEventListener('mouseleave', () => tip.style.display = 'none');
-//     overlay.appendChild(dot);
-//   });
-// }
-
-// Heatmap tetap sama
-function drawFootHeatmap(canvasId, values, maxVal, isLeft) {
-  const cv = document.getElementById(canvasId);
-  if (!cv) return;
-  const W = CANVAS_W, H = CANVAS_H;
-  cv.width = W; cv.height = H;
-  const ctx = cv.getContext('2d');
-  ctx.clearRect(0, 0, W, H);
-
-  const footPath = buildFootPath(FOOT_COORDS_RAW, W, H, isLeft);
-
-  const bb = getBoundingBox(FOOT_COORDS_RAW);
-  const bbW = bb.maxX - bb.minX;
-  const bbH = bb.maxY - bb.minY;
-  const pad = 4;
-
-  const pts = SENSOR_POS.map(s => {
-    let px = s.nx * (W - pad * 2) + pad;
-    let py = s.ny * (H - pad * 2) + pad;
-    if (isLeft) px = W - px;
-    return {
-      cx: px, cy: py,
-      sx: W * 0.28, sy: H * 0.18,
-      ratio: Math.min(1, (values[s.key] || 0) / maxVal),
-      val: values[s.key] || 0,
-      label: s.label
-    };
-  });
-
-  // IDW heatmap
-  const imgData = ctx.createImageData(W, H);
-  const d = imgData.data;
-  for (let py = 0; py < H; py++) {
-    for (let px = 0; px < W; px++) {
-      let wSum = 0, rSum = 0;
-      for (let k = 0; k < pts.length; k++) {
-        const p = pts[k];
-        const ex = (px - p.cx) / p.sx;
-        const ey = (py - p.cy) / p.sy;
-        const w  = 1 / (ex*ex + ey*ey + 0.001);
-        wSum += w; rSum += w * p.ratio;
-      }
-      const [cr, cg, cb] = heatColor(rSum / wSum);
-      const i = (py * W + px) * 4;
-      d[i]=cr; d[i+1]=cg; d[i+2]=cb; d[i+3]=215;
-    }
-  }
-
-  const off = document.createElement('canvas');
-  off.width = W; off.height = H;
-  off.getContext('2d').putImageData(imgData, 0, 0);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, W, H);
-  ctx.save();
-  ctx.clip(footPath);
-  ctx.drawImage(off, 0, 0);
-  ctx.restore();
-
-  ctx.save();
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
-  ctx.lineWidth = 1.5;
-  ctx.stroke(footPath);
-
-  // Sensor dots + label + nilai
-  pts.forEach(p => {
-    const [cr, cg, cb] = heatColor(p.ratio);
-
-    // Halo
-    ctx.beginPath();
-    ctx.arc(p.cx, p.cy, 14, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(${cr},${cg},${cb},0.18)`;
-    ctx.fill();
-
-    // Dot
-    ctx.beginPath();
-    ctx.arc(p.cx, p.cy, 7, 0, Math.PI * 2);
-    ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Nilai sensor
-    ctx.shadowColor = 'rgba(0,0,0,0.95)';
-    ctx.shadowBlur  = 5;
-    ctx.fillStyle   = '#ffffff';
-    ctx.font        = 'bold 11px JetBrains Mono, monospace';
-    ctx.textAlign   = 'center';
-    ctx.textBaseline = 'middle';
-    // ctx.fillText(Math.round(p.val), p.cx, p.cy - 18);
-
-    // Label singkat sensor (ramah baca)
-    ctx.fillText(p.label, p.cx, p.cy + 16);
-    ctx.shadowBlur  = 0;
-  });
-  ctx.restore();
-}
-
 // Tooltip hover tetap struktur lama, tapi sekarang deskripsi awam
 function attachSensorTooltips(canvasId, sensorPos, values, maxVal, isLeft) {
   const cv = document.getElementById(canvasId);
@@ -527,60 +245,6 @@ function attachSensorTooltips(canvasId, sensorPos, values, maxVal, isLeft) {
 // Untuk beralih ke versi ini: ganti redrawHeatmaps() pakai redrawHeatmapsV2()
 // Untuk kembali ke versi lama: pakai redrawHeatmaps() seperti semula
 // ============================================================
-
-/**
- * Konversi persen (0–100) ke warna RGB smooth 5 zona.
- * Zona sesuai flowchart:
- *   0–20  : biru    → cyan
- *   20–40 : cyan    → hijau
- *   40–60 : hijau   → kuning
- *   60–80 : kuning  → oranye
- *   80–100: oranye  → merah
- */
-// function heatColorPercent(pct) {
-//   // Clamp 0–100 (sesuai flowchart: P[i]<0 → 0, P[i]>100 → 100)
-//   const p = Math.max(0, Math.min(100, pct));
-
-//   let r = 0, g = 0, b = 0;
-
-//   if (p <= 20) {
-//     // Biru → Cyan
-//     const t = p / 20;
-//     r = 0;
-//     g = Math.round(255 * t);
-//     b = 255;
-
-//   } else if (p <= 40) {
-//     // Cyan → Hijau
-//     const t = (p - 20) / 20;
-//     r = 0;
-//     g = 255;
-//     b = Math.round(255 * (1 - t));
-
-//   } else if (p <= 60) {
-//     // Hijau → Kuning
-//     const t = (p - 40) / 20;
-//     r = Math.round(255 * t);
-//     g = 255;
-//     b = 0;
-
-//   } else if (p <= 80) {
-//     // Kuning → Oranye
-//     const t = (p - 60) / 20;
-//     r = 255;
-//     g = Math.round(255 - (t * 120));  // 255 → 135
-//     b = 0;
-
-//   } else {
-//     // Oranye → Merah
-//     const t = (p - 80) / 20;
-//     r = 255;
-//     g = Math.round(135 * (1 - t));   // 135 → 0
-//     b = 0;
-//   }
-
-//   return [r, g, b];
-// }
 
 /**
  * Konversi persen (0–100) langsung dari Firebase ke dalam 6 ZONA warna.
@@ -758,30 +422,11 @@ function redrawHeatmapsV2() {
   attachSensorTooltips('heatmap-R', SENSOR_POS, currentData.right_fsr_newton, maxVal, false);
 }
 
-function redrawHeatmaps() {
-  if (!currentData) return;
-
-  const maxVal = Math.max(
-    ...currentData.left_fsr_newton,
-    ...currentData.right_fsr_newton,
-    1
-  );
-
-  drawFootHeatmap('heatmap-L', currentData.left_fsr_newton, maxVal, true);
-  drawFootHeatmap('heatmap-R', currentData.right_fsr_newton, maxVal, false);
-
-  attachSensorTooltips('heatmap-L', SENSOR_POS, currentData.left_fsr_newton, maxVal, true);
-  attachSensorTooltips('heatmap-R', SENSOR_POS, currentData.right_fsr_newton, maxVal, false);
-}
-
 // ============================================================
 // MONITORING UI UPDATE
 // ============================================================
 function updateMonitoringUI(data) {
   if (!data) return;
-
-  const totalForceLabel = document.getElementById('total-force-label');
-  if (totalForceLabel) totalForceLabel.textContent = `Total: ${data.totalForce} N`;
 
   // Balance = simetri percentage
   const sym = Math.round(100 - data.asi);
@@ -801,14 +446,8 @@ function updateMonitoringUI(data) {
         : 'var(--red)';
   }
 
-  renderSensorRows('left-sensor-rows', data.left_fsr_newton, data.left_fsr_digital);
-  renderSensorRows('right-sensor-rows', data.right_fsr_newton, data.right_fsr_digital);
-
   // redrawHeatmaps();
   redrawHeatmapsV2();
-
-  const postureResult = detectPosture(data);
-  updatePostureUI(postureResult);
 }
 
 // ============================================================
@@ -838,196 +477,6 @@ function renderSensorRows(containerId, newtonArr, digitalArr) {
     `;
   }).join('');
 }
-
-// ============================================================
-// POSTURE SELECTOR
-// ============================================================
-function selectPosture(label, btn) {
-  currentPosture = label;
-  localStorage.setItem('fps_currentPosture', label);
-
-  const badge = document.getElementById('posture-badge');
-  if (badge) badge.textContent = label;
-
-  document.querySelectorAll('.posture-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-// ============================================================
-// DETEKSI POSTUR — Rule-based dummy
-// Nanti diganti dengan model TF.js
-// ============================================================
-const POSTURE_CONFIG = {
-  'Berdiri': { icon: '../assets/images/standup-icon.png', color: 'var(--green)' },
-  'Jongkok': { icon: '../assets/images/jongkok-icon.png', color: 'var(--yellow)' },
-  '1 Kaki': { icon: '../assets/images/onefoot-icon.png', color: '#2266FF' },
-};
-
-/**
- * Deteksi postur dari data sensor — rule-based sementara.
- * Nanti diganti: predictPosture(computedData) dari TF.js
- *
- * Logika sederhana:
- *   - Total force sangat kecil → tidak terdeteksi
- *   - Forefoot dominan (>60%) → Jongkok
- *   - Satu kaki dominan (>80% dari total) → 1 Kaki
- *   - Sisanya → Berdiri
- */
-function detectPosture(data) {
-  const lN = data.left_fsr_newton || [0, 0, 0, 0];
-  const rN = data.right_fsr_newton || [0, 0, 0, 0];
-
-  const totalForce = data.totalForce || 0;
-
-  // Tidak ada tekanan — tidak bisa deteksi
-  if (totalForce < 50) {
-    return { label: 'Tidak Terdeteksi', confidence: null, source: 'rule-based' };
-  }
-
-  const lTotal = lN.reduce((a, b) => a + b, 0);
-  const rTotal = rN.reduce((a, b) => a + b, 0);
-
-  // Forefoot = hallux + medFF + latFF (index 0,1,2)
-  const forefootL = lN[0] + lN[1] + lN[2];
-  const forefootR = rN[0] + rN[1] + rN[2];
-  const forefootPct = (forefootL + forefootR) / totalForce;
-
-  // Dominasi satu kaki
-  const lRatio = lTotal / totalForce;
-  const rRatio = rTotal / totalForce;
-
-  let label;
-
-  if (lRatio > 0.80 || rRatio > 0.80) {
-    label = '1 Kaki';
-  } else if (forefootPct > 0.60) {
-    label = 'Jongkok';
-  } else {
-    label = 'Berdiri';
-  }
-
-  return { label, confidence: null, source: 'rule-based' };
-
-  // ── Nanti ganti dengan ini saat TF.js siap: ──
-  // return predictPosture(data);  // dari posture_ml.js
-}
-
-/**
- * Update UI postur card berdasarkan hasil deteksi
- */
-// function updatePostureUI(result) {
-//   currentPosture = result.label;
-//   localStorage.setItem('fps_currentPosture', result.label);
-
-//   // Badge di header card
-//   const badge = document.getElementById('posture-badge');
-//   if (badge) {
-//     badge.textContent = result.label;
-
-//     const cfg = POSTURE_CONFIG[result.label];
-
-//     badge.style.color = cfg ? cfg.color : 'var(--text-secondary)';
-//     badge.style.background = cfg ? cfg.color + '15' : '';
-//     badge.style.border = cfg ? `1px solid ${cfg.color}40` : '';
-//   }
-
-//   // Gambar ikon postur aktif
-//   const iconEl = document.getElementById('posture-icon');
-//   if (iconEl) {
-//     const cfg = POSTURE_CONFIG[result.label];
-
-//     iconEl.src = cfg ? cfg.icon : '';
-//     iconEl.style.display = cfg ? 'block' : 'none';
-//   }
-
-//   // Label nama postur besar
-//   const labelEl = document.getElementById('posture-label');
-//   if (labelEl) {
-//     const cfg = POSTURE_CONFIG[result.label];
-
-//     labelEl.textContent = result.label;
-//     labelEl.style.color = cfg ? cfg.color : 'var(--text-primary)';
-//   }
-
-//   // Source tag — "Rule-based" atau "ML" nanti
-//   const sourceEl = document.getElementById('posture-source');
-//   if (sourceEl) {
-//     sourceEl.textContent = result.source === 'ml'
-//       ? `🤖 Model ML · ${(result.confidence * 100).toFixed(0)}%`
-//       : '⚙️ Rule-based · menunggu model ML';
-
-//     sourceEl.style.color = result.source === 'ml'
-//       ? 'var(--green)'
-//       : 'var(--text-dim)';
-//   }
-
-//   // Highlight panel yang sesuai
-//   document.querySelectorAll('.posture-panel').forEach(el => {
-//     el.classList.toggle('active', el.dataset.posture === result.label);
-//   });
-// }
-
-// ============================================================
-// HASIL ML SEDERHANA
-// Tidak mengganti Deteksi Postur utama.
-// ============================================================
-
-function updatePostureUI(result) {
-  currentPosture = result.label;
-  localStorage.setItem('fps_currentPosture', result.label);
-}
-
-// async function updatePostureMLSimple(data) {
-//   const seq = ++_postureMLSeq;
-//   const box = document.getElementById('posture-ml-simple');
-//   const resultEl = document.getElementById('ml-posture-result');
-
-//   if (!box || !resultEl) return;
-
-//   if (typeof predictPostureML !== 'function') {
-//     box.classList.remove('is-normal', 'is-warning');
-//     box.classList.add('is-loading');
-//     resultEl.textContent = 'Model belum siap';
-//     return;
-//   }
-
-//   box.classList.remove('is-normal', 'is-warning');
-//   box.classList.add('is-loading');
-//   resultEl.textContent = 'Mendeteksi...';
-
-//   try {
-//     const result = await predictPostureML(data);
-
-//     if (seq !== _postureMLSeq) return;
-
-//     const label = result && result.label ? result.label : 'Belum terdeteksi';
-
-//     resultEl.textContent = label;
-
-//     localStorage.setItem('fps_currentPostureML', result.rawLabel || '');
-//     localStorage.setItem('fps_currentPostureMLConfidence', (result.confidence || 0).toFixed(4));
-
-//     box.classList.remove('is-loading', 'is-normal', 'is-warning');
-
-//     if (label.toLowerCase() === 'normal') {
-//       box.classList.add('is-normal');
-//     } else if (label.toLowerCase().includes('condong')) {
-//       box.classList.add('is-warning');
-//     }
-//   } catch (err) {
-//     console.warn('ML condong gagal:', err);
-
-//     if (seq !== _postureMLSeq) return;
-
-//     box.classList.remove('is-normal', 'is-warning');
-//     box.classList.add('is-loading');
-//     resultEl.textContent = 'Belum terbaca';
-//   }
-// }
-
-// ============================================================
-// BALANCE ANALYSIS
-// ============================================================
 
 async function updatePostureMLSimple(data) {
   const seq = ++_postureMLSeq;
@@ -1064,14 +513,6 @@ async function updatePostureMLSimple(data) {
     _setPostureBoxState(box, resultEl, 'Not Read Yet', 'loading');
   }
 }
-
-// function _setPostureBoxState(box, resultEl, label, state) {
-//   box.classList.remove('is-normal', 'is-warning', 'is-loading');
-//   if (state === 'normal')  box.classList.add('is-normal');
-//   if (state === 'warning') box.classList.add('is-warning');
-//   if (state === 'loading') box.classList.add('is-loading');
-//   resultEl.textContent = label;
-// }
 
 function getPostureNote(label, state) {
   const text = String(label || '').toLowerCase();
@@ -1161,22 +602,6 @@ function updateBalanceUI(data) {
 
   const score = data.balanceScore || 0;
   const cls = data.classification || { label: 'Unknown', cssClass: 'warning' };
-
-  // 1. Update Gauge Skor
-  const scoreEl = document.getElementById('b-score');
-  if (scoreEl) scoreEl.textContent = score.toFixed(0);
-
-  const arc = document.getElementById('gauge-arc');
-  if (arc) {
-    const offset = GAUGE_CIRCUMFERENCE * (1 - score / 100);
-
-    arc.style.strokeDashoffset = offset;
-    arc.style.stroke = score >= 90
-      ? 'var(--green)'
-      : score >= 80
-        ? 'var(--yellow)'
-        : 'var(--red)';
-  }
 
   // 2. Status Badge
   const badge = document.getElementById('b-status-badge');
@@ -1292,55 +717,6 @@ function getCleanFootSVG(side, archKey, pronKey) {
     </svg>`;
 }
 
-// ============================================================
-// HISTORY MINI CHART
-// ============================================================
-function renderHistoryBars() {
-  const snaps = _firebaseHistory; // 🔥 dari Firebase
-  const container = document.getElementById('history-bars');
-
-  if (!container) return;
-
-  if (!snaps || snaps.length === 0) {
-    container.innerHTML = `<span style="color:var(--text-dim);font-size:11px;font-family:var(--font-mono)">Belum ada snapshot.</span>`;
-    return;
-  }
-
-  // ambil 7 terbaru
-  const recent = snaps.slice(-7); // lebih aman dari Firebase (urutan lama → baru)
-
-  const maxScore = 100;
-
-  container.innerHTML = recent.map(snap => {
-    const score = Number(snap.balance_score) || 0;
-
-    const pct = Math.round((score / maxScore) * 100);
-    const color = score >= 90
-      ? 'var(--green)'
-      : score >= 80
-        ? 'var(--yellow)'
-        : 'var(--red)';
-
-    return `
-      <div class="h-bar-wrap" title="${snap.snapshot_time}: ${score}">
-        <div class="h-bar" style="height:${pct}%; background:${color};"></div>
-        <span class="h-bar-val">${score.toFixed(0)}</span>
-      </div>
-    `;
-  }).join('');
-}
-
-// Koordinat sensor (cm) - Sesuai titik nx/ny di monitoring.js kamu
-// const SENSOR_COORDS = {
-//   L0: { x: -6.5, y: 7.5  }, // Hallux
-//   L1: { x: -8.5, y: 0.5  }, // Med.FF
-//   L2: { x: -12.5, y: 0.0  }, // Lat.FF
-//   L3: { x: -10.0, y: -9.5 }, // Heel
-//   R0: { x: 6.5,  y: 7.5  }, // Hallux
-//   R1: { x: 8.5,  y: 0.5  }, // Med.FF
-//   R2: { x: 12.5, y: 0.0  }, // Lat.FF
-//   R3: { x: 10.0, y: -9.5 }  // Heel
-// };
 
 const SENSOR_COORDS = {
   // Kaki KIRI — sensor ada di sisi KIRI tubuh → x negatif
@@ -1358,125 +734,6 @@ const SENSOR_COORDS = {
   R2: { x:   9.0, y:  1.5 },  // Lat.FF kanan
   R3: { x:   7.0, y: -8.0 },  // Heel kanan
 };
-
-// function updateCoP(data) {
-//     const fL = data.left_fsr_newton || [0,0,0,0];
-//     const fR = data.right_fsr_newton || [0,0,0,0];
-//     const totalForce = data.totalForce || 1;
-
-//     // 1. Hitung Koordinat CoP (Rata-rata tertimbang)
-//     let sumX = 0, sumY = 0;
-//     for(let i=0; i<4; i++) {
-//         sumX += (fL[i] * SENSOR_COORDS[`L${i}`].x) + (fR[i] * SENSOR_COORDS[`R${i}`].x);
-//         sumY += (fL[i] * SENSOR_COORDS[`L${i}`].y) + (fR[i] * SENSOR_COORDS[`R${i}`].y);
-//     }
-
-//     const copX = sumX / totalForce;
-//     const copY = sumY / totalForce;
-
-//     // 2. Referensi Elemen UI
-//     const dot = document.getElementById('cop-dot');
-//     const coordLabel = document.getElementById('cop-coordinate');
-//     const feedback = document.getElementById('cop-feedback-text');
-//     const badge = document.getElementById('b-status-badge');
-
-//     // 3. Hitung Jarak Goyangan (Sway Distance)
-//     const swayDistance = Math.sqrt(copX * copX + copY * copY);
-
-//     const MAX_SWAY   = 15;
-//     const stabilitas = Math.max(0, Math.round((1 - swayDistance / MAX_SWAY) * 100));
-//     const stabColor = swayDistance < 2.5 
-//       ? 'var(--green)' 
-//       : swayDistance <= 4.5 
-//         ? 'var(--yellow)' 
-//         : 'var(--red)';
-
-//     const stabValEl = document.getElementById('stability-val');
-//     const stabBarEl = document.getElementById('stability-bar');
-//     if (stabValEl) { stabValEl.textContent = `${stabilitas}%`; stabValEl.style.color = stabColor; }
-//     if (stabBarEl) { stabBarEl.style.width = `${stabilitas}%`; stabBarEl.style.background = stabColor; }
-
-//         // ── Update CoP Distance & Distribusi Depan/Belakang ──────────
-//     const distValEl = document.getElementById('cop-distance-val');
-//     const distStsEl = document.getElementById('cop-distance-status');
-//     if (distValEl) {
-//       const stable      = swayDistance < 2.5;
-//       const medium      = swayDistance <= 4.5;
-//       const statusText  = stable ? 'STABLE' : medium ? 'MODERATE' : 'UNSTABLE';
-//       const statusColor = stable ? 'var(--green)' : medium ? 'var(--yellow)' : 'var(--red)';
-//       distValEl.textContent = `${swayDistance.toFixed(2)} cm`;
-//       distValEl.style.color = statusColor;
-//       if (distStsEl) { distStsEl.textContent = statusText; distStsEl.style.color = statusColor; }
-//     }
-
-//     const COP_Y_MAX = 8;
-//     const COP_Y_MIN = -10;
-//     const range     = COP_Y_MAX - COP_Y_MIN;
-//     const frontPct  = Math.min(100, Math.max(0, Math.round(((copY - COP_Y_MIN) / range) * 100)));
-//     const backPct   = 100 - frontPct;
-//     const frontEl   = document.getElementById('b-front-pct');
-//     const backEl    = document.getElementById('b-back-pct');
-//     const barFront  = document.getElementById('fb-bar-front');
-//     const barBack   = document.getElementById('fb-bar-back');
-//     if (frontEl)  frontEl.textContent  = `${frontPct}%`;
-//     if (backEl)   backEl.textContent   = `${backPct}%`;
-//     if (barFront) barFront.style.width = `${frontPct}%`;
-//     if (barBack)  barBack.style.width  = `${backPct}%`;
-
-//         // 4. Update Status & Feedback (Logika Tunggal)
-//         if (swayDistance <= 1.2) {
-//     // Sesuai batas normatif quiet standing paper Prieto et al. (1996)
-//     badge.textContent = "STABLE";
-//     badge.className = "badge badge-normal";
-//     feedback.textContent = "Balance: Very Good (Normal)";
-//     feedback.style.color = "var(--green)";
-// } 
-// else if (swayDistance <= 2.5) {
-//     // Zona transisi / Warning Zone (Grey Area Sistem Pakar)
-//     badge.textContent = "MODERATE";
-//     badge.className = "badge badge-warning";
-    
-//     // Angka toleransi arah diperkecil agar sensitif di rentang jarak 1.2 - 2.5 cm
-//     let dirX = copX > 0.8 ? "Right" : (copX < -0.8 ? "Left" : "");
-//     let dirY = copY > 1.0 ? "Front" : (copY < -1.0 ? "Back" : "");
-//     feedback.textContent = `Moderately Stable (Tending to ${dirY} ${dirX})`.trim();
-//     feedback.style.color = "var(--yellow)";
-// } 
-// else {
-//     // Di atas 2.5 cm sudah masuk ambang batas abnormal / risiko gangguan vestibular
-//     badge.textContent = "ABNORMAL";
-//     badge.className = "badge badge-abnormal";
-    
-//     // Angka toleransi arah untuk kondisi goyangan ekstrem
-//     let dirX = copX > 1.2 ? "Right" : (copX < -1.2 ? "Left" : "");
-//     let dirY = copY > 1.5 ? "Front" : (copY < -1.5 ? "Back" : "");
-//     feedback.textContent = `Unstable (Tending to  ${dirY} ${dirX})`.trim();
-//     feedback.style.color = "var(--red)";
-// }
-
-//         // 5. Update Posisi Titik Visual
-//         if (dot) {
-//             // Skala visual: 100px mewakili radius +/- 15cm
-//     //         const radarEl  = document.querySelector('.cop-radar');
-//     // const radarSize = radarEl ? radarEl.offsetWidth : 200;
-//     // const center   = radarSize / 2;
-//     // const scale    = center / 15;
-//     // const posX     = center + (copX * scale);
-//     // const posY     = center - (copY * scale);
-//     //         dot.style.left = `${posX}px`;
-//     //         dot.style.top = `${posY}px`;
-//     const MAX_RANGE = 15; // cm, radius maksimum visualisasi
-//     const pctX = 50 + (copX / MAX_RANGE * 50);
-//     const pctY = 50 - (copY / MAX_RANGE * 50);
-//     dot.style.left = `${Math.max(0, Math.min(100, pctX))}%`;
-//     dot.style.top  = `${Math.max(0, Math.min(100, pctY))}%`;
-//         }
-
-//         // 6. Update Label Koordinat Teknis (Kecil)
-//         if (coordLabel) {
-//             coordLabel.textContent = `X: ${copX.toFixed(1)}, Y: ${copY.toFixed(1)}`;
-//         }
-//     }
 
 function updateCoP(data) {
     const fL = data.left_fsr_newton || [0,0,0,0];
@@ -1544,18 +801,6 @@ function updateCoP(data) {
     const stabBarEl = document.getElementById('stability-bar');
     if (stabValEl) { stabValEl.textContent = `${stabilitas}%`; stabValEl.style.color = statusColor; }
     if (stabBarEl) { stabBarEl.style.width = `${stabilitas}%`; stabBarEl.style.background = statusColor; }
-
-    // 5. Update CoP Distance & Status Jarak Komparatif Teknis
-    const distValEl = document.getElementById('cop-distance-val');
-    const distStsEl = document.getElementById('cop-distance-status'); 
-    if (distValEl) {
-        distValEl.textContent = `${swayDistance.toFixed(2)} cm`;
-        distValEl.style.color = statusColor;
-    }
-    if (distStsEl) {
-        distStsEl.textContent = statusText;
-        distStsEl.style.color = statusColor;
-    }
 
     // 6. Update Badge Card Utama & Kalimat Feedback Diagnosis
     if (badge) { badge.textContent = statusText; badge.className = badgeClass; }

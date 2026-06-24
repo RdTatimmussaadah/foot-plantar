@@ -211,17 +211,6 @@ function _populateSnapPreview() {
 
   const d = currentData;
 
-  // const posture =
-  //   localStorage.getItem('fps_currentPosture') ||
-  //   (typeof currentPosture !== 'undefined' ? currentPosture : 'Berdiri');
-
-  // const postureIcons = {
-  //   'Berdiri': '🧍',
-  //   'Jongkok': '🏋️',
-  //   '1 Kaki': '🦵',
-  //   '2 Kaki': '👣',
-  // };
-
   const postureML = localStorage.getItem('fps_currentPostureML') || '';
 const posture = {
   'normal':            'Normal',
@@ -231,8 +220,6 @@ const posture = {
   'condong_kiri':      'Left Lean',
 }[postureML] || 'Not Detected';
 
-const confidenceRaw = parseFloat(localStorage.getItem('fps_currentPostureMLConfidence') || '0');
-const confidencePct = (confidenceRaw * 100).toFixed(1);
 
 const postureIcons = {
   'Normal':            '🧍',
@@ -263,20 +250,8 @@ const postureIcons = {
   const lN = toSnapshotForceArray(d.left_fsr_newton);
   const rN = toSnapshotForceArray(d.right_fsr_newton);
 
-  set('sp-hl', lN[0]);
-  set('sp-ml', lN[1]);
-  set('sp-ll', lN[2]);
-  set('sp-el', lN[3]);
-  set('sp-hr', rN[0]);
-  set('sp-mr', rN[1]);
-  set('sp-lr', rN[2]);
-  set('sp-er', rN[3]);
-
   const fL = Math.round(lN.reduce((a, b) => a + b, 0));
   const fR = Math.round(rN.reduce((a, b) => a + b, 0));
-
-  set('sp-total-l', fL);
-  set('sp-total-r', fR);
 
   const arch = getSnapshotArchPreview(d);
   const motion = getSnapshotMotionPreview(d);
@@ -293,9 +268,6 @@ const postureIcons = {
 
   const cop = computeSnapshotCop(d);
   set('sp-cop-status', cop.label);
-  set('sp-cop-x', cop.x.toFixed(2));
-  set('sp-cop-y', cop.y.toFixed(2));
-  set('sp-cop-distance', cop.distance.toFixed(2));
 
   setColor('sp-cop-status', getSnapshotCopColor(cop.label));
   setColor('sp-cop-distance', getSnapshotCopColor(cop.label));
@@ -315,9 +287,6 @@ function saveSnapshot() {
   }
 
   const note = document.getElementById('snap-note-inp')?.value || '';
-  // const posture =
-  //   localStorage.getItem('fps_currentPosture') ||
-  //   (typeof currentPosture !== 'undefined' ? currentPosture : 'Berdiri');
 
   // BARU
   const postureML = localStorage.getItem('fps_currentPostureML') || '';
@@ -569,14 +538,6 @@ function getActivePatient() {
     email:     '—',
     address:   '—',
   };
-  
-  // return {
-  //   uid: 'uid_suwardi', name: 'Suwardi', initials: 'SW',
-  //   age: 68, gender: 'Laki-laki', weight: 72, height: 168,
-  //   bloodType: 'O', dob: '15 Maret 1957',
-  //   phone: '+62 812 3456 7890', email: 'suwardi@gmail.com',
-  //   address: 'Jl. Mawar No. 12, Depok, Jawa Barat',
-  // };
 }
 
 // Load profil dari Firebase lalu update sidebar
