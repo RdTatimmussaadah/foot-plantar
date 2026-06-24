@@ -1103,10 +1103,10 @@ function getOverallPatientConclusionDetailed(data) {
   const copModerate = data.copDashboardLabel === 'SEDANG';
 
   const structureLine =
-    `Struktur: left ${data.leftStructure}, right ${data.rightStructure}.`;
+    `Structure: left ${data.leftStructure}, right ${data.rightStructure}.`;
 
   const motionLine =
-    `Gerakan: left ${data.leftMotion}, right ${data.rightMotion}.`;
+    `Movement: left ${data.leftMotion}, right ${data.rightMotion}.`;
 
   const copLine =
     `CoP Stability Status - Last Snapshot: ${data.copDashboardLabel}.`;
