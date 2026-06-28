@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
       historyContainer.innerHTML = `
         <div style="padding:32px;text-align:center;color:var(--text-dim);
           font-family:var(--font-mono);font-size:11px">
-          Loading history...
+          ${tr('Loading history...')}
         </div>`;
     }
 
@@ -46,10 +46,25 @@ document.addEventListener('DOMContentLoaded', () => {
       drawTrendCharts();
     });
 
-    startFirebaseListen((data) => {
+    const _unsubscribeSensor = startFirebaseListen((data) => {
       currentData = data;
     });
+
+    window.addEventListener('beforeunload', () => {
+      if (_unsubscribeSensor) _unsubscribeSensor();
+    });
   });
+});
+
+window.addEventListener("languagechange", function () {
+  if (typeof renderHistoryList === "function") renderHistoryList();
+  if (typeof renderSummaryStats === "function") renderSummaryStats();
+  if (typeof drawCopHistoryCanvas === "function") drawCopHistoryCanvas();
+  if (typeof drawTrendCharts === "function") drawTrendCharts();
+
+  if (_activeProfile) {
+    fillProfile(_activeProfile);
+  }
 });
 
 /* ============================================================
@@ -86,16 +101,21 @@ function fillProfile(p) {
 
   setText('p-initials', initials);
   setText('p-name', p.name || '—');
-  setText('p-meta', age ? `${age} years · Patient` : '— years · Patient');
+  setText(
+  'p-meta',
+    age
+      ? `${age} ${tr('years')} · ${tr('Patient')}`
+      : `— ${tr('years')} · ${tr('Patient')}`
+  );
   setText('p-email', p.email || '—');
   setText('p-phone', p.phone || '—');
 
   setText('b-nama', p.name || '—');
   setText('b-dob', dobFormatted);
-  setText('b-age', age ? `(${age} years)` : '(— years)');
+  setText('b-age', age ? `(${age} ${tr('years')})` : `(— ${tr('years')})`);
   setText('b-gender', p.gender || '—');
   setText(
-    'weight-height',
+    'b-tbbb',
     p.height && p.weight ? `${p.height} cm / ${p.weight} kg` : '—'
   );
 }
@@ -243,7 +263,7 @@ function renderHistoryList() {
     container.innerHTML = `
       <div style="padding:24px;text-align:center;color:var(--text-dim);
         font-family:var(--font-mono);font-size:11px">
-        No snapshot available.
+        ${tr('No snapshot available.')}
       </div>`;
     return;
   }
@@ -292,13 +312,13 @@ function renderHistoryList() {
 
 <thead>
   <tr>
-    <th>Time</th>
-    <th>Posture</th>
-    <th>Left Structure</th>
-    <th>Left Movement</th>
-    <th>Right Structure</th>
-    <th>Right Movement</th>
-    <th>CoP</th>
+    <th>${tr('Time')}</th>
+    <th>${tr('Posture')}</th>
+    <th>${tr('Left Structure')}</th>
+    <th>${tr('Left Movement')}</th>
+    <th>${tr('Right Structure')}</th>
+    <th>${tr('Right Movement')}</th>
+    <th>${tr('CoP')}</th>
     <th></th>
   </tr>
 </thead>
@@ -340,37 +360,37 @@ function renderSnapRow(snap, index) {
 
       <td>
         <span class="snapshot-cell-value">
-          ${escapeHtml(postureLabel)}
+          ${et(postureLabel)}
         </span>
       </td>
       
       <td>
         <span class="snapshot-cell-value" style="color:${summary.leftStructureColor}">
-          ${escapeHtml(summary.leftStructure)}
+          ${et(summary.leftStructure)}
         </span>
       </td>
 
       <td>
         <span class="snapshot-cell-value" style="color:${summary.leftMotionColor}">
-          ${escapeHtml(summary.leftMotion)}
+          ${et(summary.leftMotion)}
         </span>
       </td>
 
       <td>
         <span class="snapshot-cell-value" style="color:${summary.rightStructureColor}">
-          ${escapeHtml(summary.rightStructure)}
+          ${et(summary.rightStructure)}
         </span>
       </td>
 
       <td>
         <span class="snapshot-cell-value" style="color:${summary.rightMotionColor}">
-          ${escapeHtml(summary.rightMotion)}
+          ${et(summary.rightMotion)}
         </span>
       </td>
 
       <td class="snapshot-cop-td">
         <span class="snapshot-cop-badge" style="color:${summary.copColor};border-color:${summary.copColor}">
-          ${escapeHtml(summary.copDashboardLabel)}
+          ${et(summary.copDashboardLabel)}
         </span>
       </td>
 
@@ -378,7 +398,7 @@ function renderSnapRow(snap, index) {
         <button
           class="btn-delete-snap"
           onclick="handleDeleteSnap(event, '${escapeJs(snapId)}')"
-          title="Hapus"
+          title="${tr('Delete')}"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -412,8 +432,8 @@ function renderSummaryStats() {
   };
 
   if (!snaps || snaps.length === 0) {
-    set('latest-overall-status', 'Data Not Available');
-    set('latest-overall-desc', 'No snapshot available for analysis.');
+    set('latest-overall-status', tr('Data Not Available'));
+    set('latest-overall-desc', tr('No snapshot available for analysis.'));
 
     set('latest-left-condition', '—');
     set('latest-right-condition', '—');
@@ -425,7 +445,7 @@ function renderSummaryStats() {
 
     set('latest-cop-condition', '—');
     set('total-snaps', '0');
-    set('latest-snapshot-meta', 'Snapshot terakhir: —');
+    set('latest-snapshot-meta', `${tr('Last Snapshot')}: —`);
 
     set('stable-snaps', '—');
     set('attention-snaps', '—');
@@ -434,27 +454,27 @@ function renderSummaryStats() {
     set('dominant-motion', '—');
 
     set('cop-status-summary', '');
-    set('cop-history-note', 'Menunggu data CoP terakhir...');
+    set('cop-history-note', `${tr('Waiting for latest CoP data...')}`);
     return;
   }
 
   const latest = snaps[0];
   const latestSummary = buildSnapshotSummary(latest);
 
-  set('latest-overall-status', latestSummary.overallTitle);
-  set('latest-overall-desc', latestSummary.overallDescription);
+  set('latest-overall-status', tr(latestSummary.overallTitle));
+  set('latest-overall-desc', tr(latestSummary.overallDescription));
 
-  set('latest-left-condition', latestSummary.leftCondition);
-  set('latest-right-condition', latestSummary.rightCondition);
+  set('latest-left-condition', tr(latestSummary.leftCondition));
+  set('latest-right-condition', tr(latestSummary.rightCondition));
 
-  set('latest-left-structure', latestSummary.leftStructure);
-  set('latest-left-motion', latestSummary.leftMotion);
-  set('latest-right-structure', latestSummary.rightStructure);
-  set('latest-right-motion', latestSummary.rightMotion);
+  set('latest-left-structure', tr(latestSummary.leftStructure));
+  set('latest-left-motion', tr(latestSummary.leftMotion));
+  set('latest-right-structure', tr(latestSummary.rightStructure));
+  set('latest-right-motion', tr(latestSummary.rightMotion));
 
-  set('latest-cop-condition', latestSummary.copDashboardLabel);
-  set('total-snaps', `${snaps.length} snapshot`);
-  set('latest-snapshot-meta', `Last Snapshot: ${latestSummary.copDashboardLabel}`);
+  set('latest-cop-condition', tr(latestSummary.copDashboardLabel));
+  set('total-snaps', `${snaps.length} ${tr('snapshot')}`);
+  set('latest-snapshot-meta', `${tr('Last Snapshot')}: ${tr(latestSummary.copDashboardLabel)}`);
 
   setColor('latest-left-structure', latestSummary.leftStructureColor);
   setColor('latest-left-motion', latestSummary.leftMotionColor);
@@ -465,28 +485,28 @@ function renderSummaryStats() {
   const summaries = snaps.map(buildSnapshotSummary);
 
   const stableCount = summaries.filter(
-    (summary) => summary.copDashboardLabel === 'STABIL'
+    (summary) => summary.copDashboardLabel === 'STABLE'
   ).length;
 
   const attentionCount = summaries.length - stableCount;
 
-  set('stable-snaps', `${stableCount} kali`);
-  set('attention-snaps', `${attentionCount} kali`);
-  set('dominant-condition', getDominantPatientCondition(summaries));
-  set('dominant-structure', getDominantStructureCondition(summaries));
-  set('dominant-motion', getDominantMotionCondition(summaries));
+  set('stable-snaps', `${stableCount} ${tr("times")}`);
+  set('attention-snaps', `${attentionCount} ${tr("times")}`);
+  set('dominant-condition', tr(getDominantPatientCondition(summaries)));
+  set('dominant-structure', tr(getDominantStructureCondition(summaries)));
+  set('dominant-motion', tr(getDominantMotionCondition(summaries)));
 
   const statusEl = document.getElementById('cop-status-summary');
   if (statusEl) {
-    statusEl.textContent = `Snapshot terakhir: ${latestSummary.copDashboardLabel}`;
+    statusEl.textContent = `${tr('Last Snapshot')}: ${tr(latestSummary.copDashboardLabel)}`;
     statusEl.style.color = latestSummary.copColor;
   }
 
   const note = document.getElementById('cop-history-note');
   if (note) {
     note.textContent =
-      `Chart displays the entire CoP history (${snaps.length} snapshot). ` +
-      `Status label only shows the last snapshot: ${latestSummary.copDashboardLabel}.`;
+      `${tr('Chart displays the entire CoP history')} (${snaps.length} ${tr('snapshot')}). ` +
+      `${tr('Status label only shows the last snapshot')}: ${latestSummary.copDashboardLabel}.`;
   }
 }
 
@@ -526,7 +546,7 @@ function drawCopHistoryCanvas() {
     ctx.font = 'bold 10px JetBrains Mono, monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('No CoP data available', cx, cy);
+    ctx.fillText(tr('No CoP data available'), cx, cy);
     return;
   }
 
@@ -598,14 +618,14 @@ function drawReportCopDashboardGrid(ctx, W, H, cx, cy, radius) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  ctx.fillText('FRONT', cx, 12);
-  ctx.fillText('BACK', cx, H - 12);
+  ctx.fillText(tr('FRONT'), cx, 12);
+  ctx.fillText(tr('BACK'), cx, H - 12);
 
   ctx.textAlign = 'left';
-  ctx.fillText('LEFT', 10, cy + 4);
+  ctx.fillText(tr('LEFT'), 10, cy + 4);
 
   ctx.textAlign = 'right';
-  ctx.fillText('RIGHT', W - 10, cy + 4);
+  ctx.fillText(tr('RIGHT'), W - 10, cy + 4);
 
   ctx.restore();
 }
@@ -751,7 +771,7 @@ function drawTrendThreshold(ctx, W, H, pad, minV, maxV, threshold, label) {
   ctx.fillStyle = 'rgba(120,120,140,0.7)';
   ctx.font = 'bold 7px JetBrains Mono, monospace';
   ctx.textAlign = 'right';
-  ctx.fillText(`${label} ${threshold.toFixed(1)}`, W - pad.r, y - 3);
+  ctx.fillText(`${tr(label)} ${threshold.toFixed(1)}`, W - pad.r, y - 3);
 
   ctx.restore();
 }
@@ -1027,10 +1047,29 @@ function getFootConditionColor(label) {
 function getDashboardCopStatusLabel(status) {
   const raw = String(status || '').toUpperCase();
 
-  if (raw.includes('TIDAK ADA DATA')) return 'DATA NOT AVAILABLE';
-  if (raw.includes('ABNORMAL') || raw.includes('TIDAK STABIL')) return 'ABNORMAL';
-  if (raw.includes('SEDANG') || raw.includes('CUKUP')) return 'MODERATE';
-  if (raw.includes('NORMAL') || raw.includes('STABIL')) return 'STABLE';
+  if (
+    raw.includes('TIDAK ADA DATA') ||
+    raw.includes('NO DATA AVAILABLE') ||
+    raw.includes('DATA NOT AVAILABLE')
+  ) return 'DATA NOT AVAILABLE';
+
+  if (
+    raw.includes('ABNORMAL') ||
+    raw.includes('UNSTABLE') ||
+    raw.includes('TIDAK STABIL')
+  ) return 'ABNORMAL';
+
+  if (
+    raw.includes('MODERATE') ||
+    raw.includes('SEDANG') ||
+    raw.includes('CUKUP')
+  ) return 'MODERATE';
+
+  if (
+    raw.includes('STABLE') ||
+    raw.includes('NORMAL') ||
+    raw.includes('STABIL')
+  ) return 'STABLE';
 
   return 'UNKNOWN';
 }
@@ -1083,8 +1122,8 @@ function getCopReadableStatus(status) {
 function getCopStatusColor(status) {
   const label = getDashboardCopStatusLabel(status);
 
-  if (label === 'STABIL') return 'var(--green)';
-  if (label === 'SEDANG') return 'var(--yellow)';
+  if (label === 'STABLE') return 'var(--green)';
+  if (label === 'MODERATE') return 'var(--yellow)';
   if (label === 'ABNORMAL') return 'var(--red)';
 
   return 'var(--text-secondary)';
@@ -1099,22 +1138,35 @@ function getOverallPatientConclusionDetailed(data) {
   const structureNormal = leftStructureNormal && rightStructureNormal;
   const motionNormal = leftMotionNormal && rightMotionNormal;
 
-  const copStable = data.copDashboardLabel === 'STABIL';
-  const copModerate = data.copDashboardLabel === 'SEDANG';
+  const copStable = data.copDashboardLabel === 'STABLE';
+  const copModerate = data.copDashboardLabel === 'MODERATE';
 
-  const structureLine =
-    `Structure: left ${data.leftStructure}, right ${data.rightStructure}.`;
+  const isId = window.simpleLang && window.simpleLang.get() === 'id';
 
-  const motionLine =
-    `Movement: left ${data.leftMotion}, right ${data.rightMotion}.`;
+  const leftStructure = tr(data.leftStructure);
+  const rightStructure = tr(data.rightStructure);
+  const leftMotion = tr(data.leftMotion);
+  const rightMotion = tr(data.rightMotion);
+  const copStatus = tr(data.copDashboardLabel);
 
-  const copLine =
-    `CoP Stability Status - Last Snapshot: ${data.copDashboardLabel}.`;
+  const structureLine = isId
+    ? `Struktur kaki: kiri ${leftStructure}, kanan ${rightStructure}.`
+    : `Structure: left ${leftStructure}, right ${rightStructure}.`;
+
+  const motionLine = isId
+    ? `Gerakan kaki: kiri ${leftMotion}, kanan ${rightMotion}.`
+    : `Movement: left ${leftMotion}, right ${rightMotion}.`;
+
+  const copLine = isId
+    ? `Status stabilitas CoP pada snapshot terakhir: ${copStatus}.`
+    : `CoP Stability Status - Last Snapshot: ${copStatus}.`;
 
   if (structureNormal && motionNormal && copStable) {
     return {
       title: 'Good Patient Condition',
-      description: `${structureLine} ${motionLine} ${copLine}`,
+      description: isId
+        ? `${structureLine} ${motionLine} ${copLine} Struktur, gerakan, dan stabilitas CoP secara umum berada dalam kondisi baik.`
+        : `${structureLine} ${motionLine} ${copLine} Structure, movement, and CoP stability are generally good.`,
       shortConclusion: 'Structure, movement, and CoP stability are generally good.',
     };
   }
@@ -1122,9 +1174,9 @@ function getOverallPatientConclusionDetailed(data) {
   if ((!structureNormal || !motionNormal) && copStable) {
     return {
       title: 'Indication of Foot Abnormality',
-      description:
-        `${structureLine} ${motionLine} ${copLine} ` +
-        'Stability is still good, but structural/movement abnormalities still need to be noted.',
+      description: isId
+        ? `${structureLine} ${motionLine} ${copLine} Stabilitas masih tergolong baik, tetapi kelainan struktur atau gerakan kaki tetap perlu diperhatikan.`
+        : `${structureLine} ${motionLine} ${copLine} Stability is still good, but structural/movement abnormalities still need to be noted.`,
       shortConclusion: 'There are indications of foot abnormalities, but the latest CoP is still stable.',
     };
   }
@@ -1132,20 +1184,19 @@ function getOverallPatientConclusionDetailed(data) {
   if (copModerate) {
     return {
       title: 'Monitoring Required',
-      description:
-        `${structureLine} ${motionLine} ${copLine} ` +
-        'Condition requires monitoring through subsequent snapshots.',
+      description: isId
+        ? `${structureLine} ${motionLine} ${copLine} Kondisi memerlukan pemantauan melalui snapshot berikutnya, terutama pada aspek stabilitas CoP.`
+        : `${structureLine} ${motionLine} ${copLine} Condition requires monitoring through subsequent snapshots, especially CoP stability.`,
       shortConclusion: 'Condition requires monitoring, especially CoP stability.',
     };
   }
 
   return {
     title: 'Attention Needed',
-    description:
-      `${structureLine} ${motionLine} ${copLine} ` +
-      'Further examination is recommended if this pattern occurs repeatedly.',
-    shortConclusion:
-      'There are indications of stability issues or foot abnormalities that need attention.',
+    description: isId
+      ? `${structureLine} ${motionLine} ${copLine} Pemeriksaan lanjutan disarankan apabila pola ini muncul berulang pada pengukuran berikutnya.`
+      : `${structureLine} ${motionLine} ${copLine} Further examination is recommended if this pattern occurs repeatedly.`,
+    shortConclusion: 'There are indications of stability issues or foot abnormalities that need attention.',
   };
 }
 
@@ -1194,8 +1245,8 @@ function getDominantPerFoot(summaries, leftField, rightField, typeLabel) {
   const right = getDominantSingleFoot(summaries, rightField);
 
   return (
-    `Left ${typeLabel}: ${formatDominantFootText(left, typeLabel)} · ` +
-    `Right ${typeLabel}: ${formatDominantFootText(right, typeLabel)}`
+    `${tr('Left')} ${tr(typeLabel)}: ${formatDominantFootText(left, typeLabel)} · ` +
+    `${tr('Right')} ${tr(typeLabel)}: ${formatDominantFootText(right, typeLabel)}`
   );
 }
 
@@ -1227,10 +1278,10 @@ function getDominantSingleFoot(summaries, field) {
 
 function formatDominantFootText(result, typeLabel) {
   if (!result || result.label === 'Normal') {
-    return `${typeLabel.toLowerCase()} generally normal`;
+    return `${tr(typeLabel)} ${tr('generally normal')}`;
   }
 
-  return `dominant ${result.label} (${result.count}x)`;
+  return `${tr('dominant')} ${tr(result.label)} (${result.count}x)`;
 }
 
 /* Fungsi ini tetap dipertahankan kalau masih dipakai bagian lain */
@@ -1349,7 +1400,7 @@ function exportCSV() {
   a.click();
 
   URL.revokeObjectURL(url);
-  showToast(`✓ CSV successfully exported — ${snaps.length} snapshot`, 'success');
+  showToast(`✓ ${tr('CSV successfully exported')} — ${snaps.length} ${tr('snapshot')}`, 'success');
 }
 
 /* ============================================================
@@ -1386,7 +1437,7 @@ function showConfirm(message, callback) {
   const btnCancel = document.getElementById('modal-cancel');
   const btnClose = document.getElementById('modal-close');
 
-  modalMessage.textContent = message;
+  modalMessage.textContent = tr(message);
   modal.style.display = 'flex';
 
   const closeModal = () => {
@@ -1407,7 +1458,7 @@ function handleDeleteSnap(event, snapId) {
   event.stopPropagation();
 
   if (!snapId) {
-    showToast('Snapshot ID not found.', 'error');
+    showToast(tr('Snapshot ID not found.'), 'error');
     return;
   }
 
@@ -1415,14 +1466,14 @@ function handleDeleteSnap(event, snapId) {
     if (!ok) return;
 
     firebaseDeleteSnapshot(snapId)
-      .then(() => showToast('Snapshot deleted', 'success'))
-      .catch(() => showToast('Failed to delete snapshot', 'error'));
+      .then(() => showToast(tr('Snapshot deleted'), 'success'))
+      .catch(() => showToast(tr('Failed to delete snapshot'), 'error'));
   });
 }
 
 function handleDeleteAll() {
   if (!_firebaseHistory || _firebaseHistory.length === 0) {
-    showToast('No snapshots available for deletion.', 'error');
+    showToast(tr('No snapshots available for deletion.'), 'error');
     return;
   }
 
@@ -1433,9 +1484,9 @@ function handleDeleteAll() {
 
       firebaseDeleteAllHistory()
         .then((res) => {
-          if (res !== false) showToast('All history has been cleared', 'success');
+          if (res !== false) showToast(tr('All history has been cleared'), 'success');
         })
-        .catch(() => showToast('Failed to delete history', 'error'));
+        .catch(() => showToast(tr('Failed to delete history'), 'error'));
     }
   );
 }
@@ -1448,18 +1499,18 @@ function exportPDF() {
   const snaps = _firebaseHistory;
 
   if (!snaps || snaps.length === 0) {
-    showToast('No snapshots available for export.', 'error');
+    showToast(tr('No snapshots available for export.'), 'error');
     return;
   }
 
   const win = window.open('', '_blank', 'width=1000,height=750');
 
   if (!win) {
-    showToast('Pop-up blocked by browser. Please allow pop-ups for this page.', 'error');
+    showToast(tr('Pop-up blocked by browser. Please allow pop-ups for this page.'), 'error');
     return;
   }
 
-  showToast('Opening PDF report...', 'success');
+  showToast(tr('Opening PDF report...'), 'success');
 
   const p = _activeProfile || window._activePatient || {};
   const latest = snaps[0];
@@ -1475,7 +1526,7 @@ function exportPDF() {
     );
   }
 
-  const patientAgeText = patientAge ? `${patientAge} years` : '—';
+  const patientAgeText = patientAge ? `${patientAge} ${tr('years')}` : '—';
   const patientGender = p.gender || '—';
   const patientWeight = p.weight || '—';
   const patientHeight = p.height || '—';
@@ -1549,32 +1600,32 @@ const tableRows = snaps.map((snap, index) => {
     <tr>
       <td class="tc muted">${index + 1}</td>
       <td class="nowrap">${escapeHtml(_fmtTime(snap.snapshot_time))}</td>
-      <td class="tc">${escapeHtml(snap.posture_ml || 'Standing')}</td>
+      <td class="tc">${et(getSnapshotPostureLabel(snap) || tr('Standing'))}</td>
 
       <td>
         <div class="foot-cell">
-          <strong>Left Foot</strong>
-          <span>Structure: ${escapeHtml(summary.leftStructure)}</span>
-          <span>Movement: ${escapeHtml(summary.leftMotion)}</span>
+          <strong>${et('Left Foot')}</strong>
+          <span>${et('Structure')}: ${et(summary.leftStructure)}</span>
+          <span>${et('Movement')}: ${et(summary.leftMotion)}</span>
         </div>
       </td>
 
       <td>
         <div class="foot-cell">
-          <strong>Right Foot</strong>
-          <span>Structure: ${escapeHtml(summary.rightStructure)}</span>
-          <span>Movement: ${escapeHtml(summary.rightMotion)}</span>
+          <strong>${et('Right Foot')}</strong>
+          <span>${et('Structure')}: ${et(summary.rightStructure)}</span>
+          <span>${et('Movement')}: ${et(summary.rightMotion)}</span>
         </div>
       </td>
 
       <td class="tc">
         <span class="badge" style="background:${copStatusBg(cop)};color:${copPdfColor(cop)}">
-          ${escapeHtml(summary.copDashboardLabel)}
+          ${et(summary.copDashboardLabel)}
         </span>
       </td>
 
       <td class="small-txt">
-        ${escapeHtml(snap.note || '—')}
+        ${et(snap.note || '—')}
       </td>
     </tr>
   `;
@@ -1962,188 +2013,188 @@ const tableRows = snaps.map((snap, index) => {
       <div class="brand-mark">FPS</div>
       <div>
         <div class="brand-title">Foot Plantar Monitoring</div>
-        <div class="brand-sub">Laporan Analisis Tekanan Plantar dan Stabilitas CoP</div>
+        <div class="brand-sub">${et('Plantar Pressure Analysis and CoP Stability Report')}</div>
       </div>
     </div>
 
     <div class="header-meta">
-      <strong>Laporan Pemeriksaan Plantar</strong>
-      Dicetak: ${escapeHtml(now)}<br>
-      Periode data: ${escapeHtml(firstTime)} — ${escapeHtml(lastTime)}<br>
-      Total snapshot: ${snaps.length}
+      <strong>${et('Plantar Examination Report')}</strong>
+      ${et('Printed')}: ${escapeHtml(now)}<br>
+      ${et('Data Period')}: ${escapeHtml(firstTime)} — ${escapeHtml(lastTime)}<br>
+      ${et('Total Snapshots')}: ${snaps.length}
     </div>
   </div>
 
-  <div class="section-title">Informasi Pasien</div>
+  <div class="section-title">${et('Patient Information')}</div>
 
   <div class="patient-grid">
     <div class="patient-panel">
-      <div class="panel-label">Identitas</div>
+      <div class="panel-label">${et('Patient Identity')}</div>
 
       <div class="info-row">
-        <span class="info-label">Nama</span>
+        <span class="info-label">${et('Name')}</span>
         <span class="info-value">${escapeHtml(patientName)}</span>
       </div>
 
       <div class="info-row">
-        <span class="info-label">Tanggal Lahir</span>
+        <span class="info-label">${et('Date of Birth')}</span>
         <span class="info-value">${escapeHtml(patientDOB)}</span>
       </div>
 
       <div class="info-row">
-        <span class="info-label">Umur</span>
+        <span class="info-label">${et('Age')}</span>
         <span class="info-value">${escapeHtml(patientAgeText)}</span>
       </div>
 
       <div class="info-row">
-        <span class="info-label">Jenis Kelamin</span>
+        <span class="info-label">${et('Gender')}</span>
         <span class="info-value">${escapeHtml(patientGender)}</span>
       </div>
     </div>
 
     <div class="patient-panel">
-  <div class="panel-label">Antropometri</div>
+  <div class="panel-label">${et('Anthropometry')}</div>
 
   <div class="info-row">
-    <span class="info-label">Tinggi Badan</span>
+    <span class="info-label">${et('Height')}</span>
     <span class="info-value">${escapeHtml(patientHeight)} cm</span>
   </div>
 
   <div class="info-row">
-    <span class="info-label">Berat Badan</span>
+    <span class="info-label">${et('Weight')}</span>
     <span class="info-value">${escapeHtml(patientWeight)} kg</span>
   </div>
 
   <div class="info-row">
-    <span class="info-label">Jumlah Pemeriksaan</span>
-    <span class="info-value">${snaps.length} snapshot</span>
+    <span class="info-label">${et('Number of Examinations')}</span>
+    <span class="info-value">${snaps.length} ${et('snapshot')}</span>
   </div>
 
   <div class="info-row">
-    <span class="info-label">Status Terakhir</span>
-    <span class="info-value">${escapeHtml(latestSummary.copDashboardLabel)}</span>
+    <span class="info-label">${et('Last Status')}</span>
+    <span class="info-value">${et(latestSummary.copDashboardLabel)}</span>
   </div>
 </div>
 
     <div class="patient-panel">
-      <div class="panel-label">Kontak</div>
+      <div class="panel-label">${et('Contact')}</div>
 
       <div class="info-row">
-        <span class="info-label">Telepon</span>
+        <span class="info-label">${et('Phone')}</span>
         <span class="info-value">${escapeHtml(patientPhone)}</span>
       </div>
 
       <div class="info-row">
-        <span class="info-label">Email</span>
+        <span class="info-label">${et('Email')}</span>
         <span class="info-value">${escapeHtml(patientEmail)}</span>
       </div>
     </div>
   </div>
 
-  <div class="section-title">Kesimpulan Pasien</div>
+  <div class="section-title">${et('Patient Conclusion')}</div>
 
   <div class="conclusion-box">
     <div class="conclusion-main">
       <div class="conclusion-status">
-        ${escapeHtml(latestSummary.overallTitle)}
+        ${et(latestSummary.overallTitle)}
       </div>
 
       <div class="conclusion-text">
-        ${escapeHtml(latestSummary.overallDescription)}
+        ${et(latestSummary.overallDescription)}
       </div>
     </div>
 
     <div class="latest-grid">
       <div class="latest-card">
-        <div class="latest-label">Struktur Kiri</div>
+        <div class="latest-label">${et('Left Structure')}</div>
         <div class="latest-value" style="color:${latestSummary.leftStructureColor}">
-          ${escapeHtml(latestSummary.leftStructure)}
+          ${et(latestSummary.leftStructure)}
         </div>
       </div>
 
       <div class="latest-card">
-        <div class="latest-label">Left Movement</div>
+        <div class="latest-label">${et('Left Movement')}</div>
         <div class="latest-value" style="color:${latestSummary.leftMotionColor}">
-          ${escapeHtml(latestSummary.leftMotion)}
+          ${et(latestSummary.leftMotion)}
         </div>
       </div>
 
       <div class="latest-card">
-        <div class="latest-label">Right Structure</div>
+        <div class="latest-label">${et('Right Structure')}</div>
         <div class="latest-value" style="color:${latestSummary.rightStructureColor}">
-          ${escapeHtml(latestSummary.rightStructure)}
+          ${et(latestSummary.rightStructure)}
         </div>
       </div>
 
       <div class="latest-card">
-        <div class="latest-label">Right Movement</div>
+        <div class="latest-label">${et('Right Movement')}</div>
         <div class="latest-value" style="color:${latestSummary.rightMotionColor}">
-          ${escapeHtml(latestSummary.rightMotion)}
+          ${et(latestSummary.rightMotion)}
         </div>
       </div>
 
       <div class="latest-card accent">
-        <div class="latest-label">Latest CoP</div>
+        <div class="latest-label">${et('Latest CoP')}</div>
         <div class="latest-value" style="color:${latestSummary.copColor}">
-          ${escapeHtml(latestSummary.copDashboardLabel)}
+          ${et(latestSummary.copDashboardLabel)}
         </div>
       </div>
 
       <div class="latest-card">
-        <div class="latest-label">Snapshot</div>
-        <div class="latest-value">${snaps.length} data</div>
+        <div class="latest-label">${et('Snapshot')}</div>
+        <div class="latest-value">${snaps.length} ${et('data')}</div>
       </div>
     </div>
   </div>
 
-  <div class="section-title">Ringkasan Riwayat</div>
+  <div class="section-title">${et('History Summary')}</div>
 
   <div class="summary-grid simple-summary">
   <div class="summary-card">
     <div class="summary-val">${snaps.length}</div>
-    <div class="summary-label">Total Snapshot</div>
+    <div class="summary-label">${et('Total Snapshots')}</div>
   </div>
 
   <div class="summary-card">
     <div class="summary-val" style="color:#1a7a4a">${countStable}</div>
-    <div class="summary-label">Snapshot Stabil</div>
+    <div class="summary-label">${et('Stable Snapshots')}</div>
   </div>
 
   <div class="summary-card">
     <div class="summary-val" style="color:#9b1c1c">${countAttention}</div>
-    <div class="summary-label">Need Attention</div>
+    <div class="summary-label">${et('Snapshots Need Attention')}</div>
   </div>
 
   <div class="summary-card">
-    <div class="summary-val wide-value">${escapeHtml(latestSummary.copDashboardLabel)}</div>
-    <div class="summary-label">Last Status</div>
+    <div class="summary-val wide-value">${et(latestSummary.copDashboardLabel)}</div>
+    <div class="summary-label">${et('Last Status')}</div>
   </div>
 </div>
 
   <div class="summary-grid" style="grid-template-columns: 1fr 1fr; margin-top: 8px;">
     <div class="summary-card" style="text-align:left;">
-      <div class="summary-label" style="margin-top:0;">Struktur Dominan</div>
-      <div class="summary-val wide-value">${escapeHtml(dominantStructure)}</div>
+      <div class="summary-label" style="margin-top:0;">${et('Dominant Structure')}</div>
+      <div class="summary-val wide-value">${et(dominantStructure)}</div>
     </div>
 
     <div class="summary-card" style="text-align:left;">
-      <div class="summary-label" style="margin-top:0;">Dominant Movement</div>
-      <div class="summary-val wide-value">${escapeHtml(dominantMotion)}</div>
+      <div class="summary-label" style="margin-top:0;">${et('Dominant Movement')}</div>
+      <div class="summary-val wide-value">${et(dominantMotion)}</div>
     </div>
   </div>
 
-  <div class="section-title">Snapshot Detail</div>
+  <div class="section-title">${et('Snapshot Detail')}</div>
 
   <table>
     <thead>
 <tr>
   <th class="tc" style="width:28px">No</th>
-  <th>Time</th>
-  <th class="tc">Posture</th>
-  <th>Left Foot</th>
-  <th>Right Foot</th>
-  <th class="tc">Stability</th>
-  <th>Notes</th>
+  <th>${et('Time')}</th>
+  <th class="tc">${et('Posture')}</th>
+  <th>${et('Left Foot')}</th>
+  <th>${et('Right Foot')}</th>
+  <th class="tc">${et('Stability')}</th>
+  <th>${et('Notes')}</th>
 </tr>
     </thead>
 
@@ -2153,9 +2204,7 @@ const tableRows = snaps.map((snap, index) => {
   </table>
 
 <div class="disclaimer">
-  Notes: This Report summarizes the results of plantar pressure readings, foot structure patterns,
-  foot movements, and body stability based on snapshot data. The results are for initial reference
-  only and should be confirmed through clinical examination if abnormal patterns are found.
+  ${et("Notes: This Report summarizes the results of plantar pressure readings, foot structure patterns, foot movements, and body stability based on snapshot data. The results are for initial reference only and should be confirmed through clinical examination if abnormal patterns are found.")}
 </div>
 
   <div class="footer">
@@ -2195,7 +2244,8 @@ function getSnapshotPostureLabel(snap) {
 
   if (!raw) return '—';
 
-  return labelMap[raw] || raw;
+  const label = labelMap[raw] || raw;
+  return typeof tr === "function" ? tr(label) : label;
 }
 
 function _fmtTime(raw) {

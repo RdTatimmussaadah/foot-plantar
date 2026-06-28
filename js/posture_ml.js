@@ -412,8 +412,10 @@ async function predictPostureML(data) {
   const rawFeatures = getPostureRawFeatures(data);
   const totalRaw    = rawFeatures.reduce((a, b) => a + b, 0);
 
-  if (totalRaw < 50) {
-    return { label: 'Belum Terdeteksi', rawLabel: 'no_pressure', confidence: 0 };
+  const activeSensors = rawFeatures.filter(v => v > 3000).length; // Sensor dianggap tertekan jika > 3000
+
+  if (totalRaw < 50000 || activeSensors < 4) {
+    return { label: 'Not Detected Yet', rawLabel: 'no_pressure', confidence: 0 };
   }
 
   const model          = await loadPostureModel();

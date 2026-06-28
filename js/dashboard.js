@@ -38,9 +38,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    startFirebaseListen(function(data) {
+    const _unsubscribeSensor = startFirebaseListen(function(data) {
       currentData = data;
       updateDashboardUI(currentData);
+    });
+
+    window.addEventListener('beforeunload', () => {
+      if (_unsubscribeSensor) _unsubscribeSensor();
     });
   });
 });
@@ -230,7 +234,7 @@ function attachSensorTooltips(canvasId, sensorPos, values, maxVal, isLeft) {
   display:none; pointer-events:none; z-index:50;
   box-shadow:0 2px 12px rgba(0,0,0,0.4);
 `;
-    tip.innerText = SENSOR_DESC[s.key];
+    tip.innerText = tr(SENSOR_DESC[s.key]);
 
     dot.appendChild(tip);
     dot.addEventListener('mouseenter', () => tip.style.display = 'block');
@@ -395,7 +399,7 @@ function drawFootHeatmapV2(canvasId, percentArr, isLeft) {
     ctx.font        = 'bold 11px JetBrains Mono, monospace';
     ctx.textAlign   = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(p.label, p.cx, p.cy + 16);
+    ctx.fillText(tr(p.label), p.cx, p.cy + 16);
     ctx.shadowBlur  = 0;
   });
   ctx.restore();
@@ -467,7 +471,7 @@ function renderSensorRows(containerId, newtonArr, digitalArr) {
 
     return `
       <div class="sensor-row">
-        <div class="sr-name">${SENSOR_NAMES[i]}</div>
+        <div class="sr-name">${tr(SENSOR_NAMES[i])}</div>
         <div class="sr-kpa">${d} <span class="sr-unit">ADC</span></div>
         <div class="sr-bar-track">
           <div class="sr-bar-fill" style="width:${pct}%;background:${barColor}"></div>
@@ -496,8 +500,23 @@ async function updatePostureMLSimple(data) {
     const result = await predictPostureML(data);
     if (seq !== _postureMLSeq) return;
 
-    const label = result && result.label ? result.label : 'Not Detected Yet';
+    if (result.rawLabel === 'no_pressure') {
+      // Kaki belum terdeteksi — tampilkan waiting state
+      localStorage.setItem('fps_currentPostureML', '');
+      localStorage.setItem('fps_currentPostureMLConfidence', '0');
+      _setPostureBoxState(box, resultEl, 'Waiting for foot...', 'loading');
+      return;
+    }
 
+    if ((result.confidence || 0) < 0.55) {
+      // Model tidak cukup yakin — jangan prediksi
+      localStorage.setItem('fps_currentPostureML', '');
+      localStorage.setItem('fps_currentPostureMLConfidence', '0');
+      _setPostureBoxState(box, resultEl, 'Stabilizing...', 'loading');
+      return;
+    }
+
+    const label = result.label || 'Not Detected Yet';
     localStorage.setItem('fps_currentPostureML', result.rawLabel || '');
     localStorage.setItem('fps_currentPostureMLConfidence', (result.confidence || 0).toFixed(4));
 
@@ -518,30 +537,30 @@ function getPostureNote(label, state) {
   const text = String(label || '').toLowerCase();
 
   if (state === 'loading') {
-    return 'The system is reading the foot pressure pattern to detect posture tendencies.';
+    return tr('The system is reading the foot pressure pattern to detect posture tendencies.');
   }
 
   if (text.includes('normal')) {
-    return 'The pressure pattern indicates a relatively balanced weight distribution.';
+    return tr('The pressure pattern indicates a relatively balanced weight distribution.');
   }
 
   if (text.includes('forward')) {
-    return 'The pressure pattern indicates a tendency for the body weight to shift forward.';
+    return tr('The pressure pattern indicates a tendency for the body weight to shift forward.');
   }
 
   if (text.includes('backward')) {
-    return 'The pressure pattern indicates a tendency for the body weight to shift backward.';
+    return tr('The pressure pattern indicates a tendency for the body weight to shift backward.');
   }
 
   if (text.includes('left')) {
-    return 'The pressure pattern indicates a tendency for the body weight to shift to the left side.';
+    return tr('The pressure pattern indicates a tendency for the body weight to shift to the left side.');
   }
 
   if (text.includes('right')) {
-    return 'The pressure pattern indicates a tendency for the body weight to shift to the right side.';
+    return tr('The pressure pattern indicates a tendency for the body weight to shift to the right side.');
   }
 
-  return 'The posture data is not clear enough. The reading can be repeated to better observe the pressure pattern.';
+  return tr('The posture data is not clear enough. The reading can be repeated to better observe the pressure pattern.');
 }
 
 function _setPostureBoxState(box, resultEl, label, state) {
@@ -564,11 +583,13 @@ function _setPostureBoxState(box, resultEl, label, state) {
     'Detecting...': '⏳',
     'Model belum siap': '⚠️',
     'Belum terdeteksi': '❓',
-    'Belum terbaca': '❓'
+    'Belum terbaca': '❓',
+    // 'Waiting for foot...': '👣',
+    // 'Stabilizing...':      '⏳',
   };
 
   const emoji = POSTURE_EMOJI[label] || '';
-  resultEl.textContent = `${emoji} ${label}`.trim();
+  resultEl.textContent = `${emoji} ${tr(label)}`.trim();
 
   const noteEl = document.getElementById('posture-note');
   if (noteEl) {
@@ -606,7 +627,7 @@ function updateBalanceUI(data) {
   // 2. Status Badge
   const badge = document.getElementById('b-status-badge');
   if (badge) {
-    badge.textContent = cls.label;
+    badge.textContent = tr(cls.label);
     badge.className = `badge badge-${cls.cssClass === 'normal' ? 'normal' : cls.cssClass === 'warning' ? 'warning' : 'abnormal'}`;
   }
 
@@ -634,7 +655,7 @@ function updateBalanceUI(data) {
     distValEl.textContent = `${Number(copDist).toFixed(2)} cm`;
     distValEl.style.color = statusColor;
     if (distStsEl) {
-      distStsEl.textContent = statusText;
+      distStsEl.textContent = tr(statusText);
       distStsEl.style.color = statusColor;
     }
   }
@@ -683,14 +704,16 @@ function processDiagnosis(side, arch, pron) {
   if (!labelEl || !archVal || !pronVal || !expEl || !svgEl) return;
 
   // Set Teks
-  archVal.textContent = arch;
-  pronVal.textContent = pron;
+  archVal.textContent = tr(arch);
+  pronVal.textContent = tr(pron);
   labelEl.textContent = (archKey === "Normal" && pronKey === "Normal")
-    ? "Normal Foot"
-    : (archKey !== "Normal" ? arch : pron);
+    ? tr("Normal Foot")
+    : (archKey !== "Normal" ? tr(arch) : tr(pron));
 
   // Set Penjelasan Bahasa Awam
-  expEl.textContent = interpretations[archKey][pronKey];
+  const explanation = interpretations[archKey]?.[pronKey] || "No data available";
+
+  expEl.textContent = tr(explanation);
 
   // Set SVG (Hanya warna & kemiringan sederhana, tanpa emoji)
   svgEl.innerHTML = getCleanFootSVG(side, archKey, pronKey);
@@ -770,7 +793,7 @@ function updateCoP(data) {
         statusText = "STABLE";
         statusColor = "var(--green)";
         badgeClass = "badge badge-normal";
-        feedbackText = "Balance: Very Good (Normal)";
+        feedbackText = tr("Balance: Very Good (Normal)");
     } 
     else if (swayDistance <= 2.5) {
         // Zona Peringatan Dini / Early Warning (Batas transisi sistem pakar komputasi)
@@ -781,7 +804,11 @@ function updateCoP(data) {
         // Toleransi deteksi koordinat diperkecil agar peka di rentang gerak sempit
         let dirX = copX > 0.6 ? "Right" : (copX < -0.6 ? "Left" : "");
         let dirY = copY > 0.8 ? "Front" : (copY < -0.8 ? "Back" : "");
-        feedbackText = `Moderately Stable (Tending to ${dirY} ${dirX})`.trim();
+        const direction = `${tr(dirY)} ${tr(dirX)}`.trim();
+
+        feedbackText = direction
+          ? `${tr("Moderately Stable")} (${tr("Tending to")} ${direction})`
+          : tr("Moderately Stable");
     } 
     else {
         // Melebihi batas deviasi ekstrem Mean + 2SD (Quijoux et al., 2021)
@@ -791,7 +818,11 @@ function updateCoP(data) {
         
         let dirX = copX > 1.0 ? "Right" : (copX < -1.0 ? "Left" : "");
         let dirY = copY > 1.2 ? "Front" : (copY < -1.2 ? "Back" : "");
-        feedbackText = `Unstable (Tending to ${dirY} ${dirX})`.trim();
+        const direction = `${tr(dirY)} ${tr(dirX)}`.trim();
+
+        feedbackText = direction
+          ? `${tr("Unstable")} (${tr("Tending to")} ${direction})`
+          : tr("Unstable");
     }
 
     // 4. Update Nilai Stabilitas (%) & Warna Progress Bar
@@ -803,8 +834,15 @@ function updateCoP(data) {
     if (stabBarEl) { stabBarEl.style.width = `${stabilitas}%`; stabBarEl.style.background = statusColor; }
 
     // 6. Update Badge Card Utama & Kalimat Feedback Diagnosis
-    if (badge) { badge.textContent = statusText; badge.className = badgeClass; }
-    if (feedback) { feedback.textContent = feedbackText; feedback.style.color = statusColor; }
+    if (badge) {
+      badge.textContent = tr(statusText);
+      badge.className = badgeClass;
+    }
+
+    if (feedback) {
+      feedback.textContent = feedbackText;
+      feedback.style.color = statusColor;
+    }
 
     // 7. Distribusi Persentase Sumbu Vertikal (Depan/Belakang)
     const COP_Y_MAX = 8;
@@ -836,3 +874,11 @@ function updateCoP(data) {
         coordLabel.textContent = `X: ${copX.toFixed(1)}, Y: ${copY.toFixed(1)}`;
     }
 }
+
+
+window.addEventListener("languagechange", function () {
+  if (!currentData) return;
+
+  updateMonitoringUI(currentData);
+  updateBalanceUI(currentData);
+});

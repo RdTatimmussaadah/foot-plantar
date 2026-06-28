@@ -11,7 +11,16 @@
     <link rel="stylesheet" href="../css/variables.css" />
     <link rel="stylesheet" href="../css/base.css" />
     <link rel="stylesheet" href="../css/auth.css" />
-    <link rel="icon" type="image/x-icon" href="../assets/images/logo-foot.png" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="../assets/images/logo-foot.png"
+    />
+    <link rel="stylesheet" href="../css/lang.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flag-icons@6.6.6/css/flag-icons.min.css"
+    />
   </head>
   <body class="auth-body">
     <div class="auth-layout">
@@ -25,9 +34,7 @@
           </div>
           <div class="brand-name">Foot Plantar <span>Monitoring</span></div>
         </div>
-        <p class="auth-tagline">
-          Foot plantar pressure monitoring
-        </p>
+        <p class="auth-tagline">Foot plantar pressure monitoring</p>
         <div class="auth-left-footer">v1.0.0 · Foot Plantar 2026</div>
       </div>
 
@@ -66,6 +73,7 @@
               type="text"
               id="nama"
               placeholder="Full Name as on ID Card"
+              maxlength="80"
             />
           </div>
 
@@ -133,6 +141,8 @@
             </div>
           </div>
 
+          <div id="form-alert" class="form-alert" hidden></div>
+
           <div class="btn-group">
             <button class="btn-back" onclick="window.history.back()">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -145,9 +155,7 @@
               </svg>
             </button>
 
-            <button class="btn-primary" onclick="nextStep()">
-              Continue →
-            </button>
+            <button class="btn-primary" onclick="nextStep()">Continue →</button>
           </div>
 
           <p class="auth-switch">
@@ -160,15 +168,33 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-
+    <script src="../js/lang.js"></script>
     <script>
       let selectedGender = "Male";
 
+      function showFormError(message) {
+        const box = document.getElementById("form-alert");
+        if (!box) return;
+
+        box.textContent = tr(message);
+        box.hidden = false;
+      }
+
+      function clearFormError() {
+        const box = document.getElementById("form-alert");
+        if (!box) return;
+
+        box.textContent = "";
+        box.hidden = true;
+      }
+
       function selectGender(val) {
         selectedGender = val;
+
         document
           .getElementById("gender_m")
           .classList.toggle("selected", val === "Male");
+
         document
           .getElementById("gender_f")
           .classList.toggle("selected", val === "Female");
@@ -177,20 +203,29 @@
       function calcAge() {
         const dob = new Date(document.getElementById("dob").value);
         if (isNaN(dob)) return;
+
         const age = Math.floor(
           (Date.now() - dob) / (365.25 * 24 * 3600 * 1000),
         );
-        document.getElementById("age").value = age + " th";
+
+        document.getElementById("age").value = `${age} ${tr("yrs")}`;
       }
 
       function nextStep() {
+        clearFormError();
+
         const nama = document.getElementById("nama").value.trim();
         const dob = document.getElementById("dob").value;
         const height = document.getElementById("height").value;
         const weight = document.getElementById("weight").value;
 
         if (!nama || !dob || !height || !weight) {
-          alert("Please fill in all fields.");
+          showFormError("Please fill in all fields.");
+          return;
+        }
+
+        if (nama.length > 80) {
+          showFormError("Full name must not exceed 80 characters.");
           return;
         }
 
@@ -202,6 +237,10 @@
 
         window.location.href = "register-3.html";
       }
+
+      window.addEventListener("languagechange", function () {
+        calcAge();
+      });
     </script>
   </body>
 </html>

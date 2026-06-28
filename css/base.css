@@ -112,6 +112,7 @@ input, textarea { font-family: var(--font-display); outline: none; border: none;
   cursor: pointer;
   transition: all var(--transition);
   white-space: nowrap;
+  width: 100%;
 }
  
 .nav-tab:hover { color: var(--text-primary); background: var(--bg-hover); }

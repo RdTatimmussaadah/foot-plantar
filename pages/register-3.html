@@ -11,7 +11,16 @@
     <link rel="stylesheet" href="../css/variables.css" />
     <link rel="stylesheet" href="../css/base.css" />
     <link rel="stylesheet" href="../css/auth.css" />
-    <link rel="icon" type="image/x-icon" href="../assets/images/logo-foot.png" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="../assets/images/logo-foot.png"
+    />
+    <link rel="stylesheet" href="../css/lang.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flag-icons@6.6.6/css/flag-icons.min.css"
+    />
   </head>
   <body class="auth-body">
     <div class="auth-layout">
@@ -25,9 +34,7 @@
           </div>
           <div class="brand-name">Foot Plantar <span>Monitoring</span></div>
         </div>
-        <p class="auth-tagline">
-          Foot plantar pressure monitoring
-        </p>
+        <p class="auth-tagline">Foot plantar pressure monitoring</p>
         <div class="auth-left-footer">v1.0.0 · Foot Plantar 2026</div>
       </div>
 
@@ -94,6 +101,8 @@
             </div>
           </div>
 
+          <div id="form-alert" class="form-alert" hidden></div>
+
           <div class="btn-group">
             <button class="btn-back" onclick="window.history.back()">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -122,57 +131,95 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="../js/firebase.js"></script>
+    <script src="../js/lang.js"></script>
 
     <script>
-      // Populate from sessionStorage
-      window.addEventListener("DOMContentLoaded", () => {
+      function showFormError(message) {
+        const box = document.getElementById("form-alert");
+        if (!box) return;
+
+        box.textContent = tr(message);
+        box.hidden = false;
+      }
+
+      function clearFormError() {
+        const box = document.getElementById("form-alert");
+        if (!box) return;
+
+        box.textContent = "";
+        box.hidden = true;
+      }
+
+      function getLangLocale() {
+        return window.simpleLang && window.simpleLang.get() === "id"
+          ? "id-ID"
+          : "en-US";
+      }
+
+      function renderConfirmationData() {
         const dob = sessionStorage.getItem("reg_dob") || "";
+
         let ageStr = "—";
+
         if (dob) {
           const age = Math.floor(
             (Date.now() - new Date(dob)) / (365.25 * 24 * 3600 * 1000),
           );
-          const formatted = new Date(dob).toLocaleDateString("id-ID", {
+
+          const formatted = new Date(dob).toLocaleDateString(getLangLocale(), {
             day: "numeric",
             month: "long",
             year: "numeric",
           });
-          ageStr = `${formatted} (${age} th)`;
+
+          ageStr = `${formatted} (${age} ${tr("yrs")})`;
         }
 
         document.getElementById("c_email").textContent =
           sessionStorage.getItem("reg_email") || "—";
+
         document.getElementById("c_phone").textContent =
           sessionStorage.getItem("reg_phone") || "—";
+
         document.getElementById("c_nama").textContent =
           sessionStorage.getItem("reg_nama") || "—";
+
         document.getElementById("c_dob").textContent = ageStr;
-        document.getElementById("c_gender").textContent =
-          sessionStorage.getItem("reg_gender") || "—";
+
+        document.getElementById("c_gender").textContent = tr(
+          sessionStorage.getItem("reg_gender") || "—",
+        );
 
         const h = sessionStorage.getItem("reg_height");
         const w = sessionStorage.getItem("reg_weight");
+
         document.getElementById("c_tb").textContent =
           h && w ? `${h} cm / ${w} kg` : "—";
+      }
+
+      window.addEventListener("DOMContentLoaded", renderConfirmationData);
+
+      window.addEventListener("languagechange", function () {
+        renderConfirmationData();
       });
 
       function handleRegister() {
+        clearFormError();
+
         const email = sessionStorage.getItem("reg_email");
         const password = sessionStorage.getItem("reg_password");
 
         if (!email || !password) {
-          alert("Data tidak lengkap. Kembali ke langkah 1.");
+          showFormError("Incomplete data. Please return to step 1.");
           return;
         }
 
         const btn = document.querySelector(".btn-primary");
-        btn.textContent = "Registering...";
+        btn.textContent = tr("Registering...");
         btn.disabled = true;
 
-        // Step 1: buat akun Auth
         firebaseRegister(email, password)
-          .then(function (cred) {
-            // Step 2: simpan profil ke Database
+          .then(function () {
             const profil = {
               email: email,
               name: sessionStorage.getItem("reg_nama"),
@@ -182,6 +229,7 @@
               height: sessionStorage.getItem("reg_height"),
               weight: sessionStorage.getItem("reg_weight"),
             };
+
             return firebaseSaveProfile(profil);
           })
           .then(function () {
@@ -189,17 +237,19 @@
             window.location.href = "dashboard.html";
           })
           .catch(function (err) {
-            btn.textContent = "Register Now";
+            btn.textContent = tr("Register Now");
             btn.disabled = false;
+
             const pesan =
               err.code === "auth/email-already-in-use"
                 ? "Email already registered. Please sign in."
                 : err.code === "auth/weak-password"
-                  ? "Password too weak (min. 6 characters)."
+                  ? "Password too weak."
                   : err.code === "auth/invalid-email"
                     ? "Invalid email format."
                     : err.message;
-            alert(pesan);
+
+            showFormError(pesan);
           });
       }
     </script>

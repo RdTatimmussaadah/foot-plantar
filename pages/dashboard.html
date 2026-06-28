@@ -11,7 +11,16 @@
     <link rel="stylesheet" href="../css/variables.css" />
     <link rel="stylesheet" href="../css/base.css" />
     <link rel="stylesheet" href="../css/dashboard.css" />
-    <link rel="icon" type="image/x-icon" href="../assets/images/logo-foot.png" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="../assets/images/logo-foot.png"
+    />
+    <link rel="stylesheet" href="../css/lang.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flag-icons@6.6.6/css/flag-icons.min.css"
+    />
   </head>
 
   <body>
@@ -105,7 +114,9 @@
                     </div>
                     <div class="mc-unit">%</div>
                     <div class="mc-lbl">L/R Symmetry</div>
-                    <div class="mc-sub" id="m-balance-sub">minimum threshold 85%</div>
+                    <div class="mc-sub" id="m-balance-sub">
+                      minimum threshold 85%
+                    </div>
                     <div class="mc-glow" style="background: var(--green)"></div>
                   </div>
                 </div>
@@ -131,8 +142,8 @@
                   </div>
 
                   <div class="posture-note" id="posture-note">
-                    The system is currently reading foot pressure patterns to detect
-                    posture tendencies.
+                    The system is currently reading foot pressure patterns to
+                    detect posture tendencies.
                   </div>
                 </div>
               </div>
@@ -147,9 +158,7 @@
                     style="padding: var(--space-md)"
                   >
                     <span class="card-title">POSTURE STABILITY (CoP)</span>
-                    <span class="badge" id="b-status-badge"
-                      >Analyzing...</span
-                    >
+                    <span class="badge" id="b-status-badge">Analyzing...</span>
                   </div>
 
                   <div class="cop-visualizer-container">
@@ -360,7 +369,8 @@
                       </div>
 
                       <div class="diag-explanation" id="exp-l">
-                        Please stand upright on the sensor to begin the analysis...
+                        Please stand upright on the sensor to begin the
+                        analysis...
                       </div>
                     </div>
                   </div>
@@ -389,7 +399,8 @@
                       </div>
 
                       <div class="diag-explanation" id="exp-r">
-                        Please stand upright on the sensor to begin the analysis...
+                        Please stand upright on the sensor to begin the
+                        analysis...
                       </div>
                     </div>
                   </div>
@@ -409,6 +420,7 @@
 
     <script src="../js/calculations.js"></script>
     <script src="../js/firebase.js"></script>
+    <script src="../js/lang.js"></script>
     <script src="../js/components.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
     <script src="../js/posture_ml.js"></script>

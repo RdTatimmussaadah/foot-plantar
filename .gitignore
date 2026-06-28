@@ -1,6 +1,6 @@
 .vercel
 .env*.local
-.models-data-sendiri-newton/
-.models-data-sendiri-digital/
-.models-data-orang-newton/
-.models-data-orang-digital/
+models-data-sendiri-newton/
+models-data-sendiri-digital/
+models-data-orang-newton/
+models-data-orang-digital/

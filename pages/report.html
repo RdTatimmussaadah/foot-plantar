@@ -11,7 +11,16 @@
     <link rel="stylesheet" href="../css/variables.css" />
     <link rel="stylesheet" href="../css/base.css" />
     <link rel="stylesheet" href="../css/laporan.css" />
-    <link rel="icon" type="image/x-icon" href="../assets/images/logo-foot.png" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="../assets/images/logo-foot.png"
+    />
+    <link rel="stylesheet" href="../css/lang.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flag-icons@6.6.6/css/flag-icons.min.css"
+    />
   </head>
 
   <body>
@@ -78,9 +87,7 @@
                     </div>
 
                     <div class="biodata-field">
-                      <span class="biodata-field-label"
-                        >Height / Weight</span
-                      >
+                      <span class="biodata-field-label">Height / Weight</span>
                       <span class="biodata-field-value" id="b-tbbb">—</span>
                     </div>
                   </div>
@@ -233,20 +240,20 @@
     </div>
 
     <div id="confirm-modal" class="custom-modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <span id="modal-title">Confirm</span>
-      <button id="modal-close">&times;</button>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span id="modal-title">Confirm</span>
+          <button id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body" id="modal-message">
+          <!-- Pesan dinamis muncul di sini -->
+        </div>
+        <div class="modal-footer">
+          <button id="modal-cancel" class="btn-cancel">Cancel</button>
+          <button id="modal-ok" class="btn-ok">Delete</button>
+        </div>
+      </div>
     </div>
-    <div class="modal-body" id="modal-message">
-      <!-- Pesan dinamis muncul di sini -->
-    </div>
-    <div class="modal-footer">
-      <button id="modal-cancel" class="btn-cancel">Cancel</button>
-      <button id="modal-ok" class="btn-ok">Delete</button>
-    </div>
-  </div>
-</div>
 
     <div class="toast-container" id="toast-container"></div>
 
@@ -255,6 +262,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <script src="../js/calculations.js"></script>
+    <script src="../js/lang.js"></script>
     <script src="../js/firebase.js"></script>
     <script src="../js/components.js"></script>
     <script src="../js/laporan.js"></script>

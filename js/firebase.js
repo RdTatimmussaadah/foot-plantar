@@ -390,7 +390,7 @@ function firebaseSaveProfile(profileData) {
 function firebaseLoadProfile(callback) {
   const uid = getCurrentUID();
   if (!uid) return;
-  db.ref(`users/${uid}/profile`).on('value', (snap) => {
+  db.ref(`users/${uid}/profile`).once('value', (snap) => {
     callback(snap.val());
   });
 }
@@ -407,5 +407,4 @@ function firebaseDeleteAllHistory() {
   const uid = getCurrentUID();
   if (!uid) return Promise.reject('Belum login');
   return db.ref(`users/${uid}/history`).remove();
-  return Promise.resolve(false);
 }

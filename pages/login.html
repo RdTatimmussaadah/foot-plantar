@@ -11,7 +11,16 @@
     <link rel="stylesheet" href="../css/variables.css" />
     <link rel="stylesheet" href="../css/base.css" />
     <link rel="stylesheet" href="../css/auth.css" />
-    <link rel="icon" type="image/x-icon" href="../assets/images/logo-foot.png" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="../assets/images/logo-foot.png"
+    />
+    <link rel="stylesheet" href="../css/lang.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flag-icons@6.6.6/css/flag-icons.min.css"
+    />
   </head>
   <body class="auth-body">
     <div class="auth-layout">
@@ -34,9 +43,7 @@
             <div class="brand-name">Foot Plantar Monitoring</div>
           </div>
         </div>
-        <p class="auth-tagline">
-          Foot plantar pressure monitoring
-        </p>
+        <p class="auth-tagline">Foot plantar pressure monitoring</p>
         <div class="auth-left-footer">v1.0.0 · Foot Plantar 2026</div>
       </div>
 
@@ -52,7 +59,7 @@
               <img
                 src="../assets/images/email-icon.png"
                 alt="Email Icon"
-                style="width:16px;height:16px;object-fit:contain"
+                style="width: 16px; height: 16px; object-fit: contain"
               />
               Email
             </label>
@@ -60,7 +67,7 @@
               class="form-input"
               type="email"
               id="email"
-              placeholder="name@email.com"
+              placeholder="email@email.com"
               autocomplete="email"
             />
           </div>
@@ -71,7 +78,7 @@
               <img
                 src="../assets/images/password-icon.png"
                 alt="Password Icon"
-                style="width:16px;height:16px;object-fit:contain"
+                style="width: 16px; height: 16px; object-fit: contain"
               />
               Password
             </label>
@@ -119,6 +126,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="../js/firebase.js"></script>
+    <script src="../js/lang.js"></script>
 
     <script>
       auth.onAuthStateChanged(function (user) {
@@ -130,12 +138,12 @@
         const password = document.getElementById("password").value;
 
         if (!email || !password) {
-          tampilError("Please fill in both email and password.");
+          tampilError(tr("Please fill in both email and password."));
           return;
         }
 
         const btn = document.querySelector(".btn-primary");
-        btn.textContent = "Signing in...";
+        btn.textContent = tr("Signing in...");
         btn.disabled = true;
 
         firebaseLogin(email, password)
@@ -143,7 +151,7 @@
             window.location.href = "dashboard.html";
           })
           .catch(function (err) {
-            btn.textContent = "Sign In";
+            btn.textContent = tr("Sign In");
             btn.disabled = false;
             const pesan =
               err.code === "auth/user-not-found"
@@ -157,7 +165,7 @@
                       : err.code === "auth/too-many-requests"
                         ? "Too many attempts. Please try again later."
                         : err.message;
-            tampilError(pesan);
+            tampilError(tr(pesan));
           });
       }
 

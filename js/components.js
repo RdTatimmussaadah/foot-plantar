@@ -3,16 +3,25 @@
  * Reusable UI components: Sidebar, Topbar, Toast, Modals
  */
 
-const Icons = {
-  monitor: `<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5v7A1.5 1.5 0 0112.5 12h-9A1.5 1.5 0 012 10.5v-7z" stroke="currentColor" stroke-width="1.5"/><path d="M5 15h6M8 12v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
-  balance: `<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M8 2v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M3 5l5 3 5-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 11h5M10 11h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
-  history: `<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5L10.5 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
-  profile: `<svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
-  logout:  `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 2h3a1 1 0 011 1v10a1 1 0 01-1 1h-3M7 11l3-3-3-3M10 8H2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-  camera:  `<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="9" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 5.5A1.5 1.5 0 012.5 4h1l1-2h7l1 2h1A1.5 1.5 0 0115 5.5v7A1.5 1.5 0 0113.5 14h-11A1.5 1.5 0 011 12.5v-7z" stroke="currentColor" stroke-width="1.3"/></svg>`,
-  download:`<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-  rec:     `<svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>`,
-};
+
+window.addEventListener("languagechange", function () {
+  const snapModal = document.getElementById("modal-snap-ov");
+  const logoutModal = document.getElementById("modal-logout-ov");
+
+  const snapWasOpen = snapModal && snapModal.classList.contains("show");
+  const logoutWasOpen = logoutModal && logoutModal.classList.contains("show");
+
+  if (snapModal) snapModal.remove();
+  if (logoutModal) logoutModal.remove();
+
+  if (snapWasOpen && typeof openSnapModal === "function") {
+    openSnapModal();
+  }
+
+  if (logoutWasOpen && typeof openLogoutModal === "function") {
+    openLogoutModal();
+  }
+});
 
 // ============================================================
 // SIDEBAR
@@ -61,32 +70,35 @@ function renderTopbar(container, pageTitle) {
       <button
         class="nav-tab ${isDashboard ? 'active' : ''}"
         onclick="window.location.href='dashboard.html'"
-      >Dashboard</button>
+      >${tr("Dashboard")}</button>
       <button
         class="nav-tab ${isReport ? 'active' : ''}"
         onclick="window.location.href='report.html'"
-      >Report</button>
+      >${tr("Report")}</button>
     </div>
  
     <!-- Kanan: Rekam + User -->
     <div class="topbar-right">
       <button class="btn-snapshot" onclick="openSnapModal()">
         <svg width="10" height="10" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
-        Take Snapshot
+        ${tr("Take Snapshot")}
       </button>
       <div class="user-chip">
         <div class="patient-avatar">${initials}</div>
-        <span class="patient-name">${patient.name || 'Patient'}</span>
+        <span class="patient-name">${patient.name || tr("Patient")}</span>
       </div>
       <button class="logout-btn" onclick="openLogoutModal()">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path d="M10 2h3a1 1 0 011 1v10a1 1 0 01-1 1h-3M7 11l3-3-3-3M10 8H2"
                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Logout
+        ${tr("Logout")}
       </button>
     </div>
   `;
+   if (window.simpleLang && typeof window.simpleLang.apply === "function") {
+    window.simpleLang.apply();
+  }
 }
 
 // ============================================================
@@ -103,11 +115,14 @@ function openLogoutModal() {
         <div class="modal-icon-wrap">
           <span style="font-size:36px">👋</span>
         </div>
-        <div class="modal-title">Logout from Account?</div>
-        <div class="modal-sub">Monitoring sessions will remain saved.<br>You can log back in at any time.</div>
+        <div class="modal-title">${tr("Logout from Account?")}</div>
+        <div class="modal-sub">
+          ${tr("Monitoring sessions will remain saved.")}<br>
+          ${tr("You can log back in at any time.")}
+        </div>
         <div class="modal-btns">
-          <button class="mbtn-cancel" onclick="closeLogoutModal()">Cancel</button>
-          <button class="mbtn-ok" onclick="doLogout()">Yes, Logout</button>
+          <button class="mbtn-cancel" onclick="closeLogoutModal()">${tr("Cancel")}</button>
+          <button class="mbtn-ok" onclick="doLogout()">${tr("Yes, Logout")}</button>
         </div>
       </div>
     `;
@@ -151,16 +166,16 @@ function openSnapModal() {
     ov.className = 'modal-overlay';
     ov.innerHTML = `
       <div class="modal-box snap-modal-box" id="modal-snap-box">
-        <div class="modal-title" style="margin-bottom:3px">⏺ Take Snapshot</div>
+        <div class="modal-title" style="margin-bottom:3px">⏺ ${tr("Take Snapshot")}</div>
         <div class="modal-sub" style="margin-bottom:14px">
-          Saving CoP, foot structure, movement, and sensor data to history
+          ${tr("Saving CoP, foot structure, movement, and sensor data to history")}
         </div>
 
         <div class="snap-postur-row" id="snap-postur-row">
           <span class="snap-postur-ic" id="snap-postur-ic">🧍</span>
           <div>
             <div style="font-size:9px;color:var(--text-secondary);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em">
-              Postur
+              ${tr("Posture")}
             </div>
             <div style="font-size:13px;font-weight:800;color:var(--red)" id="snap-postur-lbl">Standing</div>
           </div>
@@ -169,13 +184,13 @@ function openSnapModal() {
 
 
         <div class="snap-arch-row">
-          <div>Left Foot Structure: <span id="sp-arch-l" style="font-weight:700">—</span></div>
-          <div>Right Foot Structure: <span id="sp-arch-r" style="font-weight:700">—</span></div>
+          <div>${tr("Left Foot Structure")}: <span id="sp-arch-l" style="font-weight:700">—</span></div>
+          <div>${tr("Right Foot Structure")}: <span id="sp-arch-r" style="font-weight:700">—</span></div>
         </div>
 
         <div class="snap-arch-row">
-          <div>Left Movement: <span id="sp-pron-l" style="font-weight:700">—</span></div>
-          <div>Right Movement: <span id="sp-pron-r" style="font-weight:700">—</span></div>
+          <div>${tr("Left Movement")}: <span id="sp-pron-l" style="font-weight:700">—</span></div>
+          <div>${tr("Right Movement")}: <span id="sp-pron-r" style="font-weight:700">—</span></div>
         </div>
 
         <div class="snap-totals-row">
@@ -184,13 +199,13 @@ function openSnapModal() {
         </div>
 
         <div class="snap-note-wrap">
-          <label class="snap-note-lbl">💬 &nbsp;Note (optional)</label>
-          <textarea class="snap-note-input" id="snap-note-inp" placeholder="Example: before therapy, pain condition, etc..." rows="2"></textarea>
+          <label class="snap-note-lbl">💬 &nbsp;${tr("Note (optional)")}</label>
+          <textarea class="snap-note-input" id="snap-note-inp" placeholder="${tr("Example: before therapy, pain condition, etc...")}" rows="2"></textarea>
         </div>
 
         <div class="modal-btns">
-          <button class="mbtn-cancel" onclick="closeSnapModal()">Cancel</button>
-          <button class="mbtn-ok" onclick="saveSnapshot()">💾 Save</button>
+          <button class="mbtn-cancel" onclick="closeSnapModal()">${tr("Cancel")}</button>
+          <button class="mbtn-ok" onclick="saveSnapshot()">${tr("Save")}</button>
         </div>
       </div>
     `;
@@ -235,7 +250,7 @@ const postureIcons = {
 
   if (ic) ic.textContent = postureIcons[posture] || '🧍';
   // if (lb) lb.textContent = posture;
-  if (lb) lb.textContent = `${posture}`;
+  if (lb) lb.textContent = `${tr(posture)}`;
 
   const set = (id, val) => {
     const el = document.getElementById(id);
@@ -256,10 +271,10 @@ const postureIcons = {
   const arch = getSnapshotArchPreview(d);
   const motion = getSnapshotMotionPreview(d);
 
-  set('sp-arch-l', arch.left);
-  set('sp-arch-r', arch.right);
-  set('sp-pron-l', motion.left);
-  set('sp-pron-r', motion.right);
+  set('sp-arch-l', tr(arch.left));
+  set('sp-arch-r', tr(arch.right));
+  set('sp-pron-l', tr(motion.left));
+  set('sp-pron-r', tr(motion.right));
 
   setColor('sp-arch-l', getSnapshotStructureColor(arch.left));
   setColor('sp-arch-r', getSnapshotStructureColor(arch.right));
@@ -267,7 +282,7 @@ const postureIcons = {
   setColor('sp-pron-r', getSnapshotMotionColor(motion.right));
 
   const cop = computeSnapshotCop(d);
-  set('sp-cop-status', cop.label);
+  set('sp-cop-status', tr(cop.label));
 
   setColor('sp-cop-status', getSnapshotCopColor(cop.label));
   setColor('sp-cop-distance', getSnapshotCopColor(cop.label));
@@ -282,7 +297,7 @@ function saveSnapshot() {
   closeSnapModal();
 
   if (typeof currentData === 'undefined' || !currentData) {
-    showToast('Sensor data not available.', 'error');
+    showToast(tr('Sensor data not available.'), 'error');
     return;
   }
 
@@ -303,14 +318,14 @@ function saveSnapshot() {
   if (typeof firebaseRecordSnapshot === 'function') {
     firebaseRecordSnapshot(currentData, posture, note)
       .then(function () {
-        showToast(`✅ Snapshot saved — CoP ${cop.label}`, 'success');
+        showToast(`✅ ${tr("Snapshot saved")} — CoP ${tr(cop.label)}`, 'success');
       })
       .catch(function (err) {
         console.warn('Firebase snapshot failed:', err);
-        showToast(`Snapshot failed to save: ${err}`, 'error');
+        showToast(`${tr("Snapshot failed to save")}: ${err.message || err}`, 'error');
       });
   } else {
-    showToast(`✅ Snapshot saved — CoP ${cop.label}`, 'success');
+    showToast(`✅ ${tr("Snapshot saved")} — CoP ${tr(cop.label)}`, 'success');
   }
 
   const noteInput = document.getElementById('snap-note-inp');
@@ -513,7 +528,7 @@ function showToast(message, type = 'success') {
   }
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
-  toast.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span><span>${message}</span>`;
+  toast.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span><span>${tr(message)}</span>`;
   container.appendChild(toast);
   setTimeout(() => toast.classList.add('toast-show'), 10);
   setTimeout(() => { toast.classList.remove('toast-show'); setTimeout(() => toast.remove(), 300); }, 3000);
@@ -586,8 +601,4 @@ function loadPatientToSidebar() {
     }
     
   });
-}
-
-function exportData() {
-  showToast('Fitur export tersedia setelah integrasi Firebase.', 'success');
 }
