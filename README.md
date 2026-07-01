@@ -1,248 +1,382 @@
 # Foot Plantar Monitoring (FPS)
 
-Sistem monitoring tekanan telapak kaki berbasis IoT dan AI.  
-Dibangun dengan **HTML, CSS, JavaScript murni** — tanpa framework.
+Sistem pemantauan tekanan telapak kaki berbasis IoT dan Machine Learning secara real-time melalui antarmuka web. Data dari sensor FSR402 yang dibaca ESP32 dikirim ke Firebase Realtime Database, lalu diolah dan divisualisasikan di dashboard web termasuk deteksi postur menggunakan model TensorFlow.js.
 
 ---
 
-## Struktur Folder
+## Fitur Utama
+
+- **Peta Tekanan Real-time** — heatmap dua telapak kaki (kiri & kanan) yang diperbarui langsung setiap kali sensor mengirim data baru
+- **Deteksi Postur ML** — prediksi postur tubuh (Normal, Forward Lean, Backward Lean, Left Lean, Right Lean) menggunakan model TensorFlow.js yang berjalan di browser, dilengkapi dua lapis pengaman sebelum menampilkan prediksi
+- **Analisis Stabilitas CoP** — titik Center of Pressure divisualisasikan pada radar interaktif dengan status STABLE / MODERATE / UNSTABLE
+- **Analisis Struktur Kaki** — klasifikasi arch type (Normal / Flat Foot / High Arch) dan pola pronasi (Normal / Overpronation / Supination) untuk kaki kiri dan kanan secara terpisah
+- **Distribusi Beban** — persentase berat badan kiri–kanan dan depan–belakang ditampilkan secara real-time
+- **Snapshot** — simpan kondisi bacaan saat ini ke riwayat permanen di Firebase, tersedia di halaman dashboard maupun report
+- **Laporan** — halaman riwayat lengkap dengan grafik CoP trajectory, tren deviasi, dan ringkasan kondisi pasien; ekspor ke PDF dan CSV
+- **Dwibahasa** — UI sepenuhnya mendukung Bahasa Indonesia dan English, pilihan bahasa disimpan di `localStorage`
+- **Autentikasi** — login dan registrasi akun via Firebase Authentication, data riwayat terisolasi per akun
+
+---
+
+## Struktur Proyek
 
 ```
 fps-project/
-│
-├── index.html                    ← Entry point (redirect ke login)
-│
+├── index.html                  # Entry point — redirect ke dashboard/login
 ├── pages/
-│   ├── login.html                ← Halaman masuk akun
-│   ├── register-1.html           ← Daftar: Langkah 1 — Data Akun
-│   ├── register-2.html           ← Daftar: Langkah 2 — Data Diri
-│   ├── register-3.html           ← Daftar: Langkah 3 — Konfirmasi & Simpan
-│   ├── dashboard.html            ← Halaman utama: heatmap + postur ML + CoP + analisis kaki
-│   └── laporan.html              ← Halaman cetak laporan PDF riwayat snapshot
-│
-├── css/
-│   ├── variables.css             ← Design tokens (warna, spacing, radius, font)
-│   ├── base.css                  ← Reset global + komponen reusable (sidebar, modal, toast)
-│   ├── auth.css                  ← Login & register
-│   └── dashboard.css             ← Tampilan dashboard utama (heatmap, postur, CoP, analisis)
-│
+│   ├── login.html              # Halaman masuk akun
+│   ├── register-1.html         # Registrasi langkah 1 — data akun
+│   ├── register-2.html         # Registrasi langkah 2 — data pribadi
+│   ├── register-3.html         # Registrasi langkah 3 — konfirmasi & simpan
+│   ├── dashboard.html          # Halaman pemantauan utama (real-time)
+│   └── report.html             # Halaman laporan & riwayat snapshot
 ├── js/
-│   ├── calculations.js           ← SEMUA rumus: Newton, ASI, CoP, pronasi, arch, klasifikasi
-│   ├── firebase.js               ← Firebase Auth + Realtime Database + snapshot
-│   ├── components.js             ← Sidebar, Topbar, Modal, Toast (reusable semua halaman)
-│   ├── dashboard.js              ← Logic heatmap, analisis kaki, CoP UI, postur rule-based
-│   ├── posture_ml.js             ← Load model TF.js + prediksi postur AI
-│   └── laporan.js                ← Generate laporan PDF dari riwayat snapshot
-│
+│   ├── calculations.js         # Semua rumus: Newton, ASI, CoP, Pronasi, Arch Type
+│   ├── firebase.js             # Koneksi Firebase: auth, listener, snapshot, CRUD
+│   ├── components.js           # Komponen bersama: topbar, modal logout, modal snapshot
+│   ├── dashboard.js            # Logika dashboard: heatmap, CoP radar, diagnosis
+│   ├── posture_ml.js           # Load TF.js model, prediksi postur, safeguard
+│   ├── laporan.js              # Logika halaman laporan, export CSV/PDF
+│   └── lang.js                 # Sistem dwibahasa (EN/ID)
+├── css/
+│   ├── variables.css           # CSS custom properties (warna, spacing, font)
+│   ├── base.css                # Global styles: tombol, modal, toast
+│   ├── auth.css                # Styles halaman login & register
+│   ├── dashboard.css           # Styles halaman dashboard
+│   ├── laporan.css             # Styles halaman report
+│   └── lang.css                # Styles tombol ganti bahasa
 ├── models/
-│   └── tfjs_model/
-│       ├── model.json            ← Arsitektur model AI (TensorFlow.js)
-│       └── group1-shard1of1.bin  ← Bobot model yang sudah dilatih
-│
+│   └── tfjs_model/             # Model TF.js aktif (dipakai di dashboard)
+│       ├── model.json
+│       └── group1-shard1of1.bin
 └── assets/
-    └── images/                   ← Ikon postur dan logo
+    └── images/                 # Logo dan ikon UI
 ```
+
+---
+
+## Stack Teknologi
+
+| Lapisan | Teknologi |
+|---|---|
+| Frontend | HTML5, CSS3, JavaScript (Vanilla ES2020, no build tool) |
+| Database & Auth | Firebase Realtime Database, Firebase Authentication v10 |
+| Machine Learning | TensorFlow.js 4.22.0 (inference di browser) |
+| Hardware | ESP32, Sensor FSR402 (8 sensor: 4 kaki kiri, 4 kaki kanan) |
+| Deploy | Vercel (static hosting) |
+| Model Training | Python, TensorFlow/Keras di Google Colab (terpisah dari repo ini) |
+
+---
+
+## Hardware
+
+**ESP32** — mikrokontroler utama yang membaca sensor dan mengirim data ke Firebase via WiFi.
+
+**Sensor FSR402** — dipasang di 8 titik pada kedua telapak kaki:
+
+| Indeks | Posisi | Koordinat (cm) |
+|---|---|---|
+| L0 | Hallux kiri | x = −4.0, y = +8.0 |
+| L1 | Med. Forefoot kiri | x = −6.0, y = +2.0 |
+| L2 | Lat. Forefoot kiri | x = −9.0, y = +1.5 |
+| L3 | Heel kiri | x = −7.0, y = −8.0 |
+| R0 | Hallux kanan | x = +4.0, y = +8.0 |
+| R1 | Med. Forefoot kanan | x = +6.0, y = +2.0 |
+| R2 | Lat. Forefoot kanan | x = +9.0, y = +1.5 |
+| R3 | Heel kanan | x = +7.0, y = −8.0 |
+
+**Data yang dikirim ESP32 ke Firebase** (node `sensor_data`):
+
+```json
+{
+  "left_fsr_digital":  [512, 620, 450, 580],
+  "right_fsr_digital": [530, 610, 480, 590],
+  "left_fsr_newton":   [12.4, 15.1, 10.9, 14.1],
+  "right_fsr_newton":  [12.9, 14.8, 11.6, 14.3],
+  "left_balance_percent":  [30, 37, 26, 34],
+  "right_balance_percent": [30, 35, 27, 34],
+  "timestamp": 1719500000000
+}
+```
+
+> Field `left_fsr_newton`, `right_fsr_newton`, `left_balance_percent`, `right_balance_percent` bersifat opsional — jika tidak dikirim ESP32, website akan menghitungnya sendiri dari nilai digital sebagai fallback.
 
 ---
 
 ## Alur Data
 
 ```
-ESP32 (sensor fisik)
-  └─ kirim left_fsr_digital + right_fsr_digital
-       ↓ ke Firebase sensor_data/
-
-Website (browser)
-  └─ startFirebaseListen()       → dengar perubahan realtime
-       ↓ processRawDigital()     → digital → Newton + persen
-       ↓ computeAll()            → ASI, CoP, pronasi, arch, klasifikasi
-       ↓ updateDashboardUI()     → heatmap, radar CoP, analisis kaki
-       ↓ predictPostureML()      → model AI → label postur
-       ↓
-     [Rekam Snapshot]
-       ↓ firebaseRecordSnapshot() → simpan ke users/{uid}/history/
+FSR402 (×8)
+    │ sinyal listrik (analog)
+    ▼
+ESP32 — ADC 12-bit → nilai digital 0–4095
+    │ WiFi / HTTP atau RTDB SDK
+    ▼
+Firebase Realtime Database (node: sensor_data)
+    │ .on('value') — real-time listener
+    ▼
+firebase.js → processRawDigital()
+    │ prioritas: pakai Newton dari Firebase jika ada,
+    │ jika tidak: hitung dari digital (fallback)
+    ▼
+calculations.js → computeAll()
+    │ ASI, Balance Score, Pronasi, Arch Type, leftPercent, rightPercent
+    ▼
+dashboard.js
+    ├── updateMonitoringUI()  → heatmap + kartu L/R Symmetry
+    ├── updateCoP()           → radar CoP + status stabilitas + distribusi beban
+    ├── updateBalanceUI()     → bar kiri/kanan
+    └── updatePostureMLSimple() → posture_ml.js → prediksi postur
 ```
-
-> **Penting:** ESP32 hanya kirim 8 angka ADC mentah. Semua kalkulasi dikerjakan di JavaScript di browser.
 
 ---
 
-## Formula & Kalkulasi
+## Perhitungan dan Ambang Batas
 
-Semua rumus ada di `js/calculations.js`.
-
-### Konversi Sensor
-
-| Tahap | Rumus |
-|-------|-------|
-| Digital → Newton | `F = (digital / 4095) × 100` · F_MAX = 100N (FSR402, dapat dikalibrasi) |
-| Newton → Persen | `pct = (F_sensor / total_F_kaki) × 100` |
-| Digital → Volt | `V = (digital / 4095) × 3.3` |
-
-Data dihaluskan dengan **EMA Filter** (`α = 0.2`) sebelum masuk kalkulasi.
-
-### Metrik Utama
-
-| Metrik | Rumus | Referensi |
-|--------|-------|-----------|
-| Berat Badan | `W = F_total / 9.81` | Sazonov et al. (2020) |
-| ASI | `|F_kiri − F_kanan| / (0.5 × (F_kiri + F_kanan)) × 100%` | Robinson et al. (1987) |
-| Balance Score | `100 − ASI` | Błażkiewicz et al. (2014) |
-| Heel Load | `(Heel_kiri + Heel_kanan) / F_total × 100%` | Putti et al. (2007) |
-| CoP X/Y | `Σ(F_i × pos_i) / F_total` | Weighted average posisi sensor |
-
-### Klasifikasi Keseimbangan (Wang et al., 2023)
-
-| Status | Balance Score | ASI | Heel Load |
-|--------|--------------|-----|-----------|
-| ✅ Normal | ≥ 90 | ≤ 10% | 50–65% |
-| ⚠️ Sedang | 80–89 | 11–20% | 40–49% atau 66–75% |
-| 🚨 Abnormal | < 80 | > 20% | < 40% atau > 75% |
-
-### Stabilitas CoP
-
-| Status | Jarak Sway | Keterangan |
-|--------|-----------|------------|
-| STABIL | < 2.5 cm | Keseimbangan sangat baik |
-| SEDANG | 2.5–4.5 cm | Cukup stabil, ada condong |
-| ABNORMAL | > 4.5 cm | Tidak stabil |
-
-### Pronasi (per kaki)
+### Konversi Digital → Newton (fallback)
 
 ```
-Ratio = (Med.FF − Lat.FF) / (Med.FF + Lat.FF) × 100
+noise_floor   = 50                           // ADC_MAX = 4095, VCC = 3.3V
+nilai_bersih  = max(0, digital − noise_floor)
+F (Newton)    = (nilai_bersih / 4095) × 100
 ```
 
-| Ratio | Klasifikasi |
-|-------|-------------|
-| > +15 | Overpronation |
-| −15 s/d +15 | Normal |
-| < −15 | Supination |
+### Asymmetry Index (ASI) & Skor Simetri
 
-### Arch Type (per kaki)
+```
+ASI          = |F_kiri − F_kanan| / (0.5 × (F_kiri + F_kanan)) × 100%
+Skor Simetri = 100 − ASI
+```
 
-| Kondisi | Arch Type |
-|---------|-----------|
-| Heel > 65% & Forefoot < 35% | High Arch |
-| Forefoot > 65% & Heel < 35% | Flat Foot |
-| Seimbang | Normal |
+Warna kartu L/R Symmetry di dashboard:
+- Hijau — skor ≥ 90
+- Kuning — skor 80–89
+- Merah — skor < 80
+
+### Distribusi Beban Kiri–Kanan (fallback jika ESP32 tidak mengirim)
+
+```
+persen_kiri   = (F_kiri  / F_total) × 100
+persen_kanan  = (F_kanan / F_total) × 100
+```
+
+### Distribusi Beban Depan–Belakang (dari posisi CoP Y)
+
+```
+rentang       = 8 − (−10) = 18
+persen_depan  = clamp(((CoP_y − (−10)) / 18) × 100, 0, 100)
+persen_belakang = 100 − persen_depan
+```
+
+### Pronasi — Med-Lat Ratio
+
+```
+ratio = (MFF − LFF) / (MFF + LFF) × 100
+
+  ratio > +15  → Overpronation
+  ratio < −15  → Supination
+  else         → Normal
+```
+
+`MFF` = sensor indeks 1 (Medial Forefoot), `LFF` = sensor indeks 2 (Lateral Forefoot), per kaki.
+
+### Arch Type
+
+```
+heel_ratio = (heel / total_kaki) × 100
+ff_ratio   = ((hallux + medFF + latFF) / total_kaki) × 100
+
+  heel_ratio > 65 AND ff_ratio < 35  → High Arch
+  ff_ratio   > 65 AND heel_ratio < 35 → Flat Foot
+  else                                 → Normal
+```
+
+### Center of Pressure (CoP)
+
+```
+CoP_x = Σ(F_i × x_i) / F_total
+CoP_y = Σ(F_i × y_i) / F_total
+
+sway_distance = √(CoP_x² + CoP_y²)
+```
+
+**Status stabilitas:**
+
+| Status | Sway Distance |
+|---|---|
+| STABLE | ≤ 1.0 cm |
+| MODERATE | 1.0 – 2.5 cm |
+| UNSTABLE | > 2.5 cm |
+
+**Ambang batas arah kecondongan:**
+
+| Status | Sumbu X (kiri/kanan) | Sumbu Y (depan/belakang) |
+|---|---|---|
+| MODERATE | \|CoP_x\| > 0.6 cm | \|CoP_y\| > 0.8 cm |
+| UNSTABLE | \|CoP_x\| > 1.0 cm | \|CoP_y\| > 1.2 cm |
+
+**Persentase stabilitas:**
+
+```
+persen_stabilitas = max(0, round((1 − sway_distance / 15) × 100))
+```
 
 ---
 
-## Model AI (Postur)
+## Model Machine Learning
 
-Model MLP dilatih dengan TensorFlow/Keras, dikonversi ke TF.js, berjalan langsung di browser.
+**Arsitektur:**
+```
+Input(8) → Dense(64, relu) → Dropout(0.3) → Dense(32, relu) → Dropout(0.3) → Dense(5, softmax)
+```
 
-### Input: 8 Fitur Digital
+**Input:** 8 nilai `left_fsr_digital` + `right_fsr_digital` (bukan Newton), dinormalisasi dengan Min-Max Scaling menggunakan nilai per-sensor dari data training.
 
-| Index | Fitur | Posisi |
-|-------|-------|--------|
-| 0 | HL | Hallux kiri |
-| 1 | M1L | Med. Forefoot kiri |
-| 2 | M3L | Lat. Forefoot kiri |
-| 3 | HeelL | Heel kiri |
-| 4 | HR | Hallux kanan |
-| 5 | M1R | Med. Forefoot kanan |
-| 6 | M3R | Lat. Forefoot kanan |
-| 7 | HeelR | Heel kanan |
+**Output — 5 kelas postur:**
 
-### Output: 5 Kelas Postur
-
-| Label Internal | Tampilan |
-|---------------|---------|
+| Label Internal | Ditampilkan (EN) |
+|---|---|
 | `normal` | Normal |
-| `condong_depan` | Condong Depan |
-| `condong_belakang` | Condong Belakang |
-| `condong_kiri` | Condong Kiri |
-| `condong_kanan` | Condong Kanan |
+| `condong_depan` | Forward Lean |
+| `condong_belakang` | Backward Lean |
+| `condong_kiri` | Left Lean |
+| `condong_kanan` | Right Lean |
 
-Normalisasi fitur menggunakan Min-Max scaling dengan nilai min/max dari dataset training.
+**Safeguard sebelum prediksi ditampilkan:**
+
+1. **Cek total tekanan & jumlah sensor aktif** — jika `totalRaw < 50000` atau sensor yang aktif (nilai > threshold) kurang dari 4, tampilkan `"Not Detected Yet"`, tidak memaksakan prediksi
+2. **Cek confidence** — jika confidence model di bawah ambang batas, tampilkan `"Stabilizing..."` sampai data lebih stabil
+
+**File model aktif:** `models/tfjs_model/model.json`
+
+> Folder `models-data-orang-newton/` dan `models-data-sendiri-newton/` adalah model lama yang sudah tidak dipakai dan bisa dihapus.
 
 ---
 
-## Struktur Firebase
+## Setup Firebase
 
-```
-sensor_data/                        ← ESP32 tulis ke sini (hanya digital)
-  ├── left_fsr_digital:   [512, 620, 450, 580]
-  ├── right_fsr_digital:  [530, 610, 480, 590]
-  └── timestamp:          1646776543210
+1. Buat project baru di [Firebase Console](https://console.firebase.google.com)
+2. Aktifkan **Realtime Database** (region Asia Southeast 1 direkomendasikan)
+3. Aktifkan **Authentication** → Email/Password
+4. Salin konfigurasi project dan ganti nilai di `js/firebase.js`:
 
-users/
-  └── {uid}/
-      ├── profile/
-      │   └── { name, email, phone, dob, gender, height, weight, blood_type, address }
-      └── history/
-          └── {auto_id}/
-              ├── left_fsr_newton:        [...]
-              ├── right_fsr_newton:       [...]
-              ├── left_fsr_percent:       [...]
-              ├── right_fsr_percent:      [...]
-              ├── balance_score:          92.0
-              ├── asi:                    8.0
-              ├── heel_load:              57.3
-              ├── left_percent:           48.2
-              ├── right_percent:          51.8
-              ├── classification:         "NORMAL"
-              ├── pronation:              { ratioL, ratioR, labelL, labelR }
-              ├── archType:               { labelL, labelR, heelRatioL, heelRatioR, ffRatioL, ffRatioR }
-              ├── cop:                    { x, y, swayDistance, status }
-              ├── posture:                "Berdiri"
-              ├── posture_ml:             "normal"
-              ├── posture_ml_confidence:  0.9621
-              └── snapshot_time:          "25/05/2026 14:32"
+```javascript
+const firebaseConfig = {
+  apiKey:            "GANTI_DENGAN_API_KEY_KAMU",
+  authDomain:        "PROJECT_ID.firebaseapp.com",
+  databaseURL:       "https://PROJECT_ID-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "PROJECT_ID",
+  storageBucket:     "PROJECT_ID.firebasestorage.app",
+  messagingSenderId: "MESSAGING_SENDER_ID",
+  appId:             "APP_ID",
+};
 ```
 
----
-
-## Sensor Mapping
-
-| Index | Nama | Posisi |
-|-------|------|--------|
-| 0 | Hallux | Ujung ibu jari |
-| 1 | Med. Forefoot | Depan sisi dalam |
-| 2 | Lat. Forefoot | Depan sisi luar |
-| 3 | Heel | Tumit |
-
-Masing-masing untuk kaki kiri (`L`) dan kanan (`R`). Total: **8 sensor FSR402**.
-
----
-
-## Cara Menjalankan
-
-### Kebutuhan
-- Browser modern (Chrome / Edge / Firefox)
-- Koneksi internet (Firebase + Google Fonts)
-- VS Code + Live Server (rekomendasi)
-
-### Langkah
-
-1. Buka folder proyek di VS Code
-2. Klik kanan `index.html` → **Open with Live Server**
-3. Daftar akun atau login
-4. Nyalakan ESP32 — data otomatis masuk
-
-### Format Data ESP32
+5. Set **Realtime Database Rules** (minimal untuk development):
 
 ```json
 {
-  "left_fsr_digital":  [512, 620, 450, 580],
-  "right_fsr_digital": [530, 610, 480, 590],
-  "timestamp": 1234567890
+  "rules": {
+    "sensor_data": {
+      ".read": "auth != null",
+      ".write": true
+    },
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    }
+  }
 }
+```
+
+**Struktur data di Firebase:**
+
+```
+/sensor_data                        ← ditulis ESP32, dibaca dashboard real-time
+  left_fsr_digital: [...]
+  right_fsr_digital: [...]
+  left_fsr_newton: [...]            ← opsional, dikirim ESP32 jika sudah dihitung
+  right_fsr_newton: [...]
+  left_balance_percent: [...]       ← opsional
+  right_balance_percent: [...]
+  timestamp: 1719500000000
+
+/users/{uid}/profile                ← data profil pengguna
+  name, email, phone, dob, gender, height, weight
+
+/users/{uid}/history/{snapId}       ← riwayat snapshot
+  snapshot_time, posture_ml, left_fsr_newton, right_fsr_newton,
+  total_force, asi, cop_x, cop_y, cop_status,
+  arch_label_l, arch_label_r, pronation_label_l, pronation_label_r,
+  note
 ```
 
 ---
 
-## Design System
+## Cara Menjalankan Secara Lokal
 
-Semua design tokens di `css/variables.css`:
+Proyek ini adalah static website murni (tidak ada Node.js server, tidak ada bundler). Cukup jalankan dengan web server sederhana supaya Firebase dan TF.js bisa dimuat dengan benar.
 
-| Token | Nilai | Keterangan |
-|-------|-------|------------|
-| `--red` | `#E7302A` | Warna brand utama |
-| `--bg-base` | `#0A0A0E` | Background gelap |
-| `--font-mono` | JetBrains Mono | Font angka/label sensor |
-| `--font-main` | Nunito | Font teks umum |
+**Menggunakan VS Code Live Server:**
+1. Install ekstensi [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer)
+2. Klik kanan `index.html` → "Open with Live Server"
 
-Sidebar dan topbar di-render oleh `components.js` — reusable di semua halaman dashboard.
+**Menggunakan Python:**
+```bash
+cd fps-project
+python -m http.server 5500
+# buka http://localhost:5500
+```
+
+**Menggunakan Node.js (`serve`):**
+```bash
+npx serve fps-project
+```
+
+> Jangan buka file HTML langsung dari filesystem (`file://`) karena Firebase SDK dan modul ES tidak akan berfungsi dengan benar.
+
+---
+
+## Deploy ke Vercel
+
+Proyek ini sudah dikonfigurasi untuk Vercel (lihat `.vercel/project.json`).
+
+**Cara deploy:**
+```bash
+# Install Vercel CLI jika belum ada
+npm i -g vercel
+
+# Deploy dari root folder project
+cd fps-project
+vercel
+```
+
+Atau hubungkan repository ke Vercel dashboard untuk deploy otomatis setiap push ke main branch.
+
+> Pastikan `js/firebase.js` sudah berisi konfigurasi Firebase yang benar sebelum deploy.
+
+---
+
+## Halaman-Halaman Website
+
+| Halaman | File | Fungsi |
+|---|---|---|
+| Entry point | `index.html` | Cek status login → redirect ke dashboard atau login (timeout 5 detik) |
+| Login | `pages/login.html` | Masuk akun dengan email & kata sandi |
+| Register (1/3) | `pages/register-1.html` | Isi email, kata sandi, nomor telepon |
+| Register (2/3) | `pages/register-2.html` | Isi nama, tanggal lahir, jenis kelamin, tinggi, berat |
+| Register (3/3) | `pages/register-3.html` | Review data & simpan akun ke Firebase |
+| Dashboard | `pages/dashboard.html` | Pemantauan real-time: heatmap, postur ML, CoP radar, struktur kaki |
+| Report | `pages/report.html` | Riwayat snapshot, grafik CoP, ringkasan kondisi, ekspor PDF/CSV |
+
+---
+
+## Catatan Pengembangan
+
+- **Tidak ada framework atau bundler** — semua JavaScript ditulis vanilla dan dimuat langsung via `<script>` tag di HTML. Tidak perlu `npm install` untuk menjalankan website.
+- **Semua kalkulasi di client-side** — ESP32 cukup mengirim nilai digital mentah (atau nilai Newton jika sudah dihitung di sisi alat). Semua rumus dijalankan di browser.
+- **Firebase listener dibersihkan saat navigasi** — fungsi cleanup dari `startFirebaseListen()` dipanggil saat event `beforeunload` untuk mencegah memory leak.
+- **Model TF.js di-load lazy** — model baru dimuat saat halaman dashboard pertama kali diakses, bukan saat halaman lain dibuka.
+- **Profil pengguna** menggunakan `.once()` bukan `.on()` karena data profil tidak berubah selama sesi berlangsung.

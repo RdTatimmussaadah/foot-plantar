@@ -1,5 +1,6 @@
 .vercel
 .env*.local
+README copy.md
 models-data-sendiri-newton/
 models-data-sendiri-digital/
 models-data-orang-newton/
