@@ -136,20 +136,13 @@ function firebaseRecordSnapshot(computedData, postureLabel = 'Berdiri', note = '
     cop_distance: cop.distance,
     cop_status: cop.label,
     cop_label: cop.label,
-    cop_valid: cop.valid,
 
     arch_label_l: structure.left,
     arch_label_r: structure.right,
-    left_structure: structure.left,
-    right_structure: structure.right,
 
     pronation_label_l: motion.left,
     pronation_label_r: motion.right,
-    left_motion: motion.left,
-    right_motion: motion.right,
 
-    kelainan_kiri: combineFirebaseSnapshotCondition(structure.left, motion.left),
-    kelainan_kanan: combineFirebaseSnapshotCondition(structure.right, motion.right),
     pronation: {
       ratioL: computedData.pronation?.ratioL ?? null,
       ratioR: computedData.pronation?.ratioR ?? null,

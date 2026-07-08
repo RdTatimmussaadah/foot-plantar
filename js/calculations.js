@@ -19,62 +19,93 @@
 'use strict';
 // ============================================================
 // KONVERSI DIGITAL → NEWTON → PERCENT
-// FSR402 + Voltage Divider 3.3V, ADC 12-bit (0–4095)
 //
-// Referensi konversi:
-//   digital → volt  : V = (digital / 4095) * 3.3
-//   volt → newton   : F = (V / Vcc) * F_max  (linear approx FSR402)
-//   F_max FSR402     : ~100 Newton per sensor (bisa dikalibrasi)
-//   newton → percent : pct = F_i / sum(F_all) * 100  (per kaki)
+// Sensor  : FSR402 + ADS1115 (16-bit ADC)
+// Input   : Digital ADS1115
+// Output  : Newton (hasil kalibrasi) dan Percent
+//
+// Konversi:
+//   Digital -> Newton : Piecewise Linear Interpolation
+//                       berdasarkan data kalibrasi sensor
+//
+//   Digital -> Percent:
+//       percent = digital / 32767 * 100
+//       (mengikuti firmware ESP32)
 //
 // Catatan:
-//   - Ini pendekatan linear, cukup untuk perbandingan relatif antar sensor
-//   - Untuk akurasi absolut berat badan, perlu kalibrasi dengan beban diketahui
-//   - Python (plantar_ml_lokal.py) pakai digital langsung tanpa konversi Newton
-//     karena hanya butuh persentase, bukan nilai absolut
+// - Fungsi ini hanya dipakai sebagai fallback apabila Firebase
+//   belum mengirim nilai Newton atau Percent.
+// - Implementasi harus identik dengan rawToNewton() di ESP32.
 // ============================================================
 
 const FSR_CONFIG = {
-  ADC_MAX:   4095,    // resolusi ADC 12-bit ESP32
-  VCC:       3.3,     // tegangan referensi ESP32
-  F_MAX:     100,     // Newton maksimum per sensor FSR402 (dapat dikalibrasi)
-  // Threshold minimum — di bawah ini dianggap tidak ada tekanan (noise floor)
-  DIGITAL_MIN: 50,
+  // ADS1115
+  ADC_MAX: 32767,
+
+  // Nilai awal mulai ada tekanan
+  // DIGITAL_MIN: 10000,
+
+  // Tabel kalibrasi (HARUS sama dengan ESP32)
+  CALIBRATION: [
+    { digital: 10000, newton: 0.873 },
+    { digital: 14750, newton: 3.095 },
+    { digital: 15500, newton: 3.217 },
+    { digital: 19500, newton: 5.430 },
+    { digital: 20450, newton: 5.776 },
+    { digital: 21450, newton: 8.120 }
+  ]
 };
 
-/**
- * Konversi satu array digital → Newton
- * F = (digital / ADC_MAX) * F_MAX
- * @param {number[]} digitalArr — array 4 nilai ADC (0–4095)
- * @returns {number[]} array 4 nilai Newton
- */
 function digitalToNewton(digitalArr) {
-  return digitalArr.map(d => {
-    const clamped = Math.max(0, d - FSR_CONFIG.DIGITAL_MIN); // hilangkan noise floor
-    return Math.round((clamped / FSR_CONFIG.ADC_MAX) * FSR_CONFIG.F_MAX * 10) / 10;
+  return digitalArr.map(raw => {
+
+    const cal = FSR_CONFIG.CALIBRATION;
+
+    // Sama seperti ESP32
+    if (raw <= cal[0].digital) {
+      return Number(
+        (cal[0].newton * (raw / cal[0].digital)).toFixed(3)
+      );
+    }
+
+    // Interpolasi
+    for (let i = 0; i < cal.length - 1; i++) {
+
+      if (raw >= cal[i].digital &&
+          raw <= cal[i + 1].digital) {
+
+        return Number(
+          (
+            cal[i].newton +
+            ((raw - cal[i].digital) /
+            (cal[i + 1].digital - cal[i].digital)) *
+            (cal[i + 1].newton - cal[i].newton)
+          ).toFixed(3)
+        );
+      }
+    }
+
+    // Ekstrapolasi (sama seperti ESP)
+    const last = cal.length - 1;
+
+    const slope =
+      (cal[last].newton - cal[last - 1].newton) /
+      (cal[last].digital - cal[last - 1].digital);
+
+    return Number(
+      (
+        cal[last].newton +
+        (raw - cal[last].digital) * slope
+      ).toFixed(3)
+    );
+
   });
 }
 
-/**
- * Konversi array Newton → percent relatif (per kaki)
- * pct_i = newton_i / sum(newton) * 100
- * Sama dengan cara Python: percent dari total per kaki
- * @param {number[]} newtonArr
- * @returns {number[]} percent 0–100 per sensor
- */
-function newtonToPercent(newtonArr) {
-  const total = newtonArr.reduce((a, b) => a + b, 0);
-  if (total === 0) return [0, 0, 0, 0];
-  return newtonArr.map(n => Math.round((n / total) * 100));
-}
-
-/**
- * Konversi digital → volt (untuk ditampilkan di UI sensor bar)
- * @param {number} digital
- * @returns {number} volt
- */
-function digitalToVolt(digital) {
-  return Math.round((digital / FSR_CONFIG.ADC_MAX) * FSR_CONFIG.VCC * 100) / 100;
+function digitalToPercent(digitalArr) {
+  return digitalArr.map(raw =>
+    Number(((raw / FSR_CONFIG.ADC_MAX) * 100).toFixed(1))
+  );
 }
 
 /**
@@ -91,8 +122,9 @@ function digitalToVolt(digital) {
  * Output:
  * {
  *   left_fsr_digital,  right_fsr_digital,   ← dari ESP32
- *   left_fsr_newton,   right_fsr_newton,    ← dihitung JS
- *   left_fsr_percent,  right_fsr_percent,   ← dihitung JS
+ *   left_fsr_newton,   right_fsr_newton,    ← dihitung JS/dari ESP32
+ *   left_fsr_percent,  right_fsr_percent,   ← dihitung JS/dari ESP32
+ *   left_balance_percent, right_balance_percent, ← dari ESP32 (jika ada)
  *   timestamp
  * }
  */
@@ -112,11 +144,11 @@ function processRawDigital(rawData) {
 
   const lP = Array.isArray(rawData.left_fsr_percent)
   ? rawData.left_fsr_percent
-  : newtonToPercent(lN);
+  : digitalToPercent(lD);
 
   const rP = Array.isArray(rawData.right_fsr_percent)
     ? rawData.right_fsr_percent
-    : newtonToPercent(rN);
+    : digitalToPercent(rD);
 
 return {
     left_fsr_digital:  lD,
@@ -178,12 +210,12 @@ function calcASI(leftNewton, rightNewton) {
 // Balance Score = 100 - ASI
 // ============================================================
 /**
- * @param {number} asi
- * @returns {number}
- */
-function calcBalanceScore(asi) {
-  return Math.max(0, Math.round((100 - asi) * 10) / 10);
-}
+//  * @param {number} asi
+//  * @returns {number}
+//  */
+// function calcBalanceScore(asi) {
+//   return Math.max(0, Math.round((100 - asi) * 10) / 10);
+// }
 
 
 // ============================================================
@@ -301,7 +333,7 @@ function computeAll(sensorData) {
   
   const { totalForce } = calcWeight(lN, rN);
   const { fLeft, fRight, asi } = calcASI(lN, rN);
-  const balanceScore           = calcBalanceScore(asi);
+  // const balanceScore           = calcBalanceScore(asi);
   const pronation   = calcPronation(lN, rN);
   const archType = calcArchType(lN, rN);   
 
@@ -326,7 +358,7 @@ function computeAll(sensorData) {
     fLeft,
     fRight,
     asi,
-    balanceScore,
+    // balanceScore,
     pronation,
     leftPercent,
     rightPercent,

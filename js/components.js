@@ -181,8 +181,6 @@ function openSnapModal() {
           </div>
         </div>
 
-
-
         <div class="snap-arch-row">
           <div>${tr("Left Foot Structure")}: <span id="sp-arch-l" style="font-weight:700">—</span></div>
           <div>${tr("Right Foot Structure")}: <span id="sp-arch-r" style="font-weight:700">—</span></div>

@@ -4,10 +4,7 @@
 'use strict';
 
 const SENSOR_NAMES = ['Hallux', 'Metatarsal 1', 'Metatarsal 4', 'Heel'];
-const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 50;  // r=50
-const MAX_FORCE = 100;
 
-let currentPosture = 'Berdiri';
 let currentData = null;
 let _firebaseHistory = [];
 
@@ -60,10 +57,6 @@ function updateDashboardUI(data) {
 // Ukuran gambar asli: 950 x 600 (sesuaikan jika berbeda)
 // ============================================================
 const FOOT_COORDS_RAW = [375,343,378,354,381,364,384,374,386,383,388,392,390,400,391,414,391,424,391,433,391,442,392,449,392,460,392,470,392,484,393,497,395,508,396,520,399,533,402,541,405,549,407,553,411,561,416,569,423,576,430,581,436,584,443,588,450,590,458,592,466,592,475,592,482,591,491,589,499,585,508,580,516,572,523,564,529,555,535,543,539,534,541,524,543,515,544,502,544,487,543,469,542,447,542,435,543,420,545,406,548,392,551,380,554,369,558,355,561,345,564,332,566,317,569,296,570,280,571,266,571,249,568,228,565,209,563,193,562,177,562,166,565,156,568,141,569,127,567,115,564,109,557,104,549,103,541,105,537,110,534,118,534,125,534,133,534,141,533,147,532,153,525,150,526,140,528,131,531,123,534,113,538,104,541,96,541,87,538,79,529,74,521,73,513,76,508,82,505,91,503,100,502,108,502,117,499,128,497,133,492,131,496,121,498,113,500,98,502,86,504,80,507,76,511,67,510,59,507,52,500,46,490,43,482,44,476,48,471,56,469,66,469,74,469,84,469,93,467,101,466,109,466,117,465,122,460,122,460,112,461,99,462,87,464,77,468,63,470,52,469,44,464,38,457,34,453,34,446,35,440,37,434,42,430,50,429,59,429,67,430,77,429,88,429,98,428,109,427,119,427,126,419,130,413,132,412,129,411,126,418,117,423,107,427,93,427,79,426,65,422,52,417,43,410,37,401,34,392,34,381,36,374,40,365,48,361,57,357,67,356,80,355,91,357,103,360,113,361,122,360,142,357,163,354,176,351,188,350,201,351,217,353,229,357,248,361,263,365,280,367,295,370,313,372,328];
-
-// Ukuran gambar asli dari image-map.net
-const ORIG_W = 950;
-const ORIG_H = 600;
 
 // Canvas kaki
 const CANVAS_W = 180;
@@ -120,59 +113,6 @@ const SENSOR_POS = [
   { key: 3, nx: 0.50, ny: 0.87, label: 'Heel'    }, // tumit
 ];
 
-// ============================================================
-// HEAT COLOR
-// ============================================================
-function heatColor(ratio) {
-  const r = Math.max(0, Math.min(1, ratio));
-
-  let red = 0, green = 0, blue = 0;
-
-  if (r < 0.2) {
-    // biru → cyan
-    const t = r / 0.2;
-    red = 0;
-    green = Math.round(255 * t);
-    blue = 255;
-
-  } else if (r < 0.4) {
-    // cyan → hijau
-    const t = (r - 0.2) / 0.2;
-    red = 0;
-    green = 255;
-    blue = Math.round(255 * (1 - t));
-
-  } else if (r < 0.6) {
-    // hijau → kuning
-    const t = (r - 0.4) / 0.2;
-    red = Math.round(255 * t);
-    green = 255;
-    blue = 0;
-
-  } else if (r < 0.8) {
-    // kuning → oranye
-    const t = (r - 0.6) / 0.2;
-    red = 255;
-    green = Math.round(255 - (t * 120)); // turun ke ~135
-    blue = 0;
-
-  } else {
-    // oranye → merah
-    const t = (r - 0.8) / 0.2;
-    red = 255;
-    green = Math.round(135 * (1 - t));
-    blue = 0;
-  }
-
-  return [red, green, blue];
-}
-
-// const SENSOR_DESC = [
-//   "Hallux: Bagian ibu jari kaki, membantu menyeimbangkan tubuh dan mendorong langkah saat berjalan.",
-//   "Metatarsal 1: Bagian tengah depan kaki sisi ibu jari, menahan tekanan saat berdiri dan berjalan.",
-//   "Metatarsal 3: Bagian depan kaki sisi kelingking, menyeimbangkan tekanan luar kaki saat berjalan.",
-//   "Heel: Tumit kaki, menopang berat badan dan memberikan stabilitas saat berdiri."
-// ];
 
 const SENSOR_DESC = [
   "Hallux: The Big Toe: The largest toe on the foot, assisting in balance and propulsion during walking.",
@@ -182,7 +122,7 @@ const SENSOR_DESC = [
 ];
 
 // Tooltip hover tetap struktur lama, tapi sekarang deskripsi awam
-function attachSensorTooltips(canvasId, sensorPos, values, maxVal, isLeft) {
+function attachSensorTooltips(canvasId, percentArr, isLeft) {
   const cv = document.getElementById(canvasId);
   if (!cv) return;
 
@@ -204,9 +144,8 @@ function attachSensorTooltips(canvasId, sensorPos, values, maxVal, isLeft) {
     let py = s.ny * (H - pad * 2) + pad;
     if (isLeft) px = W - px;
 
-    const val = values[s.key] || 0;
-    const ratio = Math.min(1, val / maxVal);
-    const [cr, cg, cb] = heatColor(ratio);
+    const pct = Math.max(0, Math.min(100, percentArr[s.key] || 0));
+    const [cr, cg, cb] = heatColorPercent(pct);
     const color = `rgb(${cr},${cg},${cb})`;
 
     const dot = document.createElement('div');
@@ -223,17 +162,17 @@ function attachSensorTooltips(canvasId, sensorPos, values, maxVal, isLeft) {
 
     const tip = document.createElement('div');
     tip.style.cssText = `
-  position:absolute;
-  bottom:calc(100% + 6px);
-  left:50%; transform:translateX(-50%);
-  background:#1a1a2e;color:#fff;
-  font-family:'Nunito',sans-serif; font-size:10px; font-weight:600;
-  padding:4px 6px; border-radius:5px;
-  white-space:normal; width:200px;
-  border:1.5px solid ${color};
-  display:none; pointer-events:none; z-index:50;
-  box-shadow:0 2px 12px rgba(0,0,0,0.4);
-`;
+      position:absolute;
+      bottom:calc(100% + 6px);
+      left:50%; transform:translateX(-50%);
+      background:#1a1a2e;color:#fff;
+      font-family:'Nunito',sans-serif; font-size:10px; font-weight:600;
+      padding:4px 6px; border-radius:5px;
+      white-space:normal; width:200px;
+      border:1.5px solid ${color};
+      display:none; pointer-events:none; z-index:50;
+      box-shadow:0 2px 12px rgba(0,0,0,0.4);
+    `;
     tip.innerText = tr(SENSOR_DESC[s.key]);
 
     dot.appendChild(tip);
@@ -420,10 +359,8 @@ function redrawHeatmapsV2() {
   drawFootHeatmapV2('heatmap-L', lP, true);
   drawFootHeatmapV2('heatmap-R', rP, false);
 
-  // Tooltip tetap pakai versi lama (masih bisa hover)
-  const maxVal = Math.max(...currentData.left_fsr_newton, ...currentData.right_fsr_newton, 1);
-  attachSensorTooltips('heatmap-L', SENSOR_POS, currentData.left_fsr_newton, maxVal, true);
-  attachSensorTooltips('heatmap-R', SENSOR_POS, currentData.right_fsr_newton, maxVal, false);
+  attachSensorTooltips('heatmap-L', lP, true);
+  attachSensorTooltips('heatmap-R', rP, false);
 }
 
 // ============================================================
@@ -432,55 +369,28 @@ function redrawHeatmapsV2() {
 function updateMonitoringUI(data) {
   if (!data) return;
 
-  // Balance = simetri percentage
-  const sym = Math.round(100 - data.asi);
+  // // Balance = simetri percentage
+  // const sym = Math.round(100 - data.asi);
 
-  const balanceEl = document.getElementById('m-balance');
-  const balanceSubEl = document.getElementById('m-balance-sub');
+  // const balanceEl = document.getElementById('m-balance');
+  // const balanceSubEl = document.getElementById('m-balance-sub');
 
-  if (balanceEl) balanceEl.textContent = `${data.balanceScore}`;
-  if (balanceSubEl) balanceSubEl.textContent = `ASI: ${data.asi.toFixed(1)}%`;
+  // if (balanceEl) balanceEl.textContent = `${data.balanceScore}`;
+  // if (balanceSubEl) balanceSubEl.textContent = `ASI: ${data.asi.toFixed(1)}%`;
 
-  // Color balance
-  if (balanceEl) {
-    balanceEl.style.color = sym >= 90
-      ? 'var(--green)'
-      : sym >= 80
-        ? 'var(--yellow)'
-        : 'var(--red)';
-  }
+  // // Color balance
+  // if (balanceEl) {
+  //   balanceEl.style.color = sym >= 90
+  //     ? 'var(--green)'
+  //     : sym >= 80
+  //       ? 'var(--yellow)'
+  //       : 'var(--red)';
+  // }
 
   // redrawHeatmaps();
   redrawHeatmapsV2();
 }
 
-// ============================================================
-// SENSOR BAR ROWS
-// ============================================================
-function renderSensorRows(containerId, newtonArr, digitalArr) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  const maxVal = 4095; // Karena kita mau pakai digital value untuk bar, jadi max 4095 (12-bit ADC)
-
-  container.innerHTML = digitalArr.map((d, i) => {
-    const pct = Math.round((d / maxVal) * 100);
-    const voltage = ((d / 4095) * 3.3).toFixed(2);
-    const [cr, cg, cb] = heatColor(pct / 100);
-    const barColor = `rgb(${cr},${cg},${cb})`;
-
-    return `
-      <div class="sensor-row">
-        <div class="sr-name">${tr(SENSOR_NAMES[i])}</div>
-        <div class="sr-kpa">${d} <span class="sr-unit">ADC</span></div>
-        <div class="sr-bar-track">
-          <div class="sr-bar-fill" style="width:${pct}%;background:${barColor}"></div>
-        </div>
-        <div class="sr-volt">${voltage}V</div>
-      </div>
-    `;
-  }).join('');
-}
 
 async function updatePostureMLSimple(data) {
   const seq = ++_postureMLSeq;
@@ -642,25 +552,7 @@ function updateBalanceUI(data) {
   if (barLEl)     barLEl.style.width     = `${data.leftPercent}%`;
   if (barREl)     barREl.style.width     = `${data.rightPercent}%`;
 
-  // 4. CoP Distance
-  const copDist   = data.cop_distance != null ? data.cop_distance
-                  : (data.cop && data.cop.distance != null ? data.cop.distance : null);
-  const distValEl = document.getElementById('cop-distance-val');
-  const distStsEl = document.getElementById('cop-distance-status');
-  if (copDist != null && distValEl) {
-    const stable      = copDist < 2.5;
-    const medium      = copDist <= 4.5;
-    const statusText  = stable ? 'STABLE' : medium ? 'MODERATE' : 'UNSTABLE';
-    const statusColor = stable ? 'var(--green)' : medium ? 'var(--yellow)' : 'var(--red)';
-    distValEl.textContent = `${Number(copDist).toFixed(2)} cm`;
-    distValEl.style.color = statusColor;
-    if (distStsEl) {
-      distStsEl.textContent = tr(statusText);
-      distStsEl.style.color = statusColor;
-    }
-  }
-
-  // 5. Depan/Belakang dari cop_y
+  // 4. Depan/Belakang dari cop_y
   const copY      = data.cop_y != null ? data.cop_y
                   : (data.cop && data.cop.y != null ? data.cop.y : null);
   const COP_Y_MAX = 8;
@@ -681,7 +573,7 @@ function updateBalanceUI(data) {
     if (barBack)  barBack.style.width  = `${backPct}%`;
   }
 
-  // 4. Jalankan Diagnosis Kombinasi (Sesuai Bab 2.6 & 2.7)
+  // 5. Jalankan Diagnosis Kombinasi (Sesuai Bab 2.6 & 2.7)
   if (data.archType && data.pronation) {
     processDiagnosis('l', data.archType.labelL, data.pronation.labelL);
     processDiagnosis('r', data.archType.labelR, data.pronation.labelR);
