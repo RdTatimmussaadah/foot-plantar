@@ -479,7 +479,7 @@ function normalizeSnapshotLabel(label) {
   if (lower.includes('flat')) return 'Flat Foot';
   if (lower.includes('high')) return 'High Arch';
   if (lower.includes('over')) return 'Overpronation';
-  if (lower.includes('supin')) return 'Supinasi';
+  if (lower.includes('supin')) return 'Supination';
   if (lower.includes('normal') || lower.includes('netral')) return 'Normal';
 
   return raw;
@@ -500,7 +500,7 @@ function getSnapshotMotionColor(label) {
 
   if (text === 'Normal') return 'var(--green)';
   if (text === 'Overpronation') return 'var(--red)';
-  if (text === 'Supinasi') return '#2266FF';
+  if (text === 'Supination') return '#2266FF';
 
   return 'var(--text-secondary)';
 }

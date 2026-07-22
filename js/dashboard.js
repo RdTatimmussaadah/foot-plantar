@@ -52,6 +52,9 @@ function updateDashboardUI(data) {
   updatePostureMLSimple(data);
 }
 
+
+
+
 // ============================================================
 // FOOT OUTLINE dari image-map.net coords (kaki kanan)
 // Ukuran gambar asli: 950 x 600 (sesuaikan jika berbeda)
@@ -246,6 +249,238 @@ function heatColorPercent(pct) {
   return [r, g, b];
 }
 
+// ============================================================
+// NEWTON -> kPa
+// Pressure = Force / Area
+// Default area = Active sensing area FSR402 ≈126.7 mm²
+// ============================================================
+
+const FSR_ACTIVE_AREA = 126.7e-6; // m²
+
+function newtonToKPa(forceNewton, area = FSR_ACTIVE_AREA) {
+  if (!Number.isFinite(forceNewton) || forceNewton <= 0) {
+    return 0;
+  }
+
+  return (forceNewton / area) / 1000;
+}
+
+function convertNewtonArrayToKPa(forceArray, area = FSR_ACTIVE_AREA) {
+  if (!Array.isArray(forceArray)) {
+    return [0, 0, 0, 0];
+  }
+
+  return forceArray.map(f => newtonToKPa(f, area));
+}
+
+// ============================================================
+// kPa -> Heat Color
+// Berdasarkan plantar pressure normal standing
+// ============================================================
+
+function heatColorKPa(kpa) {
+
+  const p = Math.max(0, Math.min(300, kpa));
+
+  let r = 0, g = 0, b = 0;
+
+  if (p <= 20) {
+
+    // Biru
+    const t = p / 20;
+    r = 0;
+    g = Math.round(180 * t);
+    b = 255;
+
+  }
+  else if (p <= 40) {
+
+    // Biru → Cyan
+    const t = (p - 20) / 20;
+    r = 0;
+    g = 180 + Math.round(75 * t);
+    b = 255;
+
+  }
+  else if (p <= 60) {
+
+    // Cyan → Hijau
+    const t = (p - 40) / 20;
+    r = 0;
+    g = 255;
+    b = Math.round(255 * (1 - t));
+
+  }
+  else if (p <= 80) {
+
+    // Hijau → Kuning
+    const t = (p - 60) / 20;
+    r = Math.round(255 * t);
+    g = 255;
+    b = 0;
+
+  }
+  else if (p <= 100) {
+
+    // Kuning → Orange
+    const t = (p - 80) / 20;
+    r = 255;
+    g = Math.round(255 - 120 * t);
+    b = 0;
+
+  }
+  else if (p <= 140) {
+
+    // Orange → Merah
+    const t = (p - 100) / 40;
+    r = 255;
+    g = Math.round(135 * (1 - t));
+    b = 0;
+
+  }
+  else if (p <= 200) {
+
+    // Merah → Merah Tua
+    const t = (p - 140) / 60;
+    r = Math.round(255 - 80 * t);
+    g = 0;
+    b = 0;
+
+  }
+  else {
+
+    // >200 kPa
+    r = 120;
+    g = 0;
+    b = 0;
+
+  }
+
+  return [r, g, b];
+}
+
+function drawFootHeatmapKPa(canvasId, forceArr, isLeft) {
+  const kpaArr = convertNewtonArrayToKPa(forceArr);
+  const cv = document.getElementById(canvasId);
+  if (!cv) return;
+  const W = CANVAS_W, H = CANVAS_H;
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const footPath = buildFootPath(FOOT_COORDS_RAW, W, H, isLeft);
+  const pad = 4;
+
+  // Bangun titik sensor dengan nilai persen (0–100)
+  const pts = SENSOR_POS.map(s => {
+
+    let px = s.nx * (W - pad * 2) + pad;
+    let py = s.ny * (H - pad * 2) + pad;
+
+    if (isLeft) px = W - px;
+
+    const kpa = kpaArr[s.key];
+
+    return {
+        cx: px,
+        cy: py,
+        sx: W * 0.28,
+        sy: H * 0.18,
+        kpa,
+        label: s.label
+    };
+
+});
+
+  // IDW heatmap — interpolasi antar sensor pakai bobot jarak
+  const imgData = ctx.createImageData(W, H);
+  const d = imgData.data;
+  for (let py = 0; py < H; py++) {
+    for (let px = 0; px < W; px++) {
+      let wSum = 0, pSum = 0;
+      for (let k = 0; k < pts.length; k++) {
+        const p = pts[k];
+        const ex = (px - p.cx) / p.sx;
+        const ey = (py - p.cy) / p.sy;
+        const w  = 1 / (ex * ex + ey * ey + 0.001);
+        wSum += w;
+        pSum += w * p.kpa;
+      }
+      const [cr, cg, cb] = heatColorKPa(pSum / wSum);
+      const idx = (py * W + px) * 4;
+      d[idx] = cr; d[idx + 1] = cg; d[idx + 2] = cb; d[idx + 3] = 215;
+    }
+  }
+
+  const off = document.createElement('canvas');
+  off.width = W; off.height = H;
+  off.getContext('2d').putImageData(imgData, 0, 0);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+  ctx.save();
+  ctx.clip(footPath);
+  ctx.drawImage(off, 0, 0);
+  ctx.restore();
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke(footPath);
+
+  // Sensor dots + label
+  pts.forEach(p => {
+    const [cr, cg, cb] = heatColorKPa(p.kpa);
+
+    // Halo
+    ctx.beginPath();
+    ctx.arc(p.cx, p.cy, 14, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},0.18)`;
+    ctx.fill();
+
+    // Dot
+    ctx.beginPath();
+    ctx.arc(p.cx, p.cy, 7, 0, Math.PI * 2);
+    ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Label sensor
+    ctx.shadowColor = 'rgba(0,0,0,0.95)';
+    ctx.shadowBlur  = 5;
+    ctx.fillStyle   = '#ffffff';
+    ctx.font        = 'bold 11px JetBrains Mono, monospace';
+    ctx.textAlign   = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(tr(p.label), p.cx, p.cy + 16);
+    ctx.shadowBlur  = 0;
+  });
+  ctx.restore();
+}
+
+function redrawHeatmapsKPa() {
+
+    if (!currentData) return;
+
+    drawFootHeatmapKPa(
+        'heatmap-L',
+        currentData.left_fsr_newton || [0,0,0,0],
+        true
+    );
+
+    drawFootHeatmapKPa(
+        'heatmap-R',
+        currentData.right_fsr_newton || [0,0,0,0],
+        false
+    );
+
+    attachSensorTooltips('heatmap-L', currentData.left_fsr_newton, true);
+    attachSensorTooltips('heatmap-R', currentData.right_fsr_newton, false);
+
+}
+
 /**
  * Gambar heatmap v2 — input: array persen (0–100) per sensor,
  * langsung dari left_fsr_percent / right_fsr_percent Firebase.
@@ -389,6 +624,7 @@ function updateMonitoringUI(data) {
 
   // redrawHeatmaps();
   redrawHeatmapsV2();
+  // redrawHeatmapsKPa();
 }
 
 
@@ -511,18 +747,58 @@ const interpretations = {
   "Flat Foot": {
     "Normal": "Foot flat, but the weight distribution is stable in the center.",
     "Overpronation": "Flat foot and the weight distribution is tilted inward.",
-    "Supinasi": "Flat foot, but the weight distribution tends to shift to the outer side."
+    "Supination": "Flat foot, but the weight distribution tends to shift to the outer side."
   },
   "High Arch": {
     "Normal": "High arch, but the weight distribution is stable in the center.",
     "Overpronation": "High arch and the weight distribution is tilted inward.",
-    "Supinasi": "High arch and the weight distribution tends to shift to the outer side."
+    "Supination": "High arch and the weight distribution tends to shift to the outer side."
   },
   "Normal": {
     "Normal": "Ideal foot, structure and weight distribution are very balanced.",
     "Overpronation": "Normal shape, but the weight distribution tends to tilt inward.",
-    "Supinasi": "Normal shape, but the weight distribution tends to tilt outward."
+    "Supination": "Normal shape, but the weight distribution tends to tilt outward."
   }
+};
+
+const interpretations2 = {
+
+    "Balanced Load":{
+
+        "Normal":
+        "Weight distribution is balanced between the forefoot and heel.",
+
+        "Overpronation":
+        "Weight is balanced between the forefoot and heel, but tends to shift toward the medial side.",
+
+        "Supination":
+        "Weight is balanced between the forefoot and heel, but tends to shift toward the lateral side."
+    },
+
+    "Heel Dominant":{
+
+        "Normal":
+        "Most body weight is supported by the heel while remaining centered.",
+
+        "Overpronation":
+        "Most body weight is supported by the heel with a tendency to shift inward.",
+
+        "Supination":
+        "Most body weight is supported by the heel with a tendency to shift outward."
+    },
+
+    "Forefoot Dominant":{
+
+        "Normal":
+        "Most body weight is supported by the forefoot while remaining centered.",
+
+        "Overpronation":
+        "Most body weight is supported by the forefoot with a tendency to shift inward.",
+
+        "Supination":
+        "Most body weight is supported by the forefoot with a tendency to shift outward."
+    }
+
 };
 
 // ============================================================
@@ -579,13 +855,18 @@ function updateBalanceUI(data) {
     processDiagnosis('r', data.archType.labelR, data.pronation.labelR);
   }
 
+  // if (data.loadPattern && data.pronation) {
+  //   processDiagnosis2('l', data.loadPattern.labelL, data.pronation.labelL);
+  //   processDiagnosis2('r', data.loadPattern.labelR, data.pronation.labelR);
+  // }
+
   updateCoP(data);
 }
 
 function processDiagnosis(side, arch, pron) {
   // Konversi label internal ke key mapping
   const archKey = arch.includes("Flat") ? "Flat Foot" : arch.includes("High") ? "High Arch" : "Normal";
-  const pronKey = pron.includes("Normal") ? "Normal" : pron.includes("Over") ? "Overpronation" : "Supinasi";
+  const pronKey = pron.includes("Normal") ? "Normal" : pron.includes("Over") ? "Overpronation" : "Supination";
 
   const labelEl = document.getElementById(`final-label-${side}`);
   const archVal = document.getElementById(`arch-val-${side}`);
@@ -611,7 +892,6 @@ function processDiagnosis(side, arch, pron) {
   svgEl.innerHTML = getCleanFootSVG(side, archKey, pronKey);
 }
 
-
 function getCleanFootSVG(side, archKey, pronKey) {
     // Tentukan warna berdasarkan kondisi arch
     const color = archKey === "Normal" ? "#22D48F" : archKey === "Flat Foot" ? "#E7302A" : "#2266FF";
@@ -619,7 +899,7 @@ function getCleanFootSVG(side, archKey, pronKey) {
     // Tentukan rotasi/kemiringan berdasarkan pronasi
     let tilt = 0;
     if (pronKey === "Overpronation") tilt = (side === 'l' ? 15 : -15);
-    else if (pronKey === "Supinasi") tilt = (side === 'l' ? -15 : 15);
+    else if (pronKey === "Supination") tilt = (side === 'l' ? -15 : 15);
 
     return `
     <svg width="60" height="60" viewBox="0 0 80 100">
@@ -631,6 +911,123 @@ function getCleanFootSVG(side, archKey, pronKey) {
         </g>
     </svg>`;
 }
+
+function processDiagnosis2(side, loadPattern, pron) {
+
+  // Mapping Load Pattern
+  const loadKey =
+    loadPattern.includes("Heel") ? "Heel Dominant" :
+    loadPattern.includes("Forefoot") ? "Forefoot Dominant" :
+    "Balanced Load";
+
+  // Mapping Pronation
+  const pronKey =
+    pron.includes("Normal") ? "Normal" :
+    pron.includes("Over") ? "Overpronation" :
+    "Supination";
+
+  const labelEl = document.getElementById(`final-label-${side}`);
+  const loadVal = document.getElementById(`arch-val-${side}`);   // boleh nanti ganti id menjadi load-val
+  const pronVal = document.getElementById(`pron-val-${side}`);
+  const expEl   = document.getElementById(`exp-${side}`);
+  const svgEl   = document.getElementById(`svg-${side}`);
+
+  if (!labelEl || !loadVal || !pronVal || !expEl || !svgEl) return;
+
+  // Tampilkan nilai
+  loadVal.textContent = tr(loadPattern);
+  pronVal.textContent = tr(pron);
+
+  // Judul diagnosis
+  if (loadKey === "Balanced Load" && pronKey === "Normal") {
+    labelEl.textContent = tr("Balanced Foot Load");
+  } else if (loadKey !== "Balanced Load") {
+    labelEl.textContent = tr(loadPattern);
+  } else {
+    labelEl.textContent = tr(pron);
+  }
+
+  // Penjelasan
+  const explanation =
+      interpretations2[loadKey]?.[pronKey] ||
+      tr("No data available");
+
+  expEl.textContent = explanation;
+
+  // SVG
+  svgEl.innerHTML = getCleanFootSVG2(side, loadKey, pronKey);
+}
+
+function getCleanFootSVG2(side, loadKey, pronKey) {
+
+    // ============================
+    // Warna berdasarkan Load Pattern
+    // ============================
+    let strokeColor = "#22D48F";      // Balanced
+    let heelColor   = "transparent";
+    let foreColor   = "transparent";
+
+    switch(loadKey){
+
+        case "Heel Dominant":
+            strokeColor = "#2563EB";
+            heelColor = "#2563EB55";
+            break;
+
+        case "Forefoot Dominant":
+            strokeColor = "#F97316";
+            foreColor = "#F9731655";
+            break;
+
+        default:
+            strokeColor = "#22D48F";
+    }
+
+    // ============================
+    // Kemiringan berdasarkan Pronation
+    // ============================
+    let tilt = 0;
+
+    if(pronKey === "Overpronation"){
+        tilt = side === "l" ? 12 : -12;
+    }
+    else if(pronKey === "Supination"){
+        tilt = side === "l" ? -12 : 12;
+    }
+
+    return `
+    <svg width="70" height="90" viewBox="0 0 80 100">
+
+        <g transform="rotate(${tilt},40,80)">
+
+            <!-- bentuk kaki -->
+            <path
+                d="M30 20 Q40 10 50 20 L55 80 Q40 90 25 80 Z"
+                fill="#ffffff"
+                stroke="${strokeColor}"
+                stroke-width="3"/>
+
+            <!-- highlight forefoot -->
+            <ellipse
+                cx="40"
+                cy="32"
+                rx="12"
+                ry="12"
+                fill="${foreColor}" />
+
+            <!-- highlight heel -->
+            <ellipse
+                cx="40"
+                cy="75"
+                rx="11"
+                ry="10"
+                fill="${heelColor}" />
+
+        </g>
+
+    </svg>`;
+}
+
 
 
 const SENSOR_COORDS = {

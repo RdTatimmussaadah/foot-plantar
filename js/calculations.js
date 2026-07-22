@@ -309,6 +309,54 @@ function calcArchType(leftNewton, rightNewton) {
   };
 }
 
+function calcLoadPattern(leftNewton, rightNewton) {
+  // Index: [0]=Hallux, [1]=Med.FF, [2]=Lat.FF, [3]=Heel
+  const totalL = leftNewton.reduce((a,b) => a+b, 0)  || 1;
+  const totalR = rightNewton.reduce((a,b) => a+b, 0) || 1;
+
+  // Heel ratio per kaki (heel / total kaki itu)
+  const heelRatioL = (leftNewton[3]  / totalL) * 100;
+  const heelRatioR = (rightNewton[3] / totalR) * 100;
+
+  // Forefoot ratio per kaki
+  const ffRatioL = ((leftNewton[0]  + leftNewton[1]  + leftNewton[2])  / totalL) * 100;
+  const ffRatioR = ((rightNewton[0] + rightNewton[1] + rightNewton[2]) / totalR) * 100;
+
+  function classify(heelRatio, ffRatio){
+
+      if(heelRatio >= 60){
+          return {
+              label:"Heel Dominant",
+              cssClass:"heel-dominant"
+          };
+      }
+
+      if(ffRatio >=60){
+          return{
+              label:"Forefoot Dominant",
+              cssClass:"forefoot-dominant"
+          };
+      }
+
+      return{
+          label:"Balanced Load",
+          cssClass:"balanced-load"
+      };
+  }
+
+  const clsL = classify(heelRatioL, ffRatioL);
+  const clsR = classify(heelRatioR, ffRatioR);
+
+  return{
+    heelRatioL,
+    heelRatioR,
+    ffRatioL,
+    ffRatioR,
+    labelL:clsL.label,
+    labelR:clsR.label
+  }
+}
+
 // ============================================================
 // MASTER CALCULATE — combines everything into one result object
 // ============================================================
@@ -336,6 +384,7 @@ function computeAll(sensorData) {
   // const balanceScore           = calcBalanceScore(asi);
   const pronation   = calcPronation(lN, rN);
   const archType = calcArchType(lN, rN);   
+  const loadPattern = calcLoadPattern(lN,rN);
 
   // Left/Right distribution percentages
   // const leftPercent  = totalForce > 0 ? Math.round((fLeft  / totalForce) * 100) : 50;
@@ -363,6 +412,7 @@ function computeAll(sensorData) {
     leftPercent,
     rightPercent,
     archType,
+    loadPattern,
 
     timestamp: sensorData.timestamp || Date.now(),
   };
