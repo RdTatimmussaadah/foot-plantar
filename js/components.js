@@ -171,7 +171,7 @@ function openSnapModal() {
           ${tr("Saving CoP, foot structure, movement, and sensor data to history")}
         </div>
 
-        <div class="snap-postur-row" id="snap-postur-row">
+        ${/*<div class="snap-postur-row" id="snap-postur-row">
           <span class="snap-postur-ic" id="snap-postur-ic">🧍</span>
           <div>
             <div style="font-size:9px;color:var(--text-secondary);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em">
@@ -179,7 +179,7 @@ function openSnapModal() {
             </div>
             <div style="font-size:13px;font-weight:800;color:var(--red)" id="snap-postur-lbl">Standing</div>
           </div>
-        </div>
+        </div> */ ''}
 
         <div class="snap-arch-row">
           <div>${tr("Left Foot Structure")}: <span id="sp-arch-l" style="font-weight:700">—</span></div>
@@ -224,31 +224,30 @@ function _populateSnapPreview() {
 
   const d = currentData;
 
-  const postureML = localStorage.getItem('fps_currentPostureML') || '';
-const posture = {
-  'normal':            'Normal',
-  'condong_depan':     'Forward Lean',
-  'condong_belakang':  'Backward Lean',
-  'condong_kanan':     'Right Lean',
-  'condong_kiri':      'Left Lean',
-}[postureML] || 'Not Detected';
+  // const postureML = localStorage.getItem('fps_currentPostureML') || '';
+// const posture = {
+//   'normal':            'Normal',
+//   'condong_depan':     'Forward Lean',
+//   'condong_belakang':  'Backward Lean',
+//   'condong_kanan':     'Right Lean',
+//   'condong_kiri':      'Left Lean',
+// }[postureML] || 'Not Detected';
 
 
-const postureIcons = {
-  'Normal':            '🧍',
-  'Forward Lean':      '⬆️',
-  'Backward Lean':     '⬇️',
-  'Right Lean':        '➡️',
-  'Left Lean':         '⬅️',
-  'Not Detected':      '❓',
-};
+// const postureIcons = {
+//   'Normal':            '🧍',
+//   'Forward Lean':      '⬆️',
+//   'Backward Lean':     '⬇️',
+//   'Right Lean':        '➡️',
+//   'Left Lean':         '⬅️',
+//   'Not Detected':      '❓',
+// };
 
-  const ic = document.getElementById('snap-postur-ic');
-  const lb = document.getElementById('snap-postur-lbl');
+//   const ic = document.getElementById('snap-postur-ic');
+//   const lb = document.getElementById('snap-postur-lbl');
 
-  if (ic) ic.textContent = postureIcons[posture] || '🧍';
-  // if (lb) lb.textContent = posture;
-  if (lb) lb.textContent = `${tr(posture)}`;
+//   if (ic) ic.textContent = postureIcons[posture] || '🧍';
+//   if (lb) lb.textContent = `${tr(posture)}`;
 
   const set = (id, val) => {
     const el = document.getElementById(id);
@@ -302,19 +301,19 @@ function saveSnapshot() {
   const note = document.getElementById('snap-note-inp')?.value || '';
 
   // BARU
-  const postureML = localStorage.getItem('fps_currentPostureML') || '';
-  const posture = {
-    'normal':            'Normal',
-    'condong_depan':     'Forward Lean',
-    'condong_belakang':  'Backward Lean',
-    'condong_kanan':     'Right Lean',
-    'condong_kiri':      'Left Lean',
-  }[postureML] || 'Not Detected';
+  // const postureML = localStorage.getItem('fps_currentPostureML') || '';
+  // const posture = {
+  //   'normal':            'Normal',
+  //   'condong_depan':     'Forward Lean',
+  //   'condong_belakang':  'Backward Lean',
+  //   'condong_kanan':     'Right Lean',
+  //   'condong_kiri':      'Left Lean',
+  // }[postureML] || 'Not Detected';
 
   const cop = computeSnapshotCop(currentData);
 
   if (typeof firebaseRecordSnapshot === 'function') {
-    firebaseRecordSnapshot(currentData, posture, note)
+    firebaseRecordSnapshot(currentData, note)
       .then(function () {
         showToast(`✅ ${tr("Snapshot saved")} — CoP ${tr(cop.label)}`, 'success');
       })

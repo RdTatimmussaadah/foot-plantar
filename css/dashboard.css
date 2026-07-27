@@ -107,11 +107,11 @@
 /* Layout utama */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(500px, 1.8fr) 200px minmax(380px, 1fr);
+  grid-template-columns: minmax(500px, 1.8fr) minmax(380px, 1fr);
   grid-template-rows: auto 1fr;
   grid-template-areas:
-    "heatmap posture  cop"
-    "heatmap diagnosis diagnosis";
+    "heatmap cop"
+    "heatmap diagnosis";
   gap: 14px;
   align-items: stretch;   /* ← kedua card row atas sama tinggi */
   width: 100%;
@@ -1314,7 +1314,7 @@
 
 @media (max-width: 1440px) {
   .dashboard-grid {
-    grid-template-columns: minmax(500px, 1.8fr) 210px minmax(340px, 1fr);
+    grid-template-columns: minmax(500px, 1.8fr) minmax(340px, 1fr);
   }
 
   .posture-card,
