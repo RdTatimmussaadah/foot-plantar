@@ -301,7 +301,6 @@ function renderHistoryList() {
           <table class="snapshot-table">
 <colgroup>
   <col class="col-time" />
-  <col class="col-posture" />
   <col class="col-foot" />
   <col class="col-foot" />
   <col class="col-foot" />
@@ -313,7 +312,6 @@ function renderHistoryList() {
 <thead>
   <tr>
     <th>${tr('Time')}</th>
-    ${/*<th>${tr('Posture')}</th>*/ ''}
     <th>${tr('Left Structure')}</th>
     <th>${tr('Left Movement')}</th>
     <th>${tr('Right Structure')}</th>
@@ -346,7 +344,6 @@ function selectSnapshot(rowId) {
 
 function renderSnapRow(snap, index) {
   const summary = buildSnapshotSummary(snap);
-  // const postureLabel = getSnapshotPostureLabel(snap);
 
   const rawId = snap.id || snap.snapshot_time || index;
   const rowId = `snap-row-${index}-${String(rawId).replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -357,14 +354,6 @@ function renderSnapRow(snap, index) {
       <td class="snapshot-time-td">
         ${escapeHtml(summary.timeText)}
       </td>
-
-      ${/*
-      <td>
-        <span class="snapshot-cell-value">
-          ${et(postureLabel)}
-        </span>
-      </td>
-      */ ''}
       
       <td>
         <span class="snapshot-cell-value" style="color:${summary.leftStructureColor}">
@@ -1321,7 +1310,6 @@ function exportCSV() {
   const headers = [
     'No',
     'Time',
-    // 'Posture',
     'CoP X (cm)',
     'CoP Y (cm)',
     'CoP Deviation (cm)',
@@ -1360,7 +1348,6 @@ function exportCSV() {
     return [
       i + 1,
       _fmtTime(s.snapshot_time),
-      // s.posture || 'Berdiri',
       cop.x.toFixed(2),
       cop.y.toFixed(2),
       cop.distance.toFixed(2),
@@ -1602,7 +1589,6 @@ const tableRows = snaps.map((snap, index) => {
     <tr>
       <td class="tc muted">${index + 1}</td>
       <td class="nowrap">${escapeHtml(_fmtTime(snap.snapshot_time))}</td>
-      ${/*<td class="tc">${et(getSnapshotPostureLabel(snap) || tr('Standing'))}</td>*/ ''}
 
       <td>
         <div class="foot-cell">
@@ -2192,7 +2178,6 @@ const tableRows = snaps.map((snap, index) => {
 <tr>
   <th class="tc" style="width:28px">No</th>
   <th>${et('Time')}</th>
-  ${/*<th class="tc">${et('Posture')}</th>*/ ''}
   <th>${et('Left Foot')}</th>
   <th>${et('Right Foot')}</th>
   <th class="tc">${et('Stability')}</th>
@@ -2224,31 +2209,6 @@ const tableRows = snaps.map((snap, index) => {
 
   win.document.close();
 }
-
-/* ============================================================
-   HELPERS
-   ============================================================ */
-// function getSnapshotPostureLabel(snap) {
-//   const raw = String(
-//     snap?.posture_ml ||
-//     snap?.postureML ||
-//     snap?.posture ||
-//     ''
-//   ).trim();
-
-//   const labelMap = {
-//     normal: 'Normal',
-//     condong_depan: 'Forward Lean',
-//     condong_belakang: 'Backward Lean',
-//     condong_kiri: 'Left Lean',
-//     condong_kanan: 'Right Lean',
-//   };
-
-//   if (!raw) return '—';
-
-//   const label = labelMap[raw] || raw;
-//   return typeof tr === "function" ? tr(label) : label;
-// }
 
 function _fmtTime(raw) {
   try {

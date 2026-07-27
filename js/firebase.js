@@ -103,10 +103,6 @@ function firebaseRecordSnapshot(computedData, note = '') {
   const motion = getFirebaseSnapshotMotion(computedData);
 
   const snap = {
-    // posture: postureLabel,
-
-    // posture_ml:            localStorage.getItem('fps_currentPostureML') || '',
-    // posture_ml_confidence: parseFloat(localStorage.getItem('fps_currentPostureMLConfidence') || '0'),
     note,
     snapshot_time: now.toLocaleString('id-ID'),
     tanggal: now.toLocaleDateString('id-ID', {

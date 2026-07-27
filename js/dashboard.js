@@ -8,8 +8,6 @@ const SENSOR_NAMES = ['Hallux', 'Metatarsal 1', 'Metatarsal 4', 'Heel'];
 let currentData = null;
 let _firebaseHistory = [];
 
-// let _postureMLSeq = 0;
-
 // ============================================================
 // INIT
 // ============================================================
@@ -49,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
 function updateDashboardUI(data) {
   updateMonitoringUI(data);
   updateBalanceUI(data);
-  // updatePostureMLSimple(data);
 }
 
 
@@ -627,123 +624,6 @@ function updateMonitoringUI(data) {
   // redrawHeatmapsKPa();
 }
 
-
-// async function updatePostureMLSimple(data) {
-//   const seq = ++_postureMLSeq;
-//   const box = document.getElementById('posture-result-box');
-//   const resultEl = document.getElementById('ml-posture-result');
-
-//   if (!box || !resultEl) return;
-
-//   if (typeof predictPostureML !== 'function') {
-//     _setPostureBoxState(box, resultEl, 'Model not available', 'loading');
-//     return;
-//   }
-
-//   _setPostureBoxState(box, resultEl, 'Detecting...', 'loading');
-
-//   try {
-//     const result = await predictPostureML(data);
-//     if (seq !== _postureMLSeq) return;
-
-//     if (result.rawLabel === 'no_pressure') {
-//       // Kaki belum terdeteksi — tampilkan waiting state
-//       localStorage.setItem('fps_currentPostureML', '');
-//       localStorage.setItem('fps_currentPostureMLConfidence', '0');
-//       _setPostureBoxState(box, resultEl, 'Waiting for foot...', 'loading');
-//       return;
-//     }
-
-//     if ((result.confidence || 0) < 0.55) {
-//       // Model tidak cukup yakin — jangan prediksi
-//       localStorage.setItem('fps_currentPostureML', '');
-//       localStorage.setItem('fps_currentPostureMLConfidence', '0');
-//       _setPostureBoxState(box, resultEl, 'Stabilizing...', 'loading');
-//       return;
-//     }
-
-//     const label = result.label || 'Not Detected Yet';
-//     localStorage.setItem('fps_currentPostureML', result.rawLabel || '');
-//     localStorage.setItem('fps_currentPostureMLConfidence', (result.confidence || 0).toFixed(4));
-
-//     let state = 'default';
-//     if (label.toLowerCase() === 'normal') state = 'normal';
-//     else if (label.toLowerCase().includes('lean')) state = 'warning';
-
-//     _setPostureBoxState(box, resultEl, label, state);
-
-//   } catch (err) {
-//     console.warn('ML postur gagal:', err);
-//     if (seq !== _postureMLSeq) return;
-//     _setPostureBoxState(box, resultEl, 'Not Read Yet', 'loading');
-//   }
-// }
-
-
-
-// function getPostureNote(label, state) {
-//   const text = String(label || '').toLowerCase();
-
-//   if (state === 'loading') {
-//     return tr('The system is reading the foot pressure pattern to detect posture tendencies.');
-//   }
-
-//   if (text.includes('normal')) {
-//     return tr('The pressure pattern indicates a relatively balanced weight distribution.');
-//   }
-
-//   if (text.includes('forward')) {
-//     return tr('The pressure pattern indicates a tendency for the body weight to shift forward.');
-//   }
-
-//   if (text.includes('backward')) {
-//     return tr('The pressure pattern indicates a tendency for the body weight to shift backward.');
-//   }
-
-//   if (text.includes('left')) {
-//     return tr('The pressure pattern indicates a tendency for the body weight to shift to the left side.');
-//   }
-
-//   if (text.includes('right')) {
-//     return tr('The pressure pattern indicates a tendency for the body weight to shift to the right side.');
-//   }
-
-//   return tr('The posture data is not clear enough. The reading can be repeated to better observe the pressure pattern.');
-// }
-
-// function _setPostureBoxState(box, resultEl, label, state) {
-//   box.classList.remove('is-normal', 'is-warning', 'is-loading');
-
-//   if (state === 'normal') {
-//     box.classList.add('is-normal');
-//   } else if (state === 'warning') {
-//     box.classList.add('is-warning');
-//   } else if (state === 'loading') {
-//     box.classList.add('is-loading');
-//   }
-
-//   const POSTURE_EMOJI = {
-//     'Normal': '🟢',
-//     'Forward Lean': '⬆️',
-//     'Backward Lean': '⬇️',
-//     'Left Lean': '⬅️',
-//     'Right Lean': '➡️',
-//     'Detecting...': '⏳',
-//     'Model belum siap': '⚠️',
-//     'Belum terdeteksi': '❓',
-//     'Belum terbaca': '❓',
-//     // 'Waiting for foot...': '👣',
-//     // 'Stabilizing...':      '⏳',
-//   };
-
-//   const emoji = POSTURE_EMOJI[label] || '';
-//   resultEl.textContent = `${emoji} ${tr(label)}`.trim();
-
-//   const noteEl = document.getElementById('posture-note');
-//   if (noteEl) {
-//     noteEl.textContent = getPostureNote(label, state);
-//   }
-// }
 
 const interpretations = {
   "Flat Foot": {
